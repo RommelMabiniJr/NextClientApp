@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Checkbox } from "primereact/checkbox";
 import { Button } from "primereact/button";
@@ -6,9 +6,13 @@ import { signIn, signOut } from 'next-auth/react';
 import { useFormik } from "formik";
 import { classNames } from 'primereact/utils';
 import login_validate from "@/lib/validate";
+import axios from "axios";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 const LoginPage = () => {
     const [checked, setChecked] = useState(false);
+    const router = useRouter();
     const formik = useFormik({
         initialValues: {
             email: '',
@@ -19,11 +23,44 @@ const LoginPage = () => {
     })
 
     async function onSubmit(values) {
-        console.log(values);
+        // e.preventDefault();
+        
+        const result = await signIn('credentials', {
+            email: values.email,
+            password: values.password,
+            remember: checked,
+            redirect: false,
+            callbackUrl: "/app/employer-dashboard"
+        });
+
+        console.log(result)
+
+        if (result.ok) router.push(result.url)
     }
 
+    async function mockuplogin() {
+        const result = await signIn('credentials', {
+            email: "rommelbrillantesmabinijr@gmail.com",
+            password: "12345678",
+            remember: checked,
+            redirect: false,
+            callbackUrl: "/app/employer-dashboard"
+        });
+
+        return result;
+    }
+
+    // This is a mockup login
+    useEffect(async () => {
+        
+        const result = await mockuplogin();
+
+
+        if (result.ok) router.push(result.url)
+    }, [])
+
     async function handleGoogleSignin() {
-        signIn('google', "http://localhost:3000");
+        signIn('google', {callbackUrl: "http://localhost:3000/app/dashboard"});
     }
 
     const isFormFieldInvalid = (name) => !!(formik.touched[name] && formik.errors[name]);
@@ -37,10 +74,10 @@ const LoginPage = () => {
         <div className="flex align-items-center justify-content-center">
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
-                    <img src="/layout/logo.png" alt="hyper" height={50} className="mb-3" />
+                    <Link href="/"><img src="/layout/logo.png" alt="hyper" height={50} className="mb-3" /></Link>
                     <div className="text-900 text-3xl font-medium mb-3">Welcome Back</div>
                     <span className="text-600 font-medium line-height-3">Don't have an account?</span>
-                    <a className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Create today!</a>
+                    <a href="/register" className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Create today!</a>
                 </div>
                 <form onSubmit={formik.handleSubmit}>
                     <div>
@@ -61,9 +98,9 @@ const LoginPage = () => {
                         </div>
 
                         <Button type="Submit" label="Log In" icon="pi pi-user" className="w-full mb-4" />
-                        <Button onClick={handleGoogleSignin} label="Sign in with Google" icon="pi pi-google" className="w-full border-gray-500 text-600" outlined />
                     </div>
                 </form>
+                <Button onClick={handleGoogleSignin} label="Sign in with Google" icon="pi pi-google" className="w-full border-gray-500 text-600" outlined />
             </div>
         </div>
     );

@@ -1,0 +1,9 @@
+{
+    "data": [
+        {"name": "Direct Deposit"},
+        {"name": "Paypal"},
+        {"name": "Gcash"},
+        {"name": "Cash"},
+        {"name": "Paymaya"}
+    ]
+}

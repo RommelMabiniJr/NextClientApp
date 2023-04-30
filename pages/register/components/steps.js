@@ -7,6 +7,8 @@ import { Checkbox } from 'primereact/checkbox';
 import { Divider } from 'primereact/divider';
 import { Password } from 'primereact/password';
 import { classNames } from 'primereact/utils';
+import { Dropdown } from 'primereact/dropdown';
+import regionVIIIJson from "../../../public/data/region-viii.json";
 
 
 const PersonalInformationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
@@ -54,6 +56,78 @@ const ContactDetailsStep = ({ handleNextStep, handlePreviousStep, ...props }) =>
   );
 }
 
+const LocationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedBarangay, setSelectedBarangays] = useState(null);
+  const [barangayList, setBarangayList] = useState([]);
+  const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
+
+  const cities = Object.keys(regionVIIIJson.LEYTE.municipality_list).map((municipality) => ({
+    label: municipality,
+    value: municipality,
+  }));
+
+  let barangays = [];
+
+  const handleCityChange = (event) => {
+    const selectedCity = event.value;
+    const barangays = regionVIIIJson.LEYTE.municipality_list[selectedCity].barangay_list.map((barangay) => ({
+      label: barangay,
+      value: barangay,
+    }));
+    setBarangayList(barangays);
+    formik.setFieldValue('city', selectedCity);
+  };
+
+  return (
+    <div>
+      <label htmlFor="city" className="block text-900 font-medium mb-2">
+        City
+      </label>
+      <Dropdown
+        id="city"
+        options={cities}
+        value={formik.values.city}
+        onChange={handleCityChange}
+        placeholder="Select your city"
+        className={classNames('w-full', { 'p-invalid': isFormFieldInvalid('city') })}
+      />
+      {getFormErrorMessage('city')}
+
+      <label htmlFor="barangay" className="block text-900 font-medium mb-2">
+        Barangay
+      </label>
+      <Dropdown
+        id="barangay"
+        value={formik.values.barangay}
+        options={barangayList}
+        onChange={(e) => formik.setFieldValue('barangay', e.value)}
+        placeholder="Select your barangay"
+        className={classNames('w-full', { 'p-invalid': isFormFieldInvalid('barangay') })}
+        multiple
+      />
+      {getFormErrorMessage('barangay')}
+
+      <label htmlFor="street" className="block text-900 font-medium mb-2">
+        Street
+      </label>
+      <InputText
+        {...props.formik.getFieldProps('street')}
+        id="street"
+        type="text"
+        placeholder="Enter your street"
+        className={classNames('w-full', { 'p-invalid': isFormFieldInvalid('street') })}
+      />
+      {getFormErrorMessage('street')}
+
+      <div className="flex flex-wrap justify-content-between gap-2 mt-4">
+        <Button label="Back" className='' icon="pi pi-arrow-left" iconPos="left" onClick={handlePreviousStep} />
+        <Button label="Next" className='' icon="pi pi-arrow-right" iconPos="right" onClick={handleNextStep} />
+      </div>
+    </div>
+  );
+};
+
 const AccountSecurityStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
   const [checked, setChecked] = useState(false);
   const { isFormFieldInvalid, getFormErrorMessage } = props;
@@ -61,11 +135,11 @@ const AccountSecurityStep = ({ handleNextStep, handlePreviousStep, ...props }) =
   return (
     <div>
       <label htmlFor="password" className="block text-900 font-medium mb-2">Password</label>
-      <Password {...props.formik.getFieldProps('password')} id="password" inputStyle={{ width: '100%' }} className={classNames("w-full", { 'p-invalid': isFormFieldInvalid('password') })} toggleMask/>
+      <Password {...props.formik.getFieldProps('password')} id="password" inputStyle={{ width: '100%' }} className={classNames("w-full", { 'p-invalid': isFormFieldInvalid('password') })} toggleMask />
       {getFormErrorMessage('password')}
 
       <label htmlFor="confirmPassword" className="block text-900 font-medium mb-2">Confirm Password</label>
-      <Password {...props.formik.getFieldProps('confirmPassword')} id="confirmPassword" inputStyle={{ width: '100%' }} className={classNames("w-full", { 'p-invalid': isFormFieldInvalid('confirmPassword') })} toggleMask/>
+      <Password {...props.formik.getFieldProps('confirmPassword')} id="confirmPassword" inputStyle={{ width: '100%' }} className={classNames("w-full", { 'p-invalid': isFormFieldInvalid('confirmPassword') })} toggleMask />
       {getFormErrorMessage('confirmPassword')}
 
       <div className="flex align-items-center justify-content-between mb-6">
@@ -77,11 +151,13 @@ const AccountSecurityStep = ({ handleNextStep, handlePreviousStep, ...props }) =
 
       <div className="flex flex-wrap justify-content-between gap-2 mt-4">
         <Button label="Back" className='' icon="pi pi-arrow-left" iconPos="left" onClick={handlePreviousStep} />
-        <Button type='submit' label="Next" className='' icon="pi pi-arrow-right" iconPos="right" onClick={props.formik.handleSubmit} />
+        <Button label="Confirm" className='' icon="pi pi-arrow-right" iconPos="right" onClick={props.formik.handleSubmit} />
       </div>
     </div>
   );
 }
+
+
 
 const ConfirmationStep = ({ handleNextStep, handlePreviousStep, ...props }) => (
   <div>
@@ -98,8 +174,8 @@ const ConfirmationStep = ({ handleNextStep, handlePreviousStep, ...props }) => (
 const steps = [
   PersonalInformationStep,
   ContactDetailsStep,
+  LocationStep,
   AccountSecurityStep,
-  ConfirmationStep,
 ];
 
 export default steps;

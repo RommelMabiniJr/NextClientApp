@@ -7,10 +7,13 @@ import { Button } from 'primereact/button';
 import { Steps } from 'primereact/steps';
 import { Checkbox } from 'primereact/checkbox';
 import { Divider } from 'primereact/divider';
+import { SelectButton } from 'primereact/selectbutton';
 import { useFormik } from 'formik';
+import { classNames } from 'primereact/utils';
 import axios from 'axios';
 import steps from './components/steps';
 import { registerValidate } from '@/lib/validate';
+import Link from 'next/link';
 
 const initialState = {
     firstname: '',
@@ -104,11 +107,16 @@ const RegistrationPage = () => {
             label: 'Contact',
         },
         {
-            label: 'Security',
+            label: 'Location',
         },
         {
-            label: 'Confirmation',
+            label: 'Security',
         },
+    ];
+
+    const options = [
+        { label: 'Worker', value: 'domestic worker' },
+        { label: 'Employer', value: 'household employer' },
     ];
 
     const formik = useFormik({
@@ -119,6 +127,10 @@ const RegistrationPage = () => {
             phone: '',
             password: '',
             confirmPassword: '',
+            city : '',
+            barangay: '',
+            street: '',
+            user_type: '',
         },
         validate: registerValidate,
         onSubmit
@@ -131,14 +143,12 @@ const RegistrationPage = () => {
     };
 
     async function onSubmit(values) {
-        
         axios({
             method: 'post',
-            data: {...values, user_type: 'domestic worker'},
+            data: { ...values},
             withCredentials: true,
             url: 'http://localhost:5000/register'
-        }).then((res) => console.log(res)).catch((err)=> console.log(err));
-
+        }).then((res) => console.log(res)).catch((err) => console.log(err));
     }
 
     const handleNextStep = () => {
@@ -151,34 +161,22 @@ const RegistrationPage = () => {
 
     const StepComponent = steps[currentStep];
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        dispatch(
-            registerWorker({
-                name,
-                email,
-                password,
-                documents,
-            })
-        );
-    };
-
-    const handleUpload = (event) => {
-        setDocuments(event.files);
-    };
-
     return (
         <div className="flex align-items-center justify-content-center">
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
-                    <img src="/layout/logo.png" alt="tagatulong" height={50} className="mb-3" />
+                    <Link href="/"><img src="/layout/logo.png" alt="hyper" height={50} className="mb-3" /></Link>
                     <div className="text-900 text-3xl font-medium mb-3">Join TagaTulong</div>
                     <span className="text-600 font-medium line-height-3">Already have an account?</span>
-                    <a className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Sign In</a>
+                    <a href='/auth/login' className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Sign In</a>
                 </div>
 
                 <form>
                     <div>
+                        <div>
+                            <SelectButton value={formik.values.user_type} name='user_type' id='userType' options={options} onChange={(e) => { formik.setFieldValue('user_type', e.value);}} className={classNames('user-type-select m-auto w-8 flex justify-content-center', { 'p-invalid': isFormFieldInvalid('user_type') })} />
+                            {getFormErrorMessage("user_type")}
+                        </div>
                         <Steps className='mx-auto w-10' model={items} aria-expanded="true" activeIndex={currentStep} />
                         <Divider className='mx-auto w-10 mb-5' />
 
@@ -186,8 +184,8 @@ const RegistrationPage = () => {
                             <StepComponent
                                 isFormFieldInvalid={isFormFieldInvalid}
                                 getFormErrorMessage={getFormErrorMessage}
-                                formik = {formik}
-                                onSubmit = {onSubmit}
+                                formik={formik}
+                                onSubmit={onSubmit}
                                 handleNextStep={handleNextStep}
                                 handlePreviousStep={handlePreviousStep}
                             />

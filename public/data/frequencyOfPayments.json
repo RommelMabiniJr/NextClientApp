@@ -1,0 +1,12 @@
+{
+    "data": [
+        {"name": "Daily"},
+        {"name": "Weekly"},
+        {"name": "Bi-weekly (every two weeks)"},
+        {"name": "Semi-monthly (twice a month)"},
+        {"name": "Monthly"},
+        {"name": "Quarterly (every three months)"},
+        {"name": "Semi-annually (twice a year)"},
+        {"name": "Annually"}
+    ]
+}
