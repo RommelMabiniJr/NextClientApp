@@ -1,0 +1,50 @@
+{
+    "data": [
+      {
+        "id": 1,
+        "name": "English",
+        "code": "en"
+      },
+      {
+        "id": 2,
+        "name": "Filipino",
+        "code": "fil"
+      },
+      {
+        "id": 3,
+        "name": "Cebuano",
+        "code": "ceb"
+      },
+      {
+        "id": 4,
+        "name": "Ilocano",
+        "code": "ilo"
+      },
+      {
+        "id": 5,
+        "name": "Hiligaynon",
+        "code": "hil"
+      },
+      {
+        "id": 6,
+        "name": "Waray",
+        "code": "war"
+      },
+      {
+        "id": 7,
+        "name": "Kapampangan",
+        "code": "pam"
+      },
+      {
+        "id": 8,
+        "name": "Bikol",
+        "code": "bik"
+      },
+      {
+        "id": 9,
+        "name": "Bisaya",
+        "code": "bis"
+      }
+    ]
+  }
+  

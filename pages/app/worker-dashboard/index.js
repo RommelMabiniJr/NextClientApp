@@ -4,7 +4,7 @@ import { getSession, useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Divider } from 'primereact/divider';
-import EmployerNavbar from '@/layout/EmployerNavbar';
+import WorkerNavbar from '@/layout/WorkerNavbar';
 
 export default function Dashboard() {
   const { data: session } = useSession();
@@ -28,7 +28,7 @@ export default function Dashboard() {
       {loading && <div>Loading...</div>}
       {!loading && (
         <>
-          <EmployerNavbar session={session} handleSignOut={handleSignOut} />
+          <WorkerNavbar session={session} handleSignOut={handleSignOut} />
           <div className=" mt-4 text-center">
             <h2 className="p-text-uppercase mb-2">Welcome, {session.user.firstName}!</h2>
             <h4 className="text-500 mb-3 mt-0">What would you like to do?</h4>

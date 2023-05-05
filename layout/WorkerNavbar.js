@@ -10,7 +10,7 @@ import { getSession } from 'next-auth/react';
 import Link from 'next/link';
 
 
-const EmployerNavbar = ({ session, handleSignOut }) => {
+const WorkerNavbar = ({ session, handleSignOut }) => {
     const menu = useRef(null);
     //const router = useRouter();
     const toast = useRef(null);
@@ -22,12 +22,12 @@ const EmployerNavbar = ({ session, handleSignOut }) => {
             url: '/app/employer-dashboard',
         },
         {
-            label: 'Search',
-            icon: 'pi pi-fw pi-search',
+            label: 'Profile',
+            icon: 'pi pi-fw pi-user',
             url: '/app/worker-search',
         },
         {
-            label: 'Posts',
+            label: 'Job Listings',
             icon: 'pi pi-fw pi-briefcase',
             url: '/app/posts',
             command: () => {
@@ -89,7 +89,7 @@ const EmployerNavbar = ({ session, handleSignOut }) => {
     );
 };
 
-export default EmployerNavbar;
+export default WorkerNavbar;
 
 
 export async function getServerSideProps({ req }) {

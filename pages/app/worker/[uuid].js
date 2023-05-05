@@ -4,7 +4,7 @@ import { getSession, useSession, signOut } from 'next-auth/react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import axios from 'axios';
-import EmployerNavbar from '@/layout/EmployerNavbar';
+import WorkerNavbar from '@/layout/WorkerNavbar';
 import ContactInformation from './information/contact';
 import HouseholdInformation from './information/household';
 import PaymentInformation from './information/payment';
@@ -43,7 +43,7 @@ export default function EmployerProfile() {
 
     return (
         <div>
-            <EmployerNavbar session={session} handleSignOut={handleSignOut} />
+            <WorkerNavbar session={session} handleSignOut={handleSignOut} />
             {isLoading ? (
                 <p>Loading...</p>
             ) : (

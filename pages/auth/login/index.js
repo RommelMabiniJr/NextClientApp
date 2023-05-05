@@ -35,12 +35,12 @@ const LoginPage = () => {
 
         console.log(result)
 
-        if (result.ok) router.push(result.url)
+        // if (result.ok) router.push(result.url)
     }
 
     async function mockuplogin() {
         const result = await signIn('credentials', {
-            email: "rommelbrillantesmabinijr@gmail.com",
+            email: "eseiseno@gmail.com",
             password: "12345678",
             remember: checked,
             redirect: false,
@@ -50,13 +50,17 @@ const LoginPage = () => {
         return result;
     }
 
-    // This is a mockup login
-    useEffect(async () => {
-        
-        const result = await mockuplogin();
+    // This is a mockup login: comment or uncomment this to use this feature
 
+    useEffect( () => {
 
-        if (result.ok) router.push(result.url)
+        async function doLoginMockup() {
+            const result = await mockuplogin();
+
+            if (result.ok) router.push(result.url)
+        }
+
+        doLoginMockup();
     }, [])
 
     async function handleGoogleSignin() {

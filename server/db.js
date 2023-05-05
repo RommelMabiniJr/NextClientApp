@@ -56,6 +56,76 @@ const insertUser = async (firstName, secondName, email, phone, hashedPassword, u
   }
 };
 
+const createJobPost = async (userId, serviceId, jobTitle, jobDescription, jobStartDate, jobEndDate, jobStartTime, jobEndTime, jobType) => {
+  const query = `INSERT INTO jobposting (employer_id, service_id, job_title, job_description, job_start_date, job_end_date, job_start_time, job_end_time, job_type) VALUES ('${userId}', '${serviceId}', '${jobTitle}', '${jobDescription}', '${jobStartDate}', '${jobEndDate}', '${jobStartTime}', '${jobEndTime}', '${jobType}')`;
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(query);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getJobPosts = async (employerId) => {
+  const query = `SELECT * FROM jobposting WHERE employer_id = '${employerId}'`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getUserCounts = async () => {
+  const query = `SELECT user_type, COUNT(*) AS count FROM User GROUP BY user_type`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getPostCounts = async () => {
+  const query = `SELECT job_type, COUNT(*) AS count FROM jobposting GROUP BY job_type`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getJobPostsWithServiceName = async (employerId) => {
+  const query = `SELECT jobposting.*, service.service_name FROM jobposting INNER JOIN service ON jobposting.service_id = service.service_id WHERE employer_id = '${employerId}'`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
 const getUserIdByEmail = async (email) => {
   const query = `SELECT user_id FROM User WHERE email = '${email}'`;
   const connection = await pool.getConnection();
@@ -83,7 +153,20 @@ const getUserByEmail = async (email) => {
   } finally {
     connection.release();
   }
-  
+};
+
+const getUserByUuid = async (uuid) => {
+  const query = `SELECT * FROM User WHERE user_id IN (SELECT user_id FROM User_UUID WHERE uuid = '${uuid}')`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
 };
 
 const insertUuid = async (userId, uuid) => {
@@ -170,8 +253,8 @@ const checkHouseholdExists = async (employerId) => {
   }
 };
 
-const insertHouseholdEmployer = async (fullName, address, paymentMethod, employerId) => {
-  const query = `INSERT INTO HouseholdEmployer (full_name, address, payment_method, employer_id) VALUES ('${fullName}', '${address}', '${paymentMethod}', '${employerId}')`;
+const insertEmployerProfile = async (employerId, householdSize, hasPets, specificNeeds, paymentMethods, paymentFrequency, bio) => {
+  const query = `INSERT INTO HouseholdEmployer (employer_id, household_size, has_pets, specific_needs, payment_methods, payment_frequency, bio) VALUES ('${employerId}', '${householdSize}', '${hasPets}', '${specificNeeds}', '${paymentMethods}', '${paymentFrequency}', '${bio}')`;
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.query(query);
@@ -184,8 +267,38 @@ const insertHouseholdEmployer = async (fullName, address, paymentMethod, employe
   }
 };
 
-const updateCompletedProfile = async (userId) => {
-  const query = `UPDATE User SET completed_profile = 'true' WHERE user_id = '${userId}'`;
+const insertWorkerProfile = async (userId, availability, bio, certifications, education, hourlyRate, languages, skillsString, workExperience) => {
+  const query = `INSERT INTO DomesticWorker (worker_id, availability, bio, certifications, education, hourly_rate, languages, skills, work_experience) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const values = [userId, availability, bio, certifications, education, hourlyRate, languages, skillsString, workExperience];
+
+  const connection = await pool.getConnection();
+  try {
+    const [result] = await connection.query(query, values);
+    return result.insertId;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const updateJobPost = async (jobId, serviceId, jobTitle, jobDescription, jobStartDate, jobEndDate, jobStartTime, jobEndTime, jobType) => {
+  const query = `UPDATE JobPosting SET service_id = ?, job_title = ?, job_description = ?, job_start_date = ?, job_end_date = ?, job_start_time = ?, job_end_time = ?, job_type = ? WHERE job_id = ?`;
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(query, [serviceId, jobTitle, jobDescription, jobStartDate, jobEndDate, jobStartTime, jobEndTime, jobType, jobId]);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const updateCompletedProfile = async (userId, status) => {
+  const query = `UPDATE User SET completed_profile = '${status}' WHERE user_id = '${userId}'`;
   const connection = await pool.getConnection();
   try {
     await connection.query(query);
@@ -194,6 +307,48 @@ const updateCompletedProfile = async (userId) => {
     throw err;
   } finally {
     connection.release();
+  }
+};
+
+const updateUserInfo = async (userId, email, phoneNumber) => {
+  const query = `UPDATE User SET email = '${email}', phone = '${phoneNumber}' WHERE user_id = '${userId}'`;
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(query);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const updateEmployerInfo = async (infoType, employerInfo) => {
+  const { employerId, householdSize, hasPetsInt, specificNeeds, paymentMethods, paymentFrequency, bio } = employerInfo;
+
+  let query = '';
+
+  if (infoType == "household") {
+    query = `UPDATE HouseholdEmployer SET household_size = '${householdSize}', has_pets = '${hasPetsInt}', specific_needs = '${specificNeeds}' WHERE employer_id = '${employerId}'`;
+  
+  } else if (infoType == "payment") {
+    query = `UPDATE HouseholdEmployer SET payment_methods = '${paymentMethods}', payment_frequency = '${paymentFrequency}' WHERE employer_id = '${employerId}'`;
+  
+  } else if (infoType == "bio") {
+    query = `UPDATE HouseholdEmployer SET bio = '${bio}' WHERE employer_id = '${employerId}'`;
+
+  } else {
+    console.error("Invalid infoType");
+    throw "Invalid infoType";
+  }
+
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.query(query);
+  } catch (err) {
+    console.error(err);
+    throw err;
   }
 };
 
@@ -226,7 +381,7 @@ const inserDomesticWorker = async (full_name, profile_picture, hourly_rate, loca
 };
 
 // Helper function to get the domestic worker details by user ID
-const getDomesticWorkerByUserId = async (userId) => {
+const getWorkerByUserId = async (userId) => {
   const query = `SELECT * FROM DomesticWorker WHERE worker_id = '${userId}'`;
   const connection = await pool.getConnection();
   try {
@@ -241,8 +396,22 @@ const getDomesticWorkerByUserId = async (userId) => {
 };
 
 // Helper function to get the household employer details by user ID
-const getHouseholdEmployerByUserId = async (userId) => {
+const getEmployerByUserId = async (userId) => {
   const query = `SELECT * FROM HouseholdEmployer WHERE employer_id = '${userId}'`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getEmployerByUUID = async (uuid) => {
+  const query = `SELECT * FROM HouseholdEmployer WHERE employer_id = (SELECT user_id FROM User_UUID WHERE uuid = '${uuid}')`;
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.query(query);
@@ -284,25 +453,52 @@ const updateDomesticWorker = async (worker_id, full_name, profile_picture, hourl
   }
 };
 
+const deleteJobPost = async (jobId) => {
+  const query = `DELETE FROM JobPosting WHERE job_id = '${jobId}'`;
+  const connection = await pool.getConnection();
+  try {
+    const [result] = await connection.query(query);
+    return result.affectedRows > 0; // Returns true if the row was deleted
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+
 
 module.exports = {
   checkUserExists,
   insertUser,
   getUserIdByEmail,
+  getUserByUuid,
   insertUuid,
+  createJobPost,
   getPasswordByEmail,
   getUserById,
   getUuidByUserId,
   getUserIdbyUuid,
   getUserByEmail,
   checkHouseholdExists,
-  insertHouseholdEmployer,
+  insertEmployerProfile,
+  insertWorkerProfile,
   checkWorkerExists,
   inserDomesticWorker,
-  getDomesticWorkerByUserId,
-  getHouseholdEmployerByUserId,
+  getWorkerByUserId,
+  getEmployerByUserId,
+  getEmployerByUUID,
+  getUserCounts,
+  getPostCounts,
+  getJobPosts,
+  getJobPostsWithServiceName,
+  updateUserInfo,
+  updateJobPost,
   updateHouseholdEmployer,
   updateDomesticWorker,
   updateCompletedProfile,
+  updateEmployerInfo,
+  deleteJobPost,
   pool,
 };

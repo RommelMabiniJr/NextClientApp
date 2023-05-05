@@ -24,14 +24,13 @@ const CompleteProfile = () => {
 
     const items = [
         {
-            label: 'Household',
+            label: 'Profile',
         },
         {
-            label: 'Payment',
+            label: 'Experience',
         },
         {
-            // Will be used to ask to create bio
-            label: 'Additional',
+            label: 'Background',
         },
         {
             label: 'Verification',
@@ -40,12 +39,17 @@ const CompleteProfile = () => {
 
     const formik = useFormik({
         initialValues: {
-            householdSize: '',
-            hasPets: false,
-            specificNeeds: '',
-            paymentMethods: [],
-            paymentFrequency: '',
             bio: '',
+            servicesOffered: [],
+            availability: '',
+
+            workExperience: '',
+            hourlyRate: 0.00,
+            skills: '',
+
+            languages: '',
+            education: "College",
+            certifications: '',
         },
         
         validate: completeProfileValidate,
@@ -60,17 +64,19 @@ const CompleteProfile = () => {
 
     async function onSubmit(values) {
         try {
+            console.log(values);
+
             const response = await axios({
                 method: 'post',
                 data: { ...values, uuid: session.user.uuid },
                 withCredentials: true,
-                url: 'http://localhost:5000/employer/complete-profile'
+                url: 'http://localhost:5000/worker/complete-profile'
             });
             
             console.log(response.data);
 
             toast.current.show({ severity: 'success', summary: 'Success', detail: 'Profile created Succesfully', life: 3000 });
-            router.push(`/app/employer-dashboard`);
+            router.push(`/app/domestic-worker-dashboard`);
             
         } catch (error) {
             console.error(error);
@@ -122,3 +128,5 @@ const CompleteProfile = () => {
 };
 
 export default CompleteProfile;
+
+

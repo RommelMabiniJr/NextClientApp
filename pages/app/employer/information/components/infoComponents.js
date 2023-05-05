@@ -1,25 +1,27 @@
 import { Button } from 'primereact/button';
+import { classNames } from 'primereact/utils';
 
-export default function EditButton({ isEditMode, toggleEditMode }) {
+export default function EditButton({ isEditMode, toggleEditMode, onSubmit }) {
+  const handleSaveButton = async () => {
+    try {
+      await onSubmit();
+    } catch (error) {
+      // Handle the error here
+      console.error(error);
+    }
+  }
+
   return isEditMode ? (
-    <div className='flex'>
-      <Button
-        label='Cancel'
-        onClick={toggleEditMode}
-        severity='danger'
-        className='p-button-rounded p-button-outlined p-button-sm mr-3'
-      />
-      <Button
-        label='Save'
-        onClick={toggleEditMode}
-        severity='success'
-        className='p-button-rounded p-button-outlined p-button-sm'
-      />
+    <div className="p-d-flex p-jc-center">
+      <div className={classNames('p-d-flex', 'p-flex-column', 'p-flex-md-row', 'p-ai-center', 'p-mx-md-2')}>
+        <Button label="Save" className="mr-2 p-mb-2" onClick={handleSaveButton}/>
+        <Button label="Cancel" className="p-mb-2 bg-bluegray-600 hover:bg-bluegray-400 border-bluegray-700" onClick={toggleEditMode}/>
+      </div>
     </div>
   ) : (
     <Button
       label='Edit'
-      className='p-button-rounded p-button-outlined p-button-sm p-button-secondary'
+      className=' p-button-outlined p-button-secondary'
       icon='pi pi-pencil'
       onClick={toggleEditMode}
     />

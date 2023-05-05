@@ -3,6 +3,7 @@ import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { AutoComplete } from 'primereact/autocomplete';
+import { InputSwitch } from 'primereact/inputswitch';
 import { Checkbox } from 'primereact/checkbox';
 import { Divider } from 'primereact/divider';
 import { Password } from 'primereact/password';
@@ -13,7 +14,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 
 const HouseholdInformationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
     const [checked, setChecked] = useState(false);
-    const { isFormFieldInvalid, getFormErrorMessage } = props;
+    const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
 
 
     return (
@@ -23,7 +24,16 @@ const HouseholdInformationStep = ({ handleNextStep, handlePreviousStep, ...props
             {getFormErrorMessage('householdSize')}
 
             <label htmlFor="hasPets" className="block text-900 font-medium mb-2">Has Pets</label>
-            <InputText {...props.formik.getFieldProps('hasPets')} id="hasPets" type="text" placeholder="Enter yes or no" className={classNames("w-full", { 'p-invalid': isFormFieldInvalid('hasPets') })} />
+            {/* <InputText {...props.formik.getFieldProps('hasPets')} id="hasPets" type="text" placeholder="Enter yes or no" className={classNames("w-full", { 'p-invalid': isFormFieldInvalid('hasPets') })} /> */}
+            <InputSwitch
+                id="hasPets"
+                name="hasPets"
+                checked={formik.values.hasPets}
+                onChange={(e) => {
+                    formik.setFieldValue('hasPets', e.value);
+                }}
+                className={classNames({ 'p-invalid': isFormFieldInvalid('hasPets') })}
+            />
             {getFormErrorMessage('hasPets')}
 
             <label htmlFor="specificNeeds" className="block text-900 font-medium mb-2">Specific Needs</label>
@@ -40,7 +50,7 @@ const HouseholdInformationStep = ({ handleNextStep, handlePreviousStep, ...props
 }
 
 const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
-    const { isFormFieldInvalid, getFormErrorMessage } = props;
+    const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
     const [payments, setPayments] = useState([]);
     const [selectedPayment, setSelectedPayment] = useState([]);
     const [filteredPayments, setFilteredPayments] = useState(null);
@@ -70,17 +80,39 @@ const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
         PaymentService.getFrequencyOfPayments().then((data) => setOptions(data));
     }, []);
 
+    const handleSelectedPaymentChange = (e) => {
+        formik.setFieldValue('paymentMethods', e.value);
+    }
+
+    const handleSelectedFrequencyChange = (e) => {
+        formik.setFieldValue('paymentFrequency', e.value);
+    }
+
     return (
         <div>
             <label htmlFor="paymentMethods" className="block text-900 font-medium mb-2">Payment Methods</label>
             <div className='p-fluid'>
-                <AutoComplete placeholder='Select preferred mode of payment' field="name" multiple dropdown virtualScrollerOptions={{ itemSize: 38 }} value={selectedPayment} suggestions={filteredPayments} completeMethod={search} onChange={(e) => setSelectedPayment(e.value)} />
+                <AutoComplete 
+                    placeholder='Select preferred mode of payment' 
+                    value={formik.values.paymentMethods} 
+                    field="name" multiple dropdown 
+                    virtualScrollerOptions={{ itemSize: 38 }} 
+                    suggestions={filteredPayments} 
+                    completeMethod={search} 
+                    onChange={handleSelectedPaymentChange} 
+                />
             </div>
             {getFormErrorMessage('paymentMethods')}
 
             <label htmlFor="paymentFrequency" className="block text-900 font-medium mb-2">Preferred Frequency of Pay</label>
             <div className='p-fluid'>
-                <Dropdown id="paymentFrequency" value={selectedOption} options={options.map(option => ({ label: option.name, value: option.name }))} onChange={(e) => setSelectedOption(e.value)} placeholder="Select Frequency of Pay" />
+                <Dropdown 
+                    placeholder="Select Frequency of Pay" 
+                    value={formik.values.paymentFrequency} 
+                    id="paymentFrequency" 
+                    options={options.map(option => ({ label: option.name, value: option.name }))} 
+                    onChange={handleSelectedFrequencyChange} 
+                />
             </div>
             {getFormErrorMessage('paymentFrequency')}
 
@@ -119,14 +151,14 @@ const VerificationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
             <div className='mb-4'>
                 <label htmlFor="personalPhoto" className="block text-900 font-medium mb-2">Upload a picture </label>
                 <FileUpload name="personalPhoto" url={'/api/upload'} accept="image/*" maxFileSize={1000000} emptyTemplate={<p className="m-0">Drag and drop a picture of yourself here.</p>} />
-                {getFormErrorMessage('bio')}
+                {/* {getFormErrorMessage('bio')} */}
             </div>
 
             <div className=''>
                 <label htmlFor="" className="block text-900 font-medium mb-1">Upload a government-issued ID</label>
                 <p htmlFor="" className="block text-500 font-small mb-2">Provide proof of identity</p>
                 <FileUpload name="personalPhoto" url={'/api/upload'} accept="image/*" maxFileSize={1000000} emptyTemplate={<p className="m-0">Drag and drop an image of your id here.</p>} />
-                {getFormErrorMessage('bio')}
+                {/* {getFormErrorMessage('bio')} */}
             </div>
 
             <div className="flex flex-wrap justify-content-between gap-2 mt-4">

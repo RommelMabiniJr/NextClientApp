@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { createSlice, configureStore, createAsyncThunk } from '@reduxjs/toolkit';
 import { FileUpload } from 'primereact/fileupload';
@@ -10,6 +10,8 @@ import { Divider } from 'primereact/divider';
 import { SelectButton } from 'primereact/selectbutton';
 import { useFormik } from 'formik';
 import { classNames } from 'primereact/utils';
+import { Toast } from 'primereact/toast';
+import { useRouter } from 'next/router';
 import axios from 'axios';
 import steps from './components/steps';
 import { registerValidate } from '@/lib/validate';
@@ -99,6 +101,9 @@ const RegistrationPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [currentStep, setCurrentStep] = useState(0);
 
+    const router = useRouter();
+    const toast = useRef(null);
+
     const items = [
         {
             label: 'Personal',
@@ -143,12 +148,15 @@ const RegistrationPage = () => {
     };
 
     async function onSubmit(values) {
-        axios({
-            method: 'post',
-            data: { ...values},
-            withCredentials: true,
-            url: 'http://localhost:5000/register'
-        }).then((res) => console.log(res)).catch((err) => console.log(err));
+        try {
+            const response = await axios.post('http://localhost:5000/register', values, { withCredentials: true });
+            console.log(response);
+            toast.current.show({ severity: 'success', summary: 'Success', detail: 'User registered successfully!' });
+            router.push('/auth/login');
+        } catch (error) {
+            console.error(error);
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'An error occurred while registering user!' });
+          }
     }
 
     const handleNextStep = () => {
@@ -163,6 +171,7 @@ const RegistrationPage = () => {
 
     return (
         <div className="flex align-items-center justify-content-center">
+            <Toast ref={toast} />
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
                     <Link href="/"><img src="/layout/logo.png" alt="hyper" height={50} className="mb-3" /></Link>
