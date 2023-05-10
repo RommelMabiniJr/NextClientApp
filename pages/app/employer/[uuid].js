@@ -10,7 +10,7 @@ import HouseholdInformation from './information/household';
 import PaymentInformation from './information/payment';
 
 export default function EmployerProfile() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const handleSignOut = () => {
         signOut();
     }
@@ -28,14 +28,22 @@ export default function EmployerProfile() {
                 console.log(router.query.uuid)
                 const response = await axios.get(`http://localhost:5000/employer/${router.query.uuid}`);
                 setEmployer(response.data);
-                console.log(employer)
             } catch (error) {
                 console.error(error);
             }
             setIsLoading(false);
         };
         fetchEmployer();
-    }, [router.query.uuid]);
+    }, [session, router.query.uuid]);
+
+
+    if (!session) {
+        return (
+            <div>
+                <p>Loading...</p>
+            </div>
+        )
+    }
 
     const displayHeader = () => {
         return <h1>Edit Employer Profile</h1>;
@@ -43,6 +51,7 @@ export default function EmployerProfile() {
 
     return (
         <div>
+            {console.log(employer)}
             <EmployerNavbar session={session} handleSignOut={handleSignOut} />
             {isLoading ? (
                 <p>Loading...</p>
@@ -60,20 +69,3 @@ export default function EmployerProfile() {
     );
 }
 
-export async function getServerSideProps({ req }) {
-    const session = await getSession({ req });
-
-    if (!session) {
-
-        return {
-            redirect: {
-                destination: '/auth/login',
-                permanent: false
-            }
-        }
-    }
-
-    return {
-        props: { session }
-    }
-};

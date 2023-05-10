@@ -10,16 +10,10 @@ import { configureStore } from '@reduxjs/toolkit';
 import rootReducer from '../store/reducers/rootReducer';
 import { SessionProvider } from 'next-auth/react';
 
-const store = configureStore({
-  reducer: rootReducer
-});
-
 function MyApp({ Component, pageProps }) {
   return (
     <SessionProvider session={pageProps.session}>
-      <Provider store={store}>
         <Component {...pageProps} />
-      </Provider>
     </SessionProvider>
   );
 }

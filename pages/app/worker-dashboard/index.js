@@ -7,17 +7,29 @@ import { Divider } from 'primereact/divider';
 import WorkerNavbar from '@/layout/WorkerNavbar';
 
 export default function Dashboard() {
-  const { data: session } = useSession();
   const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // The user is not authenticated, handle it here.
+      // This is usually done by redirecting to /auth.
+      router.push('/auth/login');
+    },
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (session && session.user.completedProfile !== 'true') {
-      router.push('/app/employer/complete-profile');
+      router.push('/app/worker/complete-profile');
     } else {
       setLoading(false);
     }
   }, [session]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
 
   const handleSignOut = () => {
     signOut();
@@ -69,19 +81,19 @@ export default function Dashboard() {
   );
 }
 
-export async function getServerSideProps({ req }) {
-  const session = await getSession({ req });
+// export async function getServerSideProps({ req }) {
+//   const session = await getSession({ req });
 
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/auth/login',
-        permanent: false,
-      },
-    };
-  }
+//   if (!session) {
+//     return {
+//       redirect: {
+//         destination: '/auth/login',
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  return {
-    props: { session },
-  };
-}
+//   return {
+//     props: { session },
+//   };
+// }

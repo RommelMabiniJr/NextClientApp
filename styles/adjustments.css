@@ -2,3 +2,15 @@
     flex: 1;
 }
 
+/* Add a border to all elements*/
+/* * {
+    outline: 1px solid red;
+} */
+
+.worker-bio {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

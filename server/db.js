@@ -352,6 +352,40 @@ const updateEmployerInfo = async (infoType, employerInfo) => {
   }
 };
 
+const updateWorkerInfo = async (infoType, workerInfo) => {
+  const { workerId, availability, bio, certificationsStr, education, hourlyRate, languagesStr, skillsString, workExperience } = workerInfo;
+
+  let query = '';
+  let values = [];
+
+  if (infoType == "basics") {
+    // use question marks for values to prevent SQL injection
+    query = `UPDATE DomesticWorker SET availability = ?, bio = ? WHERE worker_id = ?`;
+    values = [availability, bio, workerId];
+
+  } else if (infoType == "experience") {
+    query = `UPDATE DomesticWorker SET hourly_rate = ?, skills = ?, work_experience = ? WHERE worker_id = ?`;
+    values = [hourlyRate, skillsString, workExperience, workerId];
+
+  } else if (infoType == "background") {
+    query = `UPDATE DomesticWorker SET certifications = ?, education = ?, languages = ? WHERE worker_id = ?`;
+    values = [certificationsStr, education, languagesStr , workerId];
+
+  } else {
+    console.error("Invalid infoType");
+    throw "Invalid infoType";
+  }
+
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.query(query, values);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+
 const checkWorkerExists = async (workerId) => {
   const query = `SELECT * FROM DomesticWorker WHERE worker_id = '${workerId}'`;
   const connection = await pool.getConnection();
@@ -467,9 +501,177 @@ const deleteJobPost = async (jobId) => {
   }
 };
 
+const insertServicesOffered = async (worker_id, servicesOffered) => {
+  const connection = await pool.getConnection();
+
+  try {
+    for ( const service of servicesOffered) {
+      const serviceId = service.id || service.service_id;
+      const query = `INSERT INTO WorkerService (worker_id, service_id) VALUES (?, ?)`;
+      await connection.query(query, [worker_id, serviceId]);
+    }
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getServiceIdsByWorkerId = async (worker_id) => {
+  const query = `SELECT * FROM WorkerService WHERE worker_id = '${worker_id}'`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getServiceByServiceId = async (service_id) => {
+  const query = `SELECT * FROM Service WHERE service_id = '${service_id}'`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getServiceNamesByWorkerId = async (worker_id) => {
+  const query = `SELECT service.service_id, service.service_name FROM service INNER JOIN workerservice ON service.service_id = workerservice.service_id WHERE workerservice.worker_id = ?;`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query, [worker_id]);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+
+const updateWorkerServices = async (worker_id, servicesOffered) => {
+  const connection = await pool.getConnection();
+
+  try {
+    const query = `DELETE FROM WorkerService WHERE worker_id = '${worker_id}'`;
+    const [result] = await connection.query(query);
+    console.log(result);
+    
+    await insertServicesOffered(worker_id, servicesOffered);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getWorkersWithServicesOffered = async () => {
+  // COMPLEX QUERY: this query returns a list of workers with their services offered in a JSON array
+  const query = `SELECT 
+                  d.worker_id,
+                  d.hourly_rate,
+                  d.rating,
+                  d.availability,
+                  d.bio,
+                  d.work_experience,
+                  d.languages,
+                  d.certifications,
+                  d.skills,
+                  d.education,
+                  d.is_verified,
+                  u.first_name,
+                  u.last_name,
+                  u.email,
+                  u.phone,
+                  u.city_municipality,
+                  u.barangay,
+                  u.street,
+                  JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                      'service_id', s.service_id,
+                      'service_name', s.service_name
+                    )
+                  ) AS services
+                FROM DomesticWorker d
+                JOIN WorkerService ws ON d.worker_id = ws.worker_id
+                JOIN Service s ON ws.service_id = s.service_id
+                JOIN User u ON d.worker_id = u.user_id
+                GROUP BY d.worker_id;`;
+
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const getJobListings = async () => {
+  const query = `SELECT
+                  j.job_id,
+                  j.employer_id,
+                  j.service_id,
+                  j.job_title,
+                  j.job_description,
+                  j.job_type,
+                  j.job_status,
+                  j.job_start_date,
+                  j.job_end_date,
+                  j.job_start_time,
+                  j.job_end_time,
+                  j.job_posting_date,
+                  u.first_name,
+                  u.last_name,
+                  u.email,
+                  u.phone,
+                  u.city_municipality,
+                  u.barangay,
+                  u.street,
+                  JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                      'service_id', s.service_id,
+                      'service_name', s.service_name
+                    )
+                  ) AS services
+                    FROM JobPosting j
+                    JOIN Service s ON j.service_id = s.service_id
+                    JOIN User u ON j.employer_id = u.user_id
+                    GROUP BY j.job_id, j.employer_id;`;
+
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+                  
 
 
 module.exports = {
+  updateWorkerServices,
   checkUserExists,
   insertUser,
   getUserIdByEmail,
@@ -499,6 +701,13 @@ module.exports = {
   updateDomesticWorker,
   updateCompletedProfile,
   updateEmployerInfo,
+  updateWorkerInfo,
   deleteJobPost,
+  insertServicesOffered,
+  getServiceIdsByWorkerId,
+  getServiceByServiceId,
+  getServiceNamesByWorkerId,
+  getWorkersWithServicesOffered,
+  getJobListings,
   pool,
 };

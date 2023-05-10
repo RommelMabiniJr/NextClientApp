@@ -30,12 +30,12 @@ const LoginPage = () => {
             password: values.password,
             remember: checked,
             redirect: false,
-            callbackUrl: "/app/employer-dashboard"
+            callbackUrl: "/app/user-router"
         });
 
         console.log(result)
 
-        // if (result.ok) router.push(result.url)
+        if (result.ok) router.push(result.url)
     }
 
     async function mockuplogin() {
@@ -44,7 +44,7 @@ const LoginPage = () => {
             password: "12345678",
             remember: checked,
             redirect: false,
-            callbackUrl: "/app/employer-dashboard"
+            callbackUrl: "/app/user-router"
         });
 
         return result;
@@ -52,19 +52,19 @@ const LoginPage = () => {
 
     // This is a mockup login: comment or uncomment this to use this feature
 
-    useEffect( () => {
+    // useEffect( () => {
 
-        async function doLoginMockup() {
-            const result = await mockuplogin();
+    //     async function doLoginMockup() {
+    //         const result = await mockuplogin();
 
-            if (result.ok) router.push(result.url)
-        }
+    //         if (result.ok) router.push(result.url)
+    //     }
 
-        doLoginMockup();
-    }, [])
+    //     doLoginMockup();
+    // }, [])
 
     async function handleGoogleSignin() {
-        signIn('google', {callbackUrl: "http://localhost:3000/app/dashboard"});
+        signIn('google', {callbackUrl: "http://localhost:3000/app/user-router"});
     }
 
     const isFormFieldInvalid = (name) => !!(formik.touched[name] && formik.errors[name]);

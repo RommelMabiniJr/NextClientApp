@@ -3,46 +3,60 @@ import { useRouter } from 'next/router';
 import { getSession, useSession, signOut } from 'next-auth/react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { Accordion, AccordionTab } from 'primereact/accordion';
 import axios from 'axios';
 import WorkerNavbar from '@/layout/WorkerNavbar';
 import ContactInformation from './information/contact';
-import HouseholdInformation from './information/household';
-import PaymentInformation from './information/payment';
+import WorkerInformation from './information/workerInfo';
+import ExperienceInformation from './information/experience';
+import BackgroundInformation from './information/background';
 
-export default function EmployerProfile() {
+export default function WorkerProfile() {
     const { data: session } = useSession();
     const handleSignOut = () => {
         signOut();
     }
 
     const router = useRouter();
-    const [employer, setEmployer] = useState({});
+    const [worker, setWorker] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
-    // Fetch employer data on page load
-    
+    // Fetch worker data on page load
+
     useEffect(() => {
-        const fetchEmployer = async () => {
+        const fetchWorker = async () => {
             setIsLoading(true);
             try {
                 console.log(router.query.uuid)
-                const response = await axios.get(`http://localhost:5000/employer/${router.query.uuid}`);
-                setEmployer(response.data);
-                console.log(employer)
+                const response = await axios.get(`http://localhost:5000/worker/${router.query.uuid}`);
+
+                //convert skills comma separated string to array
+                response.data.skills = response.data.skills.split(',');
+
+                setWorker(response.data);
             } catch (error) {
                 console.error(error);
             }
             setIsLoading(false);
         };
-        fetchEmployer();
-    }, [router.query.uuid]);
+        fetchWorker();
+    }, [session, router.query.uuid]);
 
+    if (!session) {
+        return (
+            <div>
+                <p>Loading...</p>
+            </div>
+        )
+    }
+    
     const displayHeader = () => {
-        return <h1>Edit Employer Profile</h1>;
+        return <h1>Edit Worker Profile</h1>;
     };
-
+    
     return (
         <div>
+            {console.log(worker)}
             <WorkerNavbar session={session} handleSignOut={handleSignOut} />
             {isLoading ? (
                 <p>Loading...</p>
@@ -50,9 +64,20 @@ export default function EmployerProfile() {
                 <>
                     <div className='p-5'>
                         {displayHeader()}
-                        <ContactInformation session={session} />
-                        <HouseholdInformation session={session} employer={employer} />
-                        <PaymentInformation session={session} employer={employer} />
+                        <Accordion multiple activeIndex={[0,1,2,3]}>
+                            <AccordionTab header="Contact Information">
+                                <ContactInformation session={session} />
+                            </AccordionTab>
+                            <AccordionTab header="Worker Information">
+                                <WorkerInformation session={session} worker={worker} />
+                            </AccordionTab>
+                            <AccordionTab header="Experience">
+                                <ExperienceInformation session={session} worker={worker} />
+                            </AccordionTab>
+                            <AccordionTab header="Background">
+                                <BackgroundInformation session={session} worker={worker} />
+                            </AccordionTab>
+                        </Accordion>
                     </div>
                 </>
             )}

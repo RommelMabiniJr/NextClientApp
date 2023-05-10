@@ -1,0 +1,8 @@
+{
+    "data": [
+        { "name": "High School", "value": "High School" },
+        { "name": "College", "value": "College" },
+        { "name": "Vocational", "value": "Vocational" },
+        { "name": "Post Graduate", "value": "Post Graduate" }
+    ]
+}

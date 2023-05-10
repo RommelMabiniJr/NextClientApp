@@ -76,7 +76,7 @@ const CompleteProfile = () => {
             console.log(response.data);
 
             toast.current.show({ severity: 'success', summary: 'Success', detail: 'Profile created Succesfully', life: 3000 });
-            router.push(`/app/domestic-worker-dashboard`);
+            router.push(`/app/worker-dashboard`);
             
         } catch (error) {
             console.error(error);

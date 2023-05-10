@@ -6,11 +6,12 @@ import { Image } from 'primereact/image';
 import { Divider } from 'primereact/divider';
 import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 
-const EmployerNavbar = ({ session, handleSignOut }) => {
+const EmployerNavbar = ({ handleSignOut }) => {
+    const { data: session } = useSession();
     const menu = useRef(null);
     //const router = useRouter();
     const toast = useRef(null);
@@ -24,7 +25,7 @@ const EmployerNavbar = ({ session, handleSignOut }) => {
         {
             label: 'Search',
             icon: 'pi pi-fw pi-search',
-            url: '/app/worker-search',
+            url: '/app/employer/worker-search',
         },
         {
             label: 'Posts',
@@ -43,7 +44,7 @@ const EmployerNavbar = ({ session, handleSignOut }) => {
         },
     ];
 
-    const profileItems = [
+    const profileItems = session && [
         {
             label: 'Profile',
             icon: 'pi pi-fw pi-user',
@@ -90,22 +91,3 @@ const EmployerNavbar = ({ session, handleSignOut }) => {
 };
 
 export default EmployerNavbar;
-
-
-export async function getServerSideProps({ req }) {
-    const session = await getSession({ req });
-
-    if (!session) {
-
-        return {
-            redirect: {
-                destination: '/auth/login',
-                permanent: false
-            }
-        }
-    }
-
-    return {
-        props: { session }
-    }
-};

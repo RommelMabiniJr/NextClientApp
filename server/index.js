@@ -6,7 +6,9 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const db = require('./db');
+const { cloudinary } = require('./utils/cloudinary');
 
+const employerRoute = require('./routes/Employer');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use(session({
   saveUninitialized: false
 }));
 
+// Use this route for testing
+app.use('/employer', employerRoute);
 
 app.post('/register', async (req, res) => {
   // completed_profile field is not included in the req body because it is set to 'false' by default
@@ -103,71 +107,8 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-//Use this as reference of the object to be passed on this api
+// Use this as reference of the object to be passed on this api
 // {householdSize: '12', hasPets: 'yes', specificNeeds: 'ajsbdjhasdivawdja', paymentMethods: Array(2), paymentFrequency: 'Daily', …}
-
-app.post('/employer/complete-profile', async (req, res) => {
-  const { uuid, householdSize, hasPets, specificNeeds, paymentMethods, paymentFrequency, bio } = req.body;
-
-  // convert a few fields to proper data types
-  const hasPetsInt = hasPets === true ? 1 : 0;
-  const paymentMethodsString = stringifyPaymentMethods(paymentMethods);
-
-  try {
-    // Check if user exists in the database
-    const user = await db.getUserByUuid(uuid);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid UUID' });
-    }
-
-    // Insert the user into the database
-    const userId = await db.insertEmployerProfile(user.user_id, householdSize, hasPetsInt, specificNeeds, paymentMethodsString, paymentFrequency, bio);
-
-    // Update the user's completed_profile field to true
-    await db.updateCompletedProfile(user.user_id, true);
-
-    res.status(200).send('Profile completed for' + user.first_name);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error completing profile');
-  }
-});
-
-app.get('/employer/:uuid', async (req, res) => {
-  const { uuid } = req.params;
-
-  try {
-    // Check if user exists in the database
-    const user = await db.getUserByUuid(uuid);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid UUID' });
-    }
-
-    // Get the user's profile
-    const profile = await db.getEmployerByUserId(user.user_id);
-    if (!profile) {
-      return res.status(401).json({ message: 'Error getting profile' });
-    }
-
-    // Convert a few fields to proper data types
-    const hasPetsBool = profile.has_pets === 1 ? true : false;
-    const paymentMethods_inJson = jsonifyPaymentMethods(profile.payment_methods);
-
-    res.status(200).json({
-      householdSize: profile.household_size,
-      hasPets: hasPetsBool,
-      specificNeeds: profile.specific_needs,
-      paymentMethods: paymentMethods_inJson,
-      paymentFrequency: profile.payment_frequency,
-      bio: profile.bio
-    });
-
-    console.log(paymentMethods_inJson)
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
 app.patch('/user/update-info', async (req, res) => {
   const { uuid, phoneNumber, email } = req.body;
@@ -186,149 +127,6 @@ app.patch('/user/update-info', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error updating phone number');
-  }
-});
-
-app.patch('/employer/update-info/household', async (req, res) => {
-  const { uuid, householdSize, hasPets, specificNeeds } = req.body;
-
-  // convert a few fields to proper data types
-  const hasPetsInt = hasPets === true ? 1 : 0;
-
-  try {
-    // Check if user exists in the database
-    const user = await db.getUserByUuid(uuid);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid UUID' });
-    }
-
-    const infoType = 'household';
-    const employerId = user.user_id;
-
-    // Create a variable to store all the employer information
-    const employerInfo = {
-      employerId,
-      householdSize,
-      hasPetsInt,
-      specificNeeds
-    };
-
-
-    // Update the employer's household information
-    await db.updateEmployerInfo(infoType, employerInfo);
-
-    res.status(200).send('Employer Household Information updated for ' + user.first_name);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error updating profile');
-  }
-});
-
-app.patch('/employer/update-info/payment', async (req, res) => {
-  const { uuid, paymentMethods, paymentFrequency } = req.body;
-
-  // convert a few fields to proper data types
-  const paymentMethodsString = stringifyPaymentMethods(paymentMethods);
-
-  try {
-    // Check if user exists in the database
-    const user = await db.getUserByUuid(uuid);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid UUID' });
-    }
-
-    const infoType = 'payment';
-    const employerId = user.user_id;
-    
-    // Create a variable to store all the employer information
-    const employerInfo = {
-      employerId,
-      paymentMethods: paymentMethodsString,
-      paymentFrequency
-    };
-
-    // Update the employer's payment information
-    await db.updateEmployerInfo(infoType, employerInfo);
-
-    res.status(200).send('Employer Payment Information updated for ' + user.first_name);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error updating profile');
-  }
-});
-
-app.post('/employer/post/create', async (req, res) => {
-  const { uuid, serviceId, jobTitle, jobDescription, jobStartDate, jobEndDate, jobStartTime, jobEndTime, jobType } = req.body;
-
-
-  try {
-    // Check if user exists in the database
-    const user = await db.getUserByUuid(uuid);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid UUID' });
-    }
-
-    const employerId = user.user_id;
-
-    // Create the job post
-    await db.createJobPost(employerId, serviceId, jobTitle, jobDescription, jobStartDate, jobEndDate, jobStartTime, jobEndTime, jobType);
-    res.status(200).send('Job post created for ' + user.first_name);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error creating post');
-  }
-});
-
-app.put('/employer/post/update', async (req, res) => {
-  const { jobId, serviceId, jobTitle, jobDescription, jobStartDate, jobEndDate, jobStartTime, jobEndTime, jobType} = req.body;
-
-  try {
-    // Update the job post
-    await db.updateJobPost(jobId, serviceId, jobTitle, jobDescription, jobStartDate, jobEndDate, jobStartTime, jobEndTime, jobType);
-    res.status(200).send('Job post updated');
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error updating post');
-  }
-});
-
-app.delete('/employer/post/delete/:job_id', async (req, res) => {
-  const { job_id } = req.params;
-
-  try {
-    // Delete the job post
-    let isDeleted = await db.deleteJobPost(job_id);
-    if (isDeleted) {
-      res.status(200).send('Job post deleted');
-    } else {
-      res.status(500).send('Error deleting post');
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error deleting post');
-  }
-});
-
-app.get('/employer/post/get-posts', async (req, res) => {
-  const { uuid } = req.query;
-
-  try {
-    // Check if user exists in the database
-    const user = await db.getUserByUuid(uuid);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid UUID' });
-    }
-
-    const employerId = user.user_id;
-
-    // Get the job posts
-    const jobPosts = await db.getJobPostsWithServiceName(employerId);
-
-    console.log(jobPosts);
-    res.status(200).json(jobPosts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error getting posts');
   }
 });
 
@@ -358,23 +156,27 @@ app.post('/worker/complete-profile', async (req, res) => {
   // skills is in the form of an array of strings
   // turn it into a string of comma separated values
   const skillsStr = skills.join(',');
+
+  // this fields must be converted to strings before being stored in the database
   const certificationsStr = JSON.stringify(certifications);
   const languagesStr = JSON.stringify(languages);
 
   try {
     // Check if user exists in the database
     const user = await db.getUserByUuid(uuid);
-    const userId = user.user_id;
-    if (!userId) {
+    const worker_id = user.user_id;
+    if (!worker_id) {
       return res.status(401).json({ message: 'Invalid UUID' });
     }
 
     // Update the user's completed_profile field to true
-    await db.updateCompletedProfile(userId, true);
+    await db.updateCompletedProfile(worker_id, true);
 
     // Store the worker's profile information
-    await db.insertWorkerProfile(userId, availability, bio, certificationsStr, education, hourlyRate, languagesStr, skillsStr, workExperience);
-    //                          (userId, availability, bio, certifications, education, hourlyRate, languages, skillsStr, workExperience)
+    await db.insertWorkerProfile(worker_id, availability, bio, certificationsStr, education, hourlyRate, languagesStr, skillsStr, workExperience);
+    //                          (worker_id, availability, bio, certifications, education, hourlyRate, languages, skillsStr, workExperience)
+
+    await db.insertServicesOffered(worker_id, servicesOffered);
 
     res.status(200).send('Worker profile created for ' + user.first_name);
   } catch (error) {
@@ -383,12 +185,175 @@ app.post('/worker/complete-profile', async (req, res) => {
   }
 });
 
+app.get('/worker/job-listings', async (req, res) => {
 
+  try {
+    // Get available job listings
+    const jobListings = await db.getJobListings();
+    res.status(200).json(jobListings);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error getting job listings');
+  }
+});
+
+app.get('/worker/:uuid', async (req, res) => {
+  const { uuid } = req.params;
+
+  try {
+    // Check if user exists in the database
+    const user = await db.getUserByUuid(uuid);
+    const worker_id = user.user_id;
+    if (!worker_id) {
+      return res.status(401).json({ message: 'Invalid UUID' });
+    }
+
+    // Get the worker's profile information
+    const workerProfile = await db.getWorkerByUserId(worker_id);
+
+    // Get the services offered by the worker
+    const workerServices = await db.getServiceIdsByWorkerId(worker_id);
+
+    //Get service fields for each service offered
+
+    const servicesOffered = [];
+    for (let i = 0; i < workerServices.length; i++) {
+      const service = await db.getServiceByServiceId(workerServices[i].service_id);
+      servicesOffered.push(service[0]); // Assign as a json object and not as an array
+    }
+
+
+    // pass the services offered to the worker profile
+    workerProfile.servicesOffered = servicesOffered;
+    res.status(200).json(workerProfile);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error getting worker profile');
+  }
+});
+
+app.patch('/worker/update-info/basics', async (req, res) => {
+  const { uuid, bio, servicesOffered, availability } = req.body;
+
+  try {
+    // Check if user exists in the database
+    const user = await db.getUserByUuid(uuid);
+    const workerId = user.user_id;
+    if (!workerId) {
+      return res.status(401).json({ message: 'Invalid UUID' });
+    }
+
+    // set update info type to household
+    const infoType = 'basics';
+
+    // Create a variable to store all the employer information
+    const workerInfo = {
+      workerId,
+      bio,
+      availability
+    };
+
+    // Update the employer's household information
+    await db.updateWorkerInfo(infoType, workerInfo);
     
+    // Update the services offered by the worker
+    await db.updateWorkerServices(workerId, servicesOffered);
 
+    res.status(200).send('Worker Information updated for ' + user.first_name);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error updating profile');
+  }
+});
 
+app.patch('/worker/update-info/experience', async (req, res) => {
 
+  // Note that two skills fields are being passed in: skills and skillsString
+  const { uuid, workExperience, hourlyRate, skills, skillsString} = req.body;
 
+  console.log(skills)
+
+  try {
+    // Check if user exists in the database
+    const user = await db.getUserByUuid(uuid);
+    const workerId = user.user_id;
+    if (!workerId) {
+      return res.status(401).json({ message: 'Invalid UUID' });
+    }
+
+    // set update info type to experience
+    const infoType = 'experience';
+
+    // Create a variable to store all the employer information
+    const workerInfo = {
+      workerId,
+      workExperience,
+      hourlyRate,
+      skillsString
+    };
+
+    // Update the employer's household information
+    await db.updateWorkerInfo(infoType, workerInfo);
+
+    res.status(200).send('Worker Information updated for ' + user.first_name);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error updating profile');
+  }
+});
+
+app.patch('/worker/update-info/background', async (req, res) => {
+  const { uuid, education, certifications, languages } = req.body;
+
+  const certificationsStr = JSON.stringify(certifications);
+  const languagesStr = JSON.stringify(languages);
+
+  try {
+    // Check if user exists in the database
+    const user = await db.getUserByUuid(uuid);
+    const workerId = user.user_id;
+    if (!workerId) {
+      return res.status(401).json({ message: 'Invalid UUID' });
+    }
+
+    // set update info type to background
+    const infoType = 'background';
+    
+    // Create a variable to store all the employer information
+    const workerInfo = {
+      workerId,
+      education,
+      certificationsStr,
+      languagesStr
+    };
+
+    // Update the employer's household information
+    await db.updateWorkerInfo(infoType, workerInfo);
+
+    res.status(200).send('Worker Information updated for ' + user.first_name);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error updating profile');
+  }
+});
+
+//BIG GOAL: Create an api for uploading images to the server
+//https://www.youtube.com/watch?v=Rw_QeJLnCK4
+
+app.post('/upload/profile-img', async (req, res) => {
+  try {
+    const fileStr = req.body.data;
+    const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+      upload_preset: 'TagaTulong',
+    });
+    console.log(uploadResponse);
+    res.json({ msg: 'yey' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ err: 'Something went wrong' });
+  }
+});
 
 
 

@@ -92,7 +92,6 @@ const store = configureStore({
 });
 
 const RegistrationPage = () => {
-    const dispatch = useDispatch();
     const [firstName, setFirstName] = useState('');
     const [secondName, setSecondName] = useState('');
     const [email, setEmail] = useState('');

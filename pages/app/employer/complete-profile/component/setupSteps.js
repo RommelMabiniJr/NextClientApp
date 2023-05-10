@@ -11,6 +11,8 @@ import { classNames } from 'primereact/utils';
 import { Dropdown } from 'primereact/dropdown';
 import { PaymentService } from '@/layout/service/PaymentService';
 import { InputTextarea } from 'primereact/inputtextarea';
+import axios from 'axios';
+import FileUploader from '@/layout/components/FileUploader';
 
 const HouseholdInformationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
     const [checked, setChecked] = useState(false);
@@ -92,26 +94,26 @@ const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
         <div>
             <label htmlFor="paymentMethods" className="block text-900 font-medium mb-2">Payment Methods</label>
             <div className='p-fluid'>
-                <AutoComplete 
-                    placeholder='Select preferred mode of payment' 
-                    value={formik.values.paymentMethods} 
-                    field="name" multiple dropdown 
-                    virtualScrollerOptions={{ itemSize: 38 }} 
-                    suggestions={filteredPayments} 
-                    completeMethod={search} 
-                    onChange={handleSelectedPaymentChange} 
+                <AutoComplete
+                    placeholder='Select preferred mode of payment'
+                    value={formik.values.paymentMethods}
+                    field="name" multiple dropdown
+                    virtualScrollerOptions={{ itemSize: 38 }}
+                    suggestions={filteredPayments}
+                    completeMethod={search}
+                    onChange={handleSelectedPaymentChange}
                 />
             </div>
             {getFormErrorMessage('paymentMethods')}
 
             <label htmlFor="paymentFrequency" className="block text-900 font-medium mb-2">Preferred Frequency of Pay</label>
             <div className='p-fluid'>
-                <Dropdown 
-                    placeholder="Select Frequency of Pay" 
-                    value={formik.values.paymentFrequency} 
-                    id="paymentFrequency" 
-                    options={options.map(option => ({ label: option.name, value: option.name }))} 
-                    onChange={handleSelectedFrequencyChange} 
+                <Dropdown
+                    placeholder="Select Frequency of Pay"
+                    value={formik.values.paymentFrequency}
+                    id="paymentFrequency"
+                    options={options.map(option => ({ label: option.name, value: option.name }))}
+                    onChange={handleSelectedFrequencyChange}
                 />
             </div>
             {getFormErrorMessage('paymentFrequency')}
@@ -145,29 +147,101 @@ const AdditionalStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
 
 const VerificationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
     const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
+    const [uploading, setUploading] = useState(false);
+    const [fileURL, setFileURL] = useState(null);
+
+    const itemTemplate = (file, props) => {
+        const { uploading, profileURL } = props;
+      
+        return (
+          <div className="p-fileupload-row">
+            <div>{file.name}</div>
+            {uploading && file.status !== 'uploaded' && (
+              <ProgressBar mode="indeterminate" style={{ width: '100%' }} />
+            )}
+            {!uploading && file.status === 'uploaded' && (
+              <span className="p-field p-fileupload-filename">{file.name}</span>
+            )}
+            {!uploading && file.status === 'uploaded' && (
+              <span className="p-field p-fileupload-filename">
+                Upload successful!
+              </span>
+            )}
+            {!uploading && file.status === 'uploaded' && profileURL && (
+              <img src={profileURL} alt={file.name} />
+            )}
+            {!uploading && file.status === 'error' && (
+              <span className="p-field p-fileupload-filename">
+                Upload failed :(
+              </span>
+            )}
+          </div>
+        );
+      };
+      
+
+    const handleUpload = async (event, file) => {
+        const formData = new FormData();
+        formData.append('file', event.files[0]);
+        formData.append('upload_preset', uploadPreset);
+
+        try {
+            setUploading(true);
+            const response = await axios.post(cloudinaryUrl, formData);
+            setProfileURL(response.data.secure_url);
+            console.log(response.data.secure_url);
+
+            formData.file.status = 'uploaded';
+        } catch (error) {
+            console.error('Error uploading file', error);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     return (
         <div>
             <div className='mb-4'>
-                <label htmlFor="personalPhoto" className="block text-900 font-medium mb-2">Upload a picture </label>
-                <FileUpload name="personalPhoto" url={'/api/upload'} accept="image/*" maxFileSize={1000000} emptyTemplate={<p className="m-0">Drag and drop a picture of yourself here.</p>} />
+                {/* THIS IS WHERE YOU LEFT OFF */}
+                <label htmlFor='personalPhoto' className='block text-900 font-medium mb-2'>Upload a picture </label>
+                <FileUploader fileUrl={fileURL} setFileUrl={setFileURL} />
+                {/* <FileUpload
+                    name='personalPhoto'
+                    url={`api/upload/`}
+                    accept='image/*'
+                    maxFileSize={1000000}
+                    itemTemplate={itemTemplate}
+                    emptyTemplate={<p className='m-0'>Drag and drop a picture of yourself here.</p>}
+                    customUpload={true}
+                    uploadHandler={handleUpload}
+                    onUpload={(e) => console.log(e)}
+                /> */}
                 {/* {getFormErrorMessage('bio')} */}
             </div>
 
             <div className=''>
-                <label htmlFor="" className="block text-900 font-medium mb-1">Upload a government-issued ID</label>
-                <p htmlFor="" className="block text-500 font-small mb-2">Provide proof of identity</p>
-                <FileUpload name="personalPhoto" url={'/api/upload'} accept="image/*" maxFileSize={1000000} emptyTemplate={<p className="m-0">Drag and drop an image of your id here.</p>} />
+                <label htmlFor='' className='block text-900 font-medium mb-1'>Upload a government-issued ID</label>
+                <p htmlFor='' className='block text-500 font-small mb-2'>Provide proof of identity</p>
+                <FileUpload
+                    name='personalPhoto'
+                    url={`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`}
+                    accept='image/*'
+                    maxFileSize={1000000}
+                    emptyTemplate={<p className='m-0'>Drag and drop an image of your id here.</p>}
+                    customUpload={true}
+                    uploadHandler={handleUpload}
+                />
                 {/* {getFormErrorMessage('bio')} */}
             </div>
 
-            <div className="flex flex-wrap justify-content-between gap-2 mt-4">
-                <Button label="Back" className='' icon="pi pi-arrow-left" iconPos="left" onClick={handlePreviousStep} />
-                <Button label="Confirm" className='' icon="pi pi-arrow-right" iconPos="right" onClick={props.formik.handleSubmit} />
+            <div className='flex flex-wrap justify-content-between gap-2 mt-4'>
+                <Button label='Back' className='' icon='pi pi-arrow-left' iconPos='left' onClick={handlePreviousStep} />
+                <Button label='Confirm' className='' icon='pi pi-arrow-right' iconPos='right' onClick={props.formik.handleSubmit} />
             </div>
         </div>
     );
 };
+
 
 // 
 const setupSteps = [

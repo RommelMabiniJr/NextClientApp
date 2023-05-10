@@ -39,16 +39,6 @@ const EmptyJobPosts = () => {
     );
 };
 
-//this is where you left off
-const PostCard = ({ post }) => {
-    return (
-        <div className='card col-12'>
-            <div className='grid'>
-            </div>
-        </div>
-    );
-};
-
 const PostPanel = ({ posts }) => {
     return ( 
         <div className="col-12">
@@ -127,22 +117,4 @@ const DisplayPosts = ({ session, handleSignOut }) => {
             </div>
         </div>
     );
-};
-
-export async function getServerSideProps({ req }) {
-    const session = await getSession({ req });
-
-    if (!session) {
-
-        return {
-            redirect: {
-                destination: '/auth/login',
-                permanent: false
-            }
-        }
-    }
-
-    return {
-        props: { session }
-    }
 };

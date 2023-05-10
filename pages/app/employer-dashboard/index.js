@@ -7,17 +7,42 @@ import { Divider } from 'primereact/divider';
 import EmployerNavbar from '@/layout/EmployerNavbar';
 
 export default function Dashboard() {
-  const { data: session } = useSession();
+  const [summary, setSummary] = useState('');
   const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // The user is not authenticated, handle it here.
+      // This is usually done by redirecting to /auth.
+      router.push('/auth/login');
+    },
+  });
+
   const [loading, setLoading] = useState(true);
 
+  
   useEffect(() => {
     if (session && session.user.completedProfile !== 'true') {
       router.push('/app/employer/complete-profile');
     } else {
       setLoading(false);
     }
+  
+    // const fetchDashboardData = async () => {
+
+    //   try {
+    //     const response = await axios.get('employer/dashboard/details')
+    //     setSummary(response.data);
+
+    //   } catch {
+    //     console.log()
+    //   }
+    // }
   }, [session]);
+  
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
 
   const handleSignOut = () => {
     signOut();

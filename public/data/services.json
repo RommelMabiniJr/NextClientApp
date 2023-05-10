@@ -1,0 +1,9 @@
+{
+    "data": [
+        { "service_id": 1, "service_name": "Child Care" },
+        { "service_id": 2, "service_name": "Elder Care" },
+        { "service_id": 3, "service_name": "Pet Care" },
+        { "service_id": 4, "service_name": "House Services"}
+    ]
+  }
+  

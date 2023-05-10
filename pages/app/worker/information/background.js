@@ -1,0 +1,221 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { Toast } from 'primereact/toast';
+import { InputTextarea } from 'primereact/inputtextarea';
+import EditButton from './components/infoComponents';
+import { useFormik } from 'formik';
+import axios from 'axios';
+import { Card } from 'primereact/card';
+import { Chip } from 'primereact/chip';
+import { AutoComplete } from 'primereact/autocomplete';
+import { DataView } from 'primereact/dataview';
+import { JobsService } from '@/layout/service/JobsService';
+import { Divider } from 'primereact/divider';
+import { CertificateService } from '@/layout/service/CertificateService';
+import { Dropdown } from 'primereact/dropdown';
+import { EducationService } from '@/layout/service/EducationService';
+import { LanguageService } from '@/layout/service/LanguageService';
+
+const BackgroundInformation = ({ session, worker }) => {
+    const [isEditMode, setIsEditMode] = useState(false);
+    const toast = useRef(null);
+
+    const formik = useFormik({
+        initialValues: {
+            languages: worker.languages,
+            certifications: worker.certifications,
+            education: worker.education,
+        },
+        onSubmit: async (values) => {
+            try {
+                const response = await axios({
+                    method: 'patch',
+                    data: { ...values, uuid: session.user.uuid },
+                    withCredentials: true,
+                    url: 'http://localhost:5000/worker/update-info/background',
+                });
+
+                // console.log(response.data);
+
+                toast.current.show({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Worker information Updated!',
+                    life: 3000,
+                });
+
+                toggleEditMode();
+            } catch (error) {
+                console.error(error);
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something went wrong',
+                    life: 3000,
+                });
+            }
+        },
+    });
+
+    const toggleEditMode = () => {
+        setIsEditMode(!isEditMode);
+    };
+
+    const SelectEducationLevel = ({formik}) => {
+        const [educItems, setEducItems] = useState([]);
+
+        useEffect(() => {
+            EducationService.getEducationLevels().then((data) => setEducItems(data));
+        }, []);
+
+        return (
+            <div className="p-field">
+                <Dropdown
+                    value={formik.values.education}
+                    onChange={(e) => formik.setFieldValue('education', e.value)}
+                    options={educItems}
+                    optionLabel="name"
+                    placeholder="Select a Education"
+                    className="w-full"
+                />
+            </div>
+        );
+    };
+
+
+    function MultipleCertificationOpt({ formik, isEditMode }) {
+        const [certificates, setCertificates] = useState([]);
+        const [filteredCertificates, setFilteredCertificates] = useState(null);
+      
+        const search = (event) => {
+          // Timeout to emulate a network connection
+          setTimeout(() => {
+            let _filteredCertsOptions;
+      
+            if (!event.query.trim().length) {
+              _filteredCertsOptions = [...certificates];
+            } else {
+              _filteredCertsOptions = certificates.filter((certificate) => {
+                return certificate.name.toLowerCase().startsWith(event.query.toLowerCase());
+              });
+            }
+      
+            setFilteredCertificates(_filteredCertsOptions);
+          }, 250);
+        };
+      
+        useEffect(() => {
+          CertificateService.getCertificates().then((data) => setCertificates(data));
+        }, []);
+      
+        return (
+          <>
+            {isEditMode ? (
+              <AutoComplete
+                id="certifications"
+                field="name"
+                multiple
+                dropdown
+                virtualScrollerOptions={{ itemSize: 38 }}
+                value={formik.values.certifications}
+                suggestions={filteredCertificates}
+                completeMethod={search}
+                onChange={formik.handleChange}
+              />
+            ) : (
+              <div className="p-mt-2 flex flex-wrap align-items-center">
+                {/* {console.log(formik.values.certifications)} */}
+                {formik.values.certifications &&
+                  formik.values.certifications.map((certificate, index) => (
+                    <Chip key={index} label={certificate.name} className="mr-1 mb-1" />
+                  ))}
+              </div>
+            )}
+          </>
+        );
+    }   
+
+    function MultipleLanguagesOpt({ formik, isEditMode }) {
+        const [languages, setLanguages] = useState([]);
+        const [filteredLanguages, setFilteredLanguages] = useState(null);
+      
+        const search = (event) => {
+          // Timeout to emulate a network connection
+          setTimeout(() => {
+            let _filteredLangsOptions;
+      
+            if (!event.query.trim().length) {
+              _filteredLangsOptions = [...languages];
+            } else {
+              _filteredLangsOptions = languages.filter((language) => {
+                return language.name.toLowerCase().startsWith(event.query.toLowerCase());
+              });
+            }
+      
+            setFilteredLanguages(_filteredLangsOptions);
+          }, 250);
+        };
+      
+        useEffect(() => {
+          LanguageService.getLanguages().then((data) => setLanguages(data));
+        }, []);
+      
+        return (
+          <>
+            {isEditMode ? (
+              <AutoComplete
+                id="languages"
+                field="name"
+                multiple
+                dropdown
+                virtualScrollerOptions={{ itemSize: 38 }}
+                value={formik.values.languages}
+                suggestions={filteredLanguages}
+                completeMethod={search}
+                onChange={formik.handleChange}
+              />
+            ) : (
+              <div className="p-mt-2 flex flex-wrap align-items-center">
+                {/* {console.log(formik.values.languages)} */}
+                {formik.values.languages &&
+                  formik.values.languages.map((language, index) => (
+                    <Chip key={index} label={language.name} className="mr-1 mb-1" />
+                  ))}
+              </div>
+            )}
+          </>
+        );
+    }   
+
+    return (
+        <div className='flex flex-row justify-content-between'>
+            <Toast ref={toast} />
+            <div className="panel-fields p-mb-2 grid">
+                <div className='col-12 grid align-items-center'>
+                    <div className="flex align-items-center w-3 col-fixed text-500 font-medium">Education Level: </div>
+                    <div className='col'>
+                        {isEditMode ? <SelectEducationLevel formik={formik}/> : <div className="col text-900">{formik.values.education}</div>}
+                    </div>
+                </div>
+                <div className='col-12 grid align-contents-center'>
+                    <div className="flex align-items-center w-3 col-fixed text-500 font-medium">Language/Dailect: </div>
+                    <div className='col'>
+                        <MultipleLanguagesOpt formik={formik} isEditMode={isEditMode} />
+                    </div>
+                </div>
+                <div className='col-12 grid align-contents-center'>
+                    <div className="flex align-items-center w-3 col-fixed text-500 font-medium">Certifications: </div>
+                    <div className='col'>
+                        <MultipleCertificationOpt formik={formik} isEditMode={isEditMode} />
+                    </div>
+                </div>
+            </div>
+            <div className='flex-none'>
+                <EditButton isEditMode={isEditMode} toggleEditMode={toggleEditMode} onSubmit={formik.handleSubmit} />
+            </div>
+        </div>
+    );
+};
+
+export default BackgroundInformation;

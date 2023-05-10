@@ -6,30 +6,31 @@ import { Image } from 'primereact/image';
 import { Divider } from 'primereact/divider';
 import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 
-const WorkerNavbar = ({ session, handleSignOut }) => {
+const WorkerNavbar = ({ handleSignOut }) => {
+    const { data: session } = useSession();
     const menu = useRef(null);
     //const router = useRouter();
     const toast = useRef(null);
 
-    const items = [
+    const items = session && [
         {
             label: 'Home',
             icon: 'pi pi-fw pi-home',
-            url: '/app/employer-dashboard',
+            url: '/app/worker-dashboard',
         },
         {
             label: 'Profile',
             icon: 'pi pi-fw pi-user',
-            url: '/app/worker-search',
+            url: `/app/worker/${session.user.uuid}`,
         },
         {
             label: 'Job Listings',
             icon: 'pi pi-fw pi-briefcase',
-            url: '/app/posts',
+            url: '/app/worker/job-listings',
             command: () => {
                 // handle logout logic here
             },
@@ -43,11 +44,12 @@ const WorkerNavbar = ({ session, handleSignOut }) => {
         },
     ];
 
-    const profileItems = [
+    // This will check if session exists inorder to display the profile items
+    const profileItems = session && [
         {
             label: 'Profile',
             icon: 'pi pi-fw pi-user',
-            url: `/app/employer/${session.user.uuid}`,
+            url: `/app/worker/${session.user.uuid}`,
         },
         {
             label: 'Wallet Balance',
@@ -90,22 +92,3 @@ const WorkerNavbar = ({ session, handleSignOut }) => {
 };
 
 export default WorkerNavbar;
-
-
-export async function getServerSideProps({ req }) {
-    const session = await getSession({ req });
-
-    if (!session) {
-
-        return {
-            redirect: {
-                destination: '/auth/login',
-                permanent: false
-            }
-        }
-    }
-
-    return {
-        props: { session }
-    }
-};
