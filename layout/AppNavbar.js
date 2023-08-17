@@ -13,41 +13,6 @@ import { Ripple } from 'primereact/ripple';
 import { Divider } from 'primereact/divider';
 import { classNames } from 'primereact/utils';
 
-const initialState = {
-    user: null,
-    reviews: [],
-    isLoading: false,
-    error: null
-};
-
-const userSlice = createSlice({
-    name: 'user',
-    initialState,
-    reducers: {
-        setUser(state, action) {
-            state.user = action.payload;
-        },
-        setReviews(state, action) {
-            state.reviews = action.payload;
-        },
-        setIsLoading(state, action) {
-            state.isLoading = action.payload;
-        },
-        setError(state, action) {
-            state.error = action.payload;
-        }
-    }
-});
-
-const middleware = [...getDefaultMiddleware(), thunk];
-
-const store = configureStore({
-    reducer: {
-        user: userSlice.reducer
-    },
-    middleware
-});
-
 const Navbar = () => {
     const [isHidden, setIsHidden] = React.useState(false);
     const menuRef = useRef();
@@ -61,7 +26,7 @@ const Navbar = () => {
             <div className="fixed top-0 left-0 py-4 px-4 mx-0 lg:px-6 flex align-items-center justify-content-between relative lg:static">
                 <Link href="/" className="flex align-items-center">
                     <img src={`/layout/logo.png`} alt="Sakai Logo" height="50" className="mr-0 lg:mr-2" />
-                    <span className="text-900 font-bold text-2xl line-height-3 mr-8">TagaTulong</span>
+                    <span className="text-900 font-bold text-2xl line-height-3 mr-8">KasambahayKo</span>
                 </Link>
                 <StyleClass nodeRef={menuRef} selector="@next" enterClassName="hidden" leaveToClassName="hidden" hideOnOutsideClick="true">
                     <i ref={menuRef} className="pi pi-bars text-4xl cursor-pointer block lg:hidden text-700"></i>
@@ -75,19 +40,19 @@ const Navbar = () => {
                             </a>
                         </li>
                         <li>
-                            <a href="#features" onClick={toggleMenuItemClick} className="p-ripple flex m-0 md:ml-5 px-0 py-3 text-900 font-medium line-height-3">
+                            <a href="#review" onClick={toggleMenuItemClick} className="p-ripple flex m-0 md:ml-5 px-0 py-3 text-900 font-medium line-height-3">
                                 <span>Reviews</span>
                                 <Ripple />
                             </a>
                         </li>
                         <li>
-                            <a href="#highlights" onClick={toggleMenuItemClick} className="p-ripple flex m-0 md:ml-5 px-0 py-3 text-900 font-medium line-height-3">
+                            <a href="#about" onClick={toggleMenuItemClick} className="p-ripple flex m-0 md:ml-5 px-0 py-3 text-900 font-medium line-height-3">
                                 <span>About Us</span>
                                 <Ripple />
                             </a>
                         </li>
                         <li>
-                            <a href="#pricing" onClick={toggleMenuItemClick} className="p-ripple flex m-0 md:ml-5 px-0 py-3 text-900 font-medium line-height-3">
+                            <a href="#contact" onClick={toggleMenuItemClick} className="p-ripple flex m-0 md:ml-5 px-0 py-3 text-900 font-medium line-height-3">
                                 <span>Contact Us</span>
                                 <Ripple />
                             </a>

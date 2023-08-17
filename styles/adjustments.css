@@ -14,3 +14,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* This is used to properly center badge in the profile image */
+.translate-badge {
+    left: 50%;
+    transform: translateX(-50%);
+}  
+  
+  
+  
+  
+  
+  

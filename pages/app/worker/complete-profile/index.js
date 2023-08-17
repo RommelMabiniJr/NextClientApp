@@ -14,11 +14,11 @@ import { useRef } from 'react';
 
 const CompleteProfile = () => {
     const [currentStep, setCurrentStep] = useState(0);
-    const { data: session, loading } = useSession();
+    const { data: session, loading, update } = useSession();
     const toast = useRef(null);
     const router = useRouter();
     
-    if (loading) {
+    if (!loading && !session) {
         return <div>Loading...</div>;
     }
 
@@ -53,7 +53,7 @@ const CompleteProfile = () => {
         },
         
         validate: completeProfileValidate,
-        onSubmit
+        onSubmit: onSubmit,
     })
 
     const isFormFieldInvalid = (name) => !!(formik.touched[name] && formik.errors[name]);
@@ -73,11 +73,26 @@ const CompleteProfile = () => {
                 url: 'http://localhost:5000/worker/complete-profile'
             });
             
-            console.log(response.data);
-
             toast.current.show({ severity: 'success', summary: 'Success', detail: 'Profile created Succesfully', life: 3000 });
-            router.push(`/app/worker-dashboard`);
             
+            // Make session user object reflect changes from the database (i.e. completedProfile: true)
+            console.log({
+                ...session,
+                user: {
+                    ...session.user,
+                    completedProfile: "true",
+                },
+            })
+            await update({
+                ...session,
+                user: {
+                    ...session.user,
+                    completedProfile: "true",
+                },
+            });
+            
+            console.log(session);
+            router.push('/app/worker-dashboard?completedProfile=true');
         } catch (error) {
             console.error(error);
             toast.current.show({ severity: 'error', summary: 'Error', detail: 'Something went wrong', life: 3000 });

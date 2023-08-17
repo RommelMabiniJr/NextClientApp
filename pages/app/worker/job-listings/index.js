@@ -9,10 +9,13 @@ import { useSession } from "next-auth/react";
 import { Dropdown } from "primereact/dropdown";
 import { Divider } from "primereact/divider";
 import { ToggleButton } from "primereact/togglebutton";
+import { Avatar } from "primereact/avatar";
 import axios from "axios";
 import WorkerNavbar from "@/layout/WorkerNavbar";
-const DistanceCalculator = require("/lib/distanceCalc");
 import { LocationService } from "@/layout/service/LocationService";
+import ShowJobListDetailsBtn from "./jobDetails";
+const DistanceCalculator = require("/lib/distanceCalc");
+
 
 export default function WorkerSearchPage() {
     const { data: session, status: sessionStatus } = useSession();
@@ -62,8 +65,6 @@ export default function WorkerSearchPage() {
             // setLoadingWorkers(true);
             try {
                 const response = await axios.get(`http://localhost:5000/worker/job-listings`);
-                // response.data.services = response.data.services[0];
-                // console.log(response.data[0].services)
                 setJobLists(response.data);
                 console.log(response.data)
             } catch (error) {
@@ -94,13 +95,14 @@ export default function WorkerSearchPage() {
     const itemTemplate = (employer) => {
         return (
 
-            <div className="p-col-12 p-md-3 px-3 pb-4">
+            <div className="p-col-12 p-md-3 px-3 pb-4 w-full">
                 <div className="card grid col">
                     <div className="col-12 flex flex-column md:flex-row">
                         <div className="w-full mb-4">
                             <div className="flex flex-row">
                                 <div className="pr-3">
-                                    <img src="/layout/profile-default.png" alt={employer.first_name} width={'80px'} />
+                                    {/* <img src="/layout/profile-default.png" alt={employer.first_name} width={'80px'} /> */}
+                                    <Avatar image={employer.profile_url || "/layout/profile-default.png"} alt='profile' shape='circle' className='h-8rem w-8rem md:w-8rem md:h-8rem shadow-2 cursor-pointer' />
                                 </div>
                                 <div className="w-full md:w-8 lg:w-6 ">
                                     <h4 className="mb-2">{employer.job_title}</h4>
@@ -140,8 +142,8 @@ export default function WorkerSearchPage() {
                             </div>
                         </div>
                         <div className="ml-auto flex flex-column w-full md:w-auto">
-                            <Button label="Apply" className="flex-grow-1 md:flex-grow-0 p-button-sm p-button-primary mb-2" />
-                            <Button label="View Details" className="flex-grow-1 md:flex-grow-0 p-button-sm p-button-secondary" />
+                            <Button disabled label="Apply" className="flex-grow-1 md:flex-grow-0 p-button-sm p-button-primary mb-2" />
+                            <ShowJobListDetailsBtn job={employer} getDistance={getDistance}/>
                         </div>
                     </div>
 
@@ -166,23 +168,23 @@ export default function WorkerSearchPage() {
                                 <Divider />
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <ToggleButton checked={distanceAO} onChange={(e) => setdistanceAO(e.value)}
-                                        onIcon="pi pi-angle-up" offIcon="pi pi-angle-down" onLabel="" offLabel=""
+                                        onIcon="pi pi-sort-amount-up" offIcon="pi pi-sort-amount-down" onLabel="" offLabel=""
                                         style={{ width: '2vw', height: '2vh' }} />
                                     <label className="pl-3 text-lg">Distance</label>
                                 </div>
                                 <Divider />
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <ToggleButton checked={costAO} onChange={(e) => setcostAO(e.value)}
-                                        onIcon="pi pi-angle-up" offIcon="pi pi-angle-down" onLabel="" offLabel=""
+                                        onIcon="pi pi-sort-amount-up" offIcon="pi pi-sort-amount-down" onLabel="" offLabel=""
                                         style={{ width: '2vw', height: '2vh' }} />
                                     <label className="pl-3 text-lg">Cost</label>
                                 </div>
                                 <Divider />
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <ToggleButton checked={bookingsAO} onChange={(e) => setbookingsAO(e.value)}
-                                        onIcon="pi pi-angle-up" offIcon="pi pi-angle-down" onLabel="" offLabel=""
+                                        onIcon="pi pi-sort-amount-up" offIcon="pi pi-sort-amount-down" onLabel="" offLabel=""
                                         style={{ width: '2vw', height: '2vh' }} />
-                                    <label className="pl-3 text-lg">Bookings</label>
+                                    <label className="pl-3 text-lg">Duration</label>
                                 </div>
                             </div>
                         </div>

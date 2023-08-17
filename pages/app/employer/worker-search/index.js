@@ -9,12 +9,16 @@ import { useSession } from "next-auth/react";
 import { Dropdown } from "primereact/dropdown";
 import { Divider } from "primereact/divider";
 import { ToggleButton } from "primereact/togglebutton";
+import { Avatar } from "primereact/avatar";
 import axios from "axios";
 import EmployerNavbar from "@/layout/EmployerNavbar";
+import ShowWorkerDetailsBtn from "./workerDetails";
+import { LocationService } from "@/layout/service/LocationService";
 
 export default function WorkerSearchPage() {
     const { data: session, status: sessionStatus } = useSession();
     const [workers, setWorkers] = useState([]);
+    const [distances, setDistances] = useState([]);
     const [loadingWorkers, setLoadingWorkers] = useState(false);
     const [sortField, setSortField] = useState("");
     const [sortOrder, setSortOrder] = useState("");
@@ -24,18 +28,20 @@ export default function WorkerSearchPage() {
     const [bookingsAO, setbookingsAO] = useState(false);
     const jTypeOptions = [
         {
-          name: 'All'
+            name: 'All'
         },
         {
-          name: 'Occassional'
+            name: 'Occassional'
         },
         {
-          name: 'Full-time'
+            name: 'Full-time'
         },
         {
-          name: 'Part-time'
+            name: 'Part-time'
         }
     ];
+
+    const [sortedWorkers, setSortedWorkers] = useState([]);
 
     const router = useRouter();
 
@@ -46,21 +52,49 @@ export default function WorkerSearchPage() {
     }, [sessionStatus, session, router]);
 
     useEffect(() => {
-        
+
         const fetchPosts = async () => {
             setLoadingWorkers(true);
             try {
                 const response = await axios.get(`http://localhost:5000/employer/search/workers`);
-                setWorkers(response.data);
-                console.log(response.data)
+                const sortedData = response.data.sort((a, b) => a.hourly_rate - b.hourly_rate);
+                setWorkers(sortedData);
+                setSortedWorkers(sortedData);
+                console.log(response.data);
             } catch (error) {
                 console.error(error);
             }
             setLoadingWorkers(false);
         };
 
+        const fetchDistances = async () => {
+            if (session && session.user) {
+                const distances = await LocationService.calculateDistancesToAllMunicipalities("LEYTE", session.user.city);
+                setDistances(distances);
+            }
+        }
+
         fetchPosts();
-    }, []);
+        fetchDistances();
+    }, [sessionStatus, session, router]);
+
+    const sortData = (field, order) => {
+        let sortedData = [...sortedWorkers];
+        sortedData.sort((a, b) => {
+            if (order === "asc") {
+                return a[field] - b[field];
+            } else {
+                return b[field] - a[field];
+            }
+        });
+        setSortedWorkers(sortedData);
+    };
+
+
+    const getDistance = (city_municipality) => {
+        const result = distances.find((item) => item.municipality === city_municipality);
+        return result ? result.distance_val : "N/A";
+    }
 
     const ServicesTemplate = (worker) => {
         return (
@@ -80,7 +114,8 @@ export default function WorkerSearchPage() {
                 <div className="card grid col">
                     <div className="col-12 flex">
                         <div className="pr-3">
-                            <img src="/layout/profile-default.png" alt={worker.first_name} width={'80px'} />
+                            {/* <img src="/layout/profile-default.png" alt={worker.first_name} width={'80px'} /> */}
+                            <Avatar image={worker.profile_url || "/layout/profile-default.png"} alt='profile' shape='circle' className='h-8rem w-8rem md:w-8rem md:h-8rem shadow-2 cursor-pointer' />
                         </div>
                         <div className="">
                             <h4 className="mb-2">{worker.first_name + ' ' + worker.last_name}</h4>
@@ -90,12 +125,12 @@ export default function WorkerSearchPage() {
                         </div>
                         <div className="ml-auto flex flex-column justify-content-between">
                             <Button label="Hire" className="p-button-sm p-button-primary" />
-                            <Button label="View Profile" className="p-button-sm p-button-secondary" />
+                            <ShowWorkerDetailsBtn worker={worker} getDistance={getDistance} />
                         </div>
                     </div>
                     <div className="location col-12">
                         <span className="pi pi-map-marker"></span>
-                        <span className="ml-2">{worker.city_municipality}</span>
+                        <span className="ml-2">{worker.city_municipality} | {getDistance(worker.city_municipality)} Kilometers</span>
                     </div>
                     <div className="badges col-12 p-0 pl-2 grid">
                         <span className="text-600 font-medium col-3">Badges: </span>
@@ -114,7 +149,7 @@ export default function WorkerSearchPage() {
                     </div>
                     <div className="bio col-12 ">
                         <span className="worker-bio">{worker.bio}</span>
-                    </div>  
+                    </div>
                 </div>
             </div>
         );
@@ -131,6 +166,29 @@ export default function WorkerSearchPage() {
                                 <Dropdown value={selectedJobOption} onChange={(e) => setSelectedJobOption(e.value)} options={jTypeOptions} optionLabel="name"
                                     placeholder="All" className="w-full" />
                             </div>
+                            <label className="rate font-bold">Rate</label>
+                            <div className="py-3">
+                                <Dropdown
+                                    value={sortField}
+                                    options={[
+                                        { label: "Hourly Rate (Low to High)", value: "hourly_rate_asc" },
+                                        { label: "Hourly Rate (High to Low)", value: "hourly_rate_desc" },
+                                    ]}
+                                    onChange={(e) => {
+                                        const value = e.value;
+                                        const field = "hourly_rate";
+                                        const order = value.split("_")[2];
+                                        setSortField(field);
+                                        setSortOrder(order);
+                                        sortData(field, order);
+                                        console.log(sortedWorkers)
+                                        console.log(order)
+                                        console.log(field)
+                                    }}
+                                    placeholder="Sort by Hourly Rate"
+                                    className="w-full"
+                                />
+                            </div>
                             <div style={{ paddingTop: '5vh' }} className="card">
                                 <label style={{ fontWeight: 'bold' }}>Filters</label>
                                 <Divider />
@@ -140,13 +198,13 @@ export default function WorkerSearchPage() {
                                         style={{ width: '2vw', height: '2vh' }} />
                                     <label className="pl-3 text-lg">Distance</label>
                                 </div>
-                                <Divider />
+                                {/* <Divider />
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <ToggleButton checked={costAO} onChange={(e) => setcostAO(e.value)}
                                         onIcon="pi pi-angle-up" offIcon="pi pi-angle-down" onLabel="" offLabel=""
                                         style={{ width: '2vw', height: '2vh' }} />
                                     <label className="pl-3 text-lg">Cost</label>
-                                </div>
+                                </div> */}
                                 <Divider />
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <ToggleButton checked={bookingsAO} onChange={(e) => setbookingsAO(e.value)}
@@ -159,8 +217,8 @@ export default function WorkerSearchPage() {
                     </div>
                 </SplitterPanel>
                 <SplitterPanel size={80} minSize={80} className="px-2">
-                    <h1 className="text-center py-4">Worker Search Page</h1>
-                    <DataView value={workers} itemTemplate={itemTemplate} layout={"grid"} paginator rows={12} />
+                    <h1 className="text-center py-4">Find Your Ideal Kasambahay</h1>
+                    <DataView value={sortedWorkers} itemTemplate={itemTemplate} layout={"grid"} paginator rows={12} sortField={sortField} sortOrder={sortOrder} />
                 </SplitterPanel>
             </Splitter>
         </div>

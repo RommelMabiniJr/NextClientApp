@@ -72,11 +72,11 @@ const HouseholdInformation = ({ session, employer }) => {
         return (
             <div className="p-field">
                 <InputSwitch
-                id="hasPets"
-                name="hasPets"
-                checked={formik.values.hasPets}
-                onChange={formik.handleChange}
-            />
+                    id="hasPets"
+                    name="hasPets"
+                    checked={formik.values.hasPets}
+                    onChange={formik.handleChange}
+                />
             </div>
         );
     };
@@ -98,30 +98,28 @@ const HouseholdInformation = ({ session, employer }) => {
 
     return (
         <div className="p-d-flex p-jc-between">
-            <Panel header="Household Information" className="p-col-12 p-sm-6 p-md-4">
-                <Toast ref={toast} />
-                <div className='flex flex-row justify-content-between'>
-                    <div className="panel-fields p-mb-2 col">
-                        <div className="p-mb-2 grid">
-                            <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">Household Size: </div>
-                            {isEditMode ? renderHouseholdSizeField() : <div className="col text-900">{formik.values.householdSize}</div>}
-                        </div>
-                        <div className='divider my-3' />
-                        <div className="p-mb-2 grid">
-                            <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">Has Pets: </div>
-                            {isEditMode ? renderHasPetsField() : <div className="col text-900">{formik.values.hasPets.toString()}</div>}
-                        </div>
-                        <div className='divider my-3' />
-                        <div className="p-mb-2 grid">
-                            <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">Specific Requirements: </div>
-                            {isEditMode ? renderSpecificNeedsField() : <div className="col text-900">{formik.values.specificNeeds}</div>}
-                        </div>
+            <Toast ref={toast} />
+            <div className='flex flex-row justify-content-between'>
+                <div className="panel-fields p-mb-2 col">
+                    <div className="p-mb-2 grid">
+                        <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">Household Size: </div>
+                        {isEditMode ? renderHouseholdSizeField() : <div className="col text-900">{formik.values.householdSize}</div>}
                     </div>
-                    <div className='flex-none'>
-                        <EditButton isEditMode={isEditMode} toggleEditMode={toggleEditMode} onSubmit={formik.handleSubmit} />
+                    <div className='divider my-3' />
+                    <div className="p-mb-2 grid">
+                        <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">Has Pets: </div>
+                        {isEditMode ? renderHasPetsField() : <div className="col text-900">{formik.values.hasPets.toString()}</div>}
+                    </div>
+                    <div className='divider my-3' />
+                    <div className="p-mb-2 grid">
+                        <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">Specific Requirements: </div>
+                        {isEditMode ? renderSpecificNeedsField() : <div className="col text-900">{formik.values.specificNeeds}</div>}
                     </div>
                 </div>
-            </Panel>
+                <div className='flex-none'>
+                    <EditButton isEditMode={isEditMode} toggleEditMode={toggleEditMode} onSubmit={formik.handleSubmit} />
+                </div>
+            </div>
         </div>
     );
 };

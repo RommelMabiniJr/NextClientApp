@@ -80,7 +80,6 @@ const ContactInformation = ({ session }) => {
 
   return (
     <div className="p-d-flex p-jc-between">
-      <Panel header="Contact Information" className="p-col-12 p-sm-6 p-md-4">
         <Toast ref={toast} />
         <div className='flex flex-row justify-content-between'>
           <div className="panel-fields p-mb-2 col">
@@ -99,7 +98,6 @@ const ContactInformation = ({ session }) => {
             <EditButton isEditMode={isEditMode} toggleEditMode={toggleEditMode} onSubmit={formik.handleSubmit} />
           </div>
         </div>
-      </Panel>
     </div>
 
   );

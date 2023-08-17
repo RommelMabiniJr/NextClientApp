@@ -43,7 +43,7 @@ const checkUserExists = async (email) => {
 
 const insertUser = async (firstName, secondName, email, phone, hashedPassword, userType, city, barangay, street) => {
   const saltRounds = 10;
-  const query = `INSERT INTO User (first_name, last_name, email, phone, password, user_type, city_municipality, barangay, street) VALUES ('${firstName}', '${secondName}','${email}', '${phone}', '${hashedPassword}', '${userType}', '${city}', '${barangay}', '${street}')`;
+  const query = `INSERT INTO User (first_name, last_name, email, phone, password, user_type, city_municipality, barangay, street, profile_url) VALUES ('${firstName}', '${secondName}','${email}', '${phone}', '${hashedPassword}', '${userType}', '${city}', '${barangay}', '${street}', 'profile')`;
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.query(query);
@@ -302,6 +302,20 @@ const updateCompletedProfile = async (userId, status) => {
   const connection = await pool.getConnection();
   try {
     await connection.query(query);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
+const uploadProfileURL = async (userId, profileURL) => {
+  const query = `UPDATE User SET profile_url = '${profileURL}' WHERE user_id = '${userId}'`;
+  const connection = await pool.getConnection();
+  try {
+    let [result] = await connection.query(query);
+    return result = true;
   } catch (err) {
     console.error(err);
     throw err;
@@ -667,8 +681,21 @@ const getJobListings = async () => {
   }
 };
 
-                  
-
+// This is how it's called const imageUrl = await db.getProfileURL(userId);
+const getProfileURL = async (userId) => {
+  const query = `SELECT profile_url FROM User WHERE user_id = ?`;
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(query, [userId]);
+    console.log(rows[0].profile_url)
+    return rows[0].profile_url;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
 
 module.exports = {
   updateWorkerServices,
@@ -702,6 +729,7 @@ module.exports = {
   updateCompletedProfile,
   updateEmployerInfo,
   updateWorkerInfo,
+  uploadProfileURL,
   deleteJobPost,
   insertServicesOffered,
   getServiceIdsByWorkerId,
@@ -709,5 +737,6 @@ module.exports = {
   getServiceNamesByWorkerId,
   getWorkersWithServicesOffered,
   getJobListings,
+  getProfileURL,
   pool,
 };

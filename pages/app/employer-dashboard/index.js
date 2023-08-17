@@ -7,7 +7,7 @@ import { Divider } from 'primereact/divider';
 import EmployerNavbar from '@/layout/EmployerNavbar';
 
 export default function Dashboard() {
-  const [summary, setSummary] = useState('');
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { data: session, status } = useSession({
     required: true,
@@ -18,7 +18,6 @@ export default function Dashboard() {
     },
   });
 
-  const [loading, setLoading] = useState(true);
 
   
   useEffect(() => {
@@ -27,17 +26,7 @@ export default function Dashboard() {
     } else {
       setLoading(false);
     }
-  
-    // const fetchDashboardData = async () => {
 
-    //   try {
-    //     const response = await axios.get('employer/dashboard/details')
-    //     setSummary(response.data);
-
-    //   } catch {
-    //     console.log()
-    //   }
-    // }
   }, [session]);
   
   if (status === 'loading') {

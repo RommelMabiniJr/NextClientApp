@@ -33,7 +33,7 @@ export function MultiplePaymentOpt({ formik, isEditMode }) {
     }, 250);
   };
 
-  useEffect( () => {
+  useEffect(() => {
     PaymentService.getPaymentMethods().then((data) => setPayments(data));
     // console.log(payments);
   }, []);
@@ -172,17 +172,15 @@ const PaymentInformation = ({ session, employer }) => {
 
   return (
     <div className="p-d-flex p-jc-between">
-      <Panel header="Payment Information" className="p-col-12 p-sm-6 p-md-4">
-        <Toast ref={toast} />
-        <div className='flex flex-row justify-content-between'>
-          <div className="p-mb-2 col">
-            {renderContent()}
-          </div>
-          <div className='flex-none'>
-            <EditButton isEditMode={isEditMode} toggleEditMode={toggleEditMode} onSubmit={formik.handleSubmit} />
-          </div>
+      <Toast ref={toast} />
+      <div className='flex flex-row justify-content-between'>
+        <div className="p-mb-2 col">
+          {renderContent()}
         </div>
-      </Panel>
+        <div className='flex-none'>
+          <EditButton isEditMode={isEditMode} toggleEditMode={toggleEditMode} onSubmit={formik.handleSubmit} />
+        </div>
+      </div>
     </div>
 
   );

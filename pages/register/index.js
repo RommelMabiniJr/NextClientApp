@@ -174,7 +174,7 @@ const RegistrationPage = () => {
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
                     <Link href="/"><img src="/layout/logo.png" alt="hyper" height={50} className="mb-3" /></Link>
-                    <div className="text-900 text-3xl font-medium mb-3">Join TagaTulong</div>
+                    <div className="text-900 text-3xl font-medium mb-3">Join KasambahayKo</div>
                     <span className="text-600 font-medium line-height-3">Already have an account?</span>
                     <a href='/auth/login' className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Sign In</a>
                 </div>

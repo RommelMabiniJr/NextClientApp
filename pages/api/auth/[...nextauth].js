@@ -44,14 +44,26 @@ export default NextAuth({
             session.user = token.user;
             return session;
         },
-        async jwt({ token, user }) {
-            if (user) {
+        async jwt({ token, user, trigger, session }) {
+            if(trigger === 'update') {
+                if (session.user) {
+                    console.log(session.user)
+                    token.user = session.user;
+                }
+            } else if (user) {
                 token.user = user;
             }
             return token;
         },
     },
 
-    session: "jwt"
+    session: {
+        jwt: true,
+        maxAge: 30 * 24 * 60 * 60,
+    },
+
+    pages: {
+        signIn: '/auth/login',
+    },
 
 })

@@ -50,7 +50,7 @@ const LoginPage = () => {
         return result;
     }
 
-    // This is a mockup login: comment or uncomment this to use this feature
+    // This is a mockup login for testing: comment or uncomment this to use this feature
 
     // useEffect( () => {
 

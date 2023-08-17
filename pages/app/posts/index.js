@@ -11,7 +11,7 @@ import axios from 'axios';
 import Posts from './templates/posts';
 
 export default function EmployerPosts() {
-    const { data: session } = useSession();
+    const { data: session, status, loading } = useSession();
     const router = useRouter();
 
     const handleSignOut = () => {
@@ -39,11 +39,22 @@ const EmptyJobPosts = () => {
     );
 };
 
+const EmptyJobHistory = () => {
+    return (
+        <div className='flex flex-col align-items-center justify-content-center mx-auto p-5'>
+            <div className='text-center'>
+                <h1 className='text-2xl'>You have no job history.</h1>
+                <p className='text-lg'>Click the button below to create a new job post.</p>
+            </div>
+        </div>
+    );
+};
+
 const PostPanel = ({ posts }) => {
     return ( 
         <div className="col-12">
             <div className="card">
-                <h5>My Posts</h5>
+                {/* <h5>My Posts</h5> */}
                 <Posts posts={posts}></Posts>
             </div>
         </div>
@@ -107,7 +118,7 @@ const DisplayPosts = ({ session, handleSignOut }) => {
                             </TabPanel>
                             <TabPanel header="Job History">
                                 <div className='h-24rem p-6'>
-                                    <EmptyJobPosts />
+                                    <EmptyJobHistory />
                                     <RenderCreateJobPostButton />
                                 </div>
                             </TabPanel>

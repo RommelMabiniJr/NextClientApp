@@ -8,16 +8,23 @@ const UserRouter = () => {
 
   useEffect(() => {
     // console.log(session)
-    if (status === 'authenticated' && session) {
-      if (session.user.userType === 'household employer') {
-        // console.log(session.user.userType)
-        router.push('http://localhost:3000/app/employer-dashboard');
-      } else if (session.user.userType === 'domestic worker') {
-        // console.log(session.user.userType)
-        router.push('http://localhost:3000/app/worker-dashboard');
+    const redirect = async () => {
+      if (status === 'authenticated' && session) {
+        if (session.user.userType === 'household employer') {
+          // console.log(session.user.userType)
+          router.push('http://localhost:3000/app/employer-dashboard');
+        } else if (session.user.userType === 'domestic worker') {
+          // console.log(session.user.userType)
+          router.push('http://localhost:3000/app/worker-dashboard');
+        }
       }
-    }
+    };
+    redirect();
   }, [status, session]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
 
   return null;
 };
@@ -25,20 +32,5 @@ const UserRouter = () => {
 
 export default UserRouter;
 
-export async function getServerSideProps({ req }) {
-  const session = await getSession({ req });
 
-  if (!session) {
-      return {
-          redirect: {
-              destination: '/auth/login',
-              permanent: false,
-          },
-      };
-  }
-  
-  return {
-      props: { session },
-  };
-}
 

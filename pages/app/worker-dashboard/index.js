@@ -11,8 +11,6 @@ export default function Dashboard() {
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
-      // The user is not authenticated, handle it here.
-      // This is usually done by redirecting to /auth.
       router.push('/auth/login');
     },
   });
@@ -46,31 +44,33 @@ export default function Dashboard() {
             <h4 className="text-500 mb-3 mt-0">What would you like to do?</h4>
             <Divider className="p-mb-3" />
             <div className="flex text-left justify-content-evenly p-mt-4">
-              <Card title="Jobs Overview">
-                <p className="p-m-0">You have posted 5 jobs with 20 applicants in total.</p>
+              <Card title="Job Applications">
+                <p className="p-m-0">You have applied for 0 jobs in total.</p>
                 <Button
-                  label="View Jobs"
+                  disabled
+                  label="View Applications"
                   icon="pi pi-briefcase"
                   className="p-mt-4"
-                  onClick={() => router.push('/app/posts')}
+                  onClick={() => router.push('/app/worker/job-applications')}
                 />
               </Card>
-              <Card className='' title="Add a New Job">
-                <p className="p-m-0">Post a new job to find your next domestic worker.</p>
+              <Card className='' title="Search for Jobs">
+                <p className="p-m-0">Find a job that matches your skills and experience.</p>
                 <Button
-                  label="Add Job"
-                  icon="pi pi-plus"
+                  label="Search Jobs"
+                  icon="pi pi-search"
                   className="p-mt-4"
-                  onClick={() => router.push('/app/posts/create')}
+                  onClick={() => router.push('/app/worker/job-listings')}
                 />
               </Card>
-              <Card title="Book a Worker">
-                <p className="p-m-0">Book a domestic worker directly from your dashboard.</p>
+              <Card title="Availability">
+                <p className="p-m-0">Set your availability for potential employers to see.</p>
                 <Button
-                  label="Book Worker"
+                  disabled
+                  label="Edit Availability"
                   icon="pi pi-calendar"
                   className="p-mt-4"
-                  onClick={() => router.push('/app/bookings/create')}
+                  onClick={() => router.push('/app/worker/availability')}
                 />
               </Card>
             </div>
@@ -81,19 +81,19 @@ export default function Dashboard() {
   );
 }
 
-// export async function getServerSideProps({ req }) {
-//   const session = await getSession({ req });
+export async function getServerSideProps({ req }) {
+  const session = await getSession({ req });
 
-//   if (!session) {
-//     return {
-//       redirect: {
-//         destination: '/auth/login',
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
+      },
+    };
+  }
 
-//   return {
-//     props: { session },
-//   };
-// }
+  return {
+    props: { session },
+  };
+}

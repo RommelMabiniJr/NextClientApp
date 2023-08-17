@@ -1,16 +1,17 @@
-import React, {useState, useRef} from 'react';
+import React, { useState, useRef } from 'react';
 import EmployerNavbar from '@/layout/EmployerNavbar';
 import { getSession, useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
-import  { Toast } from 'primereact/toast';
+import { Toast } from 'primereact/toast';
 import Link from 'next/link';
 import { Card } from 'primereact/card';
 import { Steps } from 'primereact/steps';
 import { useFormik } from 'formik';
 import jobCreateSteps from './steps/jobCreateSteps'
+import DateConverter from '@/lib/dateConverter';
 import axios from 'axios';
 
 
@@ -29,8 +30,9 @@ export default function EmployerPosts() {
 }
 
 const DisplayPostCreation = ({ session, handleSignOut }) => {
-    const[currentStep, setCurrentStep] = useState(0);
+    const [currentStep, setCurrentStep] = useState(0);
     const router = useRouter();
+    const dateConverter = DateConverter();
     const { id } = router.query;
     const { edit, post } = router.query
     let postData = {};
@@ -45,11 +47,11 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
         postData.job_end_date = new Date(postData.job_end_date);
         postData.job_start_time = new Date(`1970-01-01T${postData.job_start_time}Z`);
         postData.job_end_time = new Date(`1970-01-01T${postData.job_end_time}Z`);
-        
+
     } else {
         postData = null;
     }
-    
+
 
     const toast = useRef(null);
 
@@ -67,47 +69,51 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
             label: '',
         },
     ];
-    
+
     const onSubmit = async (values) => {
-      try {
-          
-          console.log(values)
+        try {
 
-          // jobStartTime and jobEndTime not in mysql time format
-          // No need to convert jobStartTime and jobEndTime to MySQL time format
+            console.log(values)
 
-          // Convert jobStartDate to MySQL date format
-          values.jobStartDate = new Date(values.jobStartDate).toISOString().slice(0, 10);
-          // Convert jobEndDate to MySQL date format
-          values.jobEndDate = new Date(values.jobEndDate).toISOString().slice(0, 10);
+            // jobStartTime and jobEndTime not in mysql time format
+            // No need to convert jobStartTime and jobEndTime to MySQL time format
 
+            // Convert jobStartDate to MySQL date format
+            values.jobStartDate = new Date(values.jobStartDate).toISOString().slice(0, 10);
+            // Convert jobEndDate to MySQL date format
+            values.jobEndDate = new Date(values.jobEndDate).toISOString().slice(0, 10);
+            values.jobStartTime = new Date(values.jobStartTime).toISOString().slice(11, 19).replace('T', ' ');
+            values.jobEndTime = new Date(values.jobEndTime).toISOString().slice(11, 19).replace('T', ' ');
 
-        const response = await axios({
-          method: 'put',
-          data: { ...values, uuid: session.user.uuid },
-          withCredentials: true,
-          url: 'http://localhost:5000/employer/post/update',
-        });
+            const response = await axios({
+                method: 'put',
+                data: { ...values, uuid: session.user.uuid },
+                withCredentials: true,
+                url: 'http://localhost:5000/employer/post/update',
+            });
 
-        console.log(response.data);
+            console.log(response.data);
 
-        toast.current.show({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Job Post Updated!',
-          life: 3000,
-        });
+            toast.current.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Job Post Updated!',
+                life: 3000,
+                command: () => {
+                    router.push('/app/posts');
+                }
+            });
 
-        // router.push('/app/posts');
-      } catch (error) {
-        console.error(error);
-        toast.current.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Something went wrong',
-          life: 3000,
-        });
-      }
+            router.push('/app/posts');
+        } catch (error) {
+            console.error(error);
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Something went wrong',
+                life: 3000,
+            });
+        }
     };
 
     const formik = useFormik({
@@ -125,7 +131,7 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
             jobEndTime: edit ? postData.job_end_time : '',
 
             // Original code
-            
+
             // serviceId: '',
             // jobTitle: '',
             // jobType: '',

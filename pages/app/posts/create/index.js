@@ -123,6 +123,8 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
             serviceId: edit ? postData.service_id : '',
             jobTitle: edit ? postData.job_title : '',
             jobType: edit ? postData.job_type : '',
+            livingArrangement: edit ? postData.living_arrangement : '',
+            // jobPayRate: edit ? postData.job_pay_rate : '',
             jobDescription: edit ? postData.job_description : '',
             jobStartDate: edit ? postData.job_start_date : '',
             jobEndDate: edit ? postData.job_end_date : '',

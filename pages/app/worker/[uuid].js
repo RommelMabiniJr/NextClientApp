@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getSession, useSession, signOut } from 'next-auth/react';
-import { InputText } from 'primereact/inputtext';
+import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
+import { Avatar } from 'primereact/avatar';
+import { Badge } from 'primereact/badge';
 import { Accordion, AccordionTab } from 'primereact/accordion';
+import ImgCropper from '@/layout/components/Cropper';
 import axios from 'axios';
 import WorkerNavbar from '@/layout/WorkerNavbar';
 import ContactInformation from './information/contact';
 import WorkerInformation from './information/workerInfo';
 import ExperienceInformation from './information/experience';
 import BackgroundInformation from './information/background';
+import DisplayHeader from '@/layout/components/Cropper';
 
 export default function WorkerProfile() {
     const { data: session } = useSession();
+    const [visible, setVisible] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
     const handleSignOut = () => {
         signOut();
     }
@@ -27,7 +34,7 @@ export default function WorkerProfile() {
         const fetchWorker = async () => {
             setIsLoading(true);
             try {
-                console.log(router.query.uuid)
+                // console.log(router.query.uuid)
                 const response = await axios.get(`http://localhost:5000/worker/${router.query.uuid}`);
 
                 //convert skills comma separated string to array
@@ -49,22 +56,47 @@ export default function WorkerProfile() {
             </div>
         )
     }
-    
-    const displayHeader = () => {
-        return <h1>Edit Worker Profile</h1>;
+
+    const handleImgClick = () => {
+        setVisible(true);
     };
-    
+
+    const handleFileSelect = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result);
+            };
+        }
+    };
+
+    const handleFileUpload = () => {
+        // TODO: Handle file upload logic here
+        setVisible(false);
+    };
+
+    const footer = (
+        <>
+            <Button label="Upload" onClick={handleFileUpload} />
+            <Button label="Cancel" onClick={() => setVisible(false)} className="p-button-secondary" />
+        </>
+    );
+
     return (
         <div>
-            {console.log(worker)}
+            {/* {console.log(worker)} */}
             <WorkerNavbar session={session} handleSignOut={handleSignOut} />
             {isLoading ? (
                 <p>Loading...</p>
             ) : (
                 <>
                     <div className='p-5'>
-                        {displayHeader()}
-                        <Accordion multiple activeIndex={[0,1,2,3]}>
+                        {/* {displayHeader()} */}
+                        <DisplayHeader session={session}/>
+                        <Accordion multiple activeIndex={[0, 1, 2, 3]}>
                             <AccordionTab header="Contact Information">
                                 <ContactInformation session={session} />
                             </AccordionTab>
@@ -84,21 +116,3 @@ export default function WorkerProfile() {
         </div>
     );
 }
-
-export async function getServerSideProps({ req }) {
-    const session = await getSession({ req });
-
-    if (!session) {
-
-        return {
-            redirect: {
-                destination: '/auth/login',
-                permanent: false
-            }
-        }
-    }
-
-    return {
-        props: { session }
-    }
-};

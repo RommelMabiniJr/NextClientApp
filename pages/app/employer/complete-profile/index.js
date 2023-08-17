@@ -8,17 +8,17 @@ import axios from 'axios';
 import { completeProfileValidate } from '@/lib/validate';
 import Link from 'next/link';
 import setupSteps from './component/setupSteps';
-import { useSession } from 'next-auth/react';
+import { useSession, getSession } from 'next-auth/react';
 import { useRef } from 'react';
 
 
 const CompleteProfile = () => {
     const [currentStep, setCurrentStep] = useState(0);
-    const { data: session, loading } = useSession();
+    const { data: session, loading, update } = useSession();
     const toast = useRef(null);
     const router = useRouter();
     
-    if (loading) {
+    if (!session && !loading) {
         return <div>Loading...</div>;
     }
 
@@ -58,6 +58,11 @@ const CompleteProfile = () => {
         return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
     };
 
+    // this is a handler function for updating the session user object
+    const handleUpdate = async (data) => {
+        await update(data, true);
+    };
+
     async function onSubmit(values) {
         try {
             const response = await axios({
@@ -70,8 +75,28 @@ const CompleteProfile = () => {
             console.log(response.data);
 
             toast.current.show({ severity: 'success', summary: 'Success', detail: 'Profile created Succesfully', life: 3000 });
-            router.push(`/app/employer-dashboard`);
             
+            // Make session user object reflect changes from the database (i.e. completedProfile: true)
+            console.log({
+                ...session,
+                user: {
+                    ...session.user,
+                    completedProfile: "true",
+                },
+            })
+            await update({
+                ...session,
+                user: {
+                    ...session.user,
+                    completedProfile: "true",
+                },
+            });
+
+            // Access the updated session data
+            // const updatedSession = await getSession();
+
+            console.log(session);
+            router.push('/app/employer-dashboard?completedProfile=true');
         } catch (error) {
             console.error(error);
             toast.current.show({ severity: 'error', summary: 'Error', detail: 'Something went wrong', life: 3000 });

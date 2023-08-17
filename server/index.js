@@ -2,11 +2,21 @@ const { stringifyPaymentMethods, jsonifyPaymentMethods } = require('./utils/util
 const cors = require('cors');
 const session = require('express-session');
 const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const { getImagePath } = require('./utils/imageUtils');
+// import fetch from 'node-fetch';
+const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const db = require('./db');
-const { cloudinary } = require('./utils/cloudinary');
+// const { cloudinary } = require('./utils/cloudinary');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') }) // This is required inorder to load the .env file to process.env
+
+// const captchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
+// console.log(process.env.RECAPTCHA_SECRET_KEY)
 
 const employerRoute = require('./routes/Employer');
 
@@ -26,6 +36,23 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = './server/assets';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const fileName = `${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, fileName);
+  },
+});
+
+const upload = multer({ storage });
 
 // Use this route for testing
 app.use('/employer', employerRoute);
@@ -75,6 +102,9 @@ app.post('/auth/login', async (req, res) => {
 
     // get the user's uuid
     const userUuid = await db.getUuidByUserId(user.user_id);
+    console.log(user.user_id)
+    const imagePath = await getImagePath(user.user_id);
+
     if (!userUuid) {
       return res.status(401).json({ message: 'Error getting UUID' });
     }
@@ -98,7 +128,8 @@ app.post('/auth/login', async (req, res) => {
         completedProfile: user.completed_profile,
         city: user.city_municipality,
         barangay: user.barangay,
-        street: user.street
+        street: user.street,
+        imageUrl: `http://localhost:5000/server/assets/${path.basename(imagePath)}`,
     });
 
   } catch (error) {
@@ -106,6 +137,105 @@ app.post('/auth/login', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+// Example endpoint for handling reCAPTCHA verification
+app.post('/verify-recaptcha', async (req, res) => {
+  
+  ////Destructuring response token and input field value from request body
+  const { token } = req.body;
+  console.log("secret: " + process.env.RECAPTCHA_SECRET_KEY)
+  console.log("token: " + token)
+
+  try {
+    // Sending secret key and response token to Google Recaptcha API for authentication.
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+    );
+
+    console.log(response.data.success);
+
+    // Check response status and send back to the client-side
+    if (response.data.success) {
+      res.json({ success: true });
+    } else {
+      res.json({ success: false });
+    }
+  } catch (error) {
+    // Handle any errors that occur during the reCAPTCHA verification process
+    console.error(error);
+    res.status(500).send("Error verifying reCAPTCHA");
+   }
+});
+
+app.post('/profile-img/upload', upload.single('croppedImage'), async (req, res) => {
+  const { uuid } = req.body;
+
+  try {
+    const userId = await db.getUserIdbyUuid(uuid);
+
+    if (!userId) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // retrieve current profile image filename
+    const currentProfileImageUrl = await db.getProfileURL(userId);
+    
+    //delete current profile image if it exists
+    if (currentProfileImageUrl) {
+      const filePath = path.join(__dirname, 'assets', currentProfileImageUrl);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error(err);
+      });
+    }
+
+    const success = await db.uploadProfileURL(userId, req.file.filename);
+    if (!success) {
+      return res.status(404).json({ message: 'Upload unsuccesful' });
+    }
+    res.json({ imageUrl: `server/assets/${req.file.filename}` });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Image upload failed! Server error' });
+  }
+});
+
+app.get('/profile-img', async (req, res) => {
+  const { uuid } = req.query;
+
+
+  try {
+    const userId = await db.getUserIdbyUuid(uuid);
+
+    if (!userId) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const imageUrl = await db.getProfileURL(userId);
+
+    if (!imageUrl) {
+      return res.status(404).json({ message: 'Profile image not found' });
+    }
+
+    const imagePath = path.join(__dirname, 'assets', imageUrl);
+
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({ message: 'Profile image not found' });
+    }
+
+    // // set the Content-Type header to the correct MIME type
+    // const contentType = mime.getType(imagePath);
+    res.setHeader('Content-Type', "image/jpeg");
+
+    // read the image file from disk and stream it to the client
+    const fileStream = fs.createReadStream(imagePath);
+    fileStream.pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to retrieve profile image' });
+  }
+});
+
 
 // Use this as reference of the object to be passed on this api
 // {householdSize: '12', hasPets: 'yes', specificNeeds: 'ajsbdjhasdivawdja', paymentMethods: Array(2), paymentFrequency: 'Daily', …}
@@ -167,7 +297,7 @@ app.post('/worker/complete-profile', async (req, res) => {
     const worker_id = user.user_id;
     if (!worker_id) {
       return res.status(401).json({ message: 'Invalid UUID' });
-    }
+    } 
 
     // Update the user's completed_profile field to true
     await db.updateCompletedProfile(worker_id, true);
@@ -271,7 +401,7 @@ app.patch('/worker/update-info/experience', async (req, res) => {
   // Note that two skills fields are being passed in: skills and skillsString
   const { uuid, workExperience, hourlyRate, skills, skillsString} = req.body;
 
-  console.log(skills)
+  // console.log(skills)
 
   try {
     // Check if user exists in the database
@@ -339,21 +469,6 @@ app.patch('/worker/update-info/background', async (req, res) => {
 
 //BIG GOAL: Create an api for uploading images to the server
 //https://www.youtube.com/watch?v=Rw_QeJLnCK4
-
-app.post('/upload/profile-img', async (req, res) => {
-  try {
-    const fileStr = req.body.data;
-    const uploadResponse = await cloudinary.uploader.upload(fileStr, {
-      upload_preset: 'TagaTulong',
-    });
-    console.log(uploadResponse);
-    res.json({ msg: 'yey' });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ err: 'Something went wrong' });
-  }
-});
 
 
 

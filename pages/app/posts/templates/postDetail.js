@@ -65,6 +65,7 @@ export default function ShowPostButton({ post }) {
                         <div className="col-6 mb-2"><strong>Start Time:</strong> {new Date(`1970-01-01T${post.job_start_time}Z`).toLocaleTimeString([], { timeStyle: 'short' })}</div>
                         <div className="col-6 mb-2"><strong>End Time:</strong> {new Date(`1970-01-01T${post.job_end_time}Z`).toLocaleTimeString([], { timeStyle: 'short' })}</div>
                     </div>
+                    <div className="col-12 mb-2 px-0"><strong>Living Arrangement:</strong>  {post.living_arrangement}</div>
                 </div>
             </Dialog>
         </>

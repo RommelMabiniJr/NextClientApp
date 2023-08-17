@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { FileUpload } from 'primereact/fileupload';
+import { useRef } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Steps } from 'primereact/steps';
 import { Checkbox } from 'primereact/checkbox';
-import { Divider } from 'primereact/divider';
+import { Toast } from 'primereact/toast';
 import { Password } from 'primereact/password';
 import { classNames } from 'primereact/utils';
 import { Dropdown } from 'primereact/dropdown';
 import regionVIIIJson from "../../../public/data/region-viii.json";
+import ReCAPTCHA from 'react-google-recaptcha';
+import axios from 'axios';
 
 
 const PersonalInformationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
@@ -131,9 +132,67 @@ const LocationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
 const AccountSecurityStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
   const [checked, setChecked] = useState(false);
   const { isFormFieldInvalid, getFormErrorMessage } = props;
+  const [isVerified, setIsVerified] = useState(false);
+
+  const toastSuccess = useRef(null);
+  // Define a function to send the reCAPTCHA token to the server for verification
+  async function verifyToken(token) {
+    try {
+      const response = await axios.post('http://localhost:5000/verify-recaptcha', { token });
+      console.log(response.data.success)
+      return response.data.success;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  // In your handleVerificationChange function, call the verifyToken function to send the token to the server
+  const handleVerificationChange = async (token) => {
+    console.log("Verification successful! Token:", token);
+    const isVerified = await verifyToken(token);
+    console.log("Verification status:", isVerified)
+
+    if (isVerified) {
+      setIsVerified(isVerified);
+      // Show success toast and allow user to continue registration
+      toastSuccess.current.show({
+        severity: 'success',
+        summary: 'Verification Successful',
+        detail: 'Thank you for proving that you are a human. Please continue with your registration process.',
+        life: 3000
+      });
+    } else {
+      // Show error toast
+      toastSuccess.current.show({ severity: 'error', summary: 'Error', detail: 'reCAPTCHA verification failed' });
+    }
+  }
+
+  //// THIS IS AN OLD VERSION OF THE handleVerificationChange FUNCTION ////
+
+  // const handleVerificationChange = (token) => {
+  //   console.log("Verification successful! Token:", token);
+  //   setIsVerified(true);
+  //   toastSuccess.current.show({
+  //     severity: 'success',
+  //     summary: 'Verification Successful',
+  //     detail: 'Thank you for proving that you are a human. Please continue with your registration process.',
+  //     life: 3000
+  //   });
+  // }
+
+  const handleVerificationError = () => {
+    console.log('reCAPTCHA verification error');
+    toastError.current.show({ severity: 'error', summary: 'Error', detail: 'reCAPTCHA verification failed' });
+  }
+
+  // <ReCAPTCHA sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} onChange={handleVerificationChange} onError={handleVerificationError} />
+  
+  
 
   return (
     <div>
+      <Toast ref={toastSuccess} position="top-right" />
       <label htmlFor="password" className="block text-900 font-medium mb-2">Password</label>
       <Password {...props.formik.getFieldProps('password')} id="password" inputStyle={{ width: '100%' }} className={classNames("w-full", { 'p-invalid': isFormFieldInvalid('password') })} toggleMask />
       {getFormErrorMessage('password')}
@@ -148,6 +207,9 @@ const AccountSecurityStep = ({ handleNextStep, handlePreviousStep, ...props }) =
           <label htmlFor="termsAndConditions">I agree to the <a href="#">terms and conditions</a></label>
         </div>
       </div>
+      <ReCAPTCHA sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} onChange={handleVerificationChange} onError={handleVerificationError}/>
+
+      {/* CAPTCHA IMPLEMENTATION */}
 
       <div className="flex flex-wrap justify-content-between gap-2 mt-4">
         <Button label="Back" className='' icon="pi pi-arrow-left" iconPos="left" onClick={handlePreviousStep} />
