@@ -1,3 +1,4 @@
+import Navbar from "../../layout/components/Navbar"
 import React, { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { createSlice, configureStore, createAsyncThunk } from '@reduxjs/toolkit';
@@ -131,7 +132,7 @@ const RegistrationPage = () => {
             phone: '',
             password: '',
             confirmPassword: '',
-            city : '',
+            city: '',
             barangay: '',
             street: '',
             user_type: '',
@@ -155,7 +156,7 @@ const RegistrationPage = () => {
         } catch (error) {
             console.error(error);
             toast.current.show({ severity: 'error', summary: 'Error', detail: 'An error occurred while registering user!' });
-          }
+        }
     }
 
     const handleNextStep = () => {
@@ -169,40 +170,50 @@ const RegistrationPage = () => {
     const StepComponent = steps[currentStep];
 
     return (
-        <div className="flex align-items-center justify-content-center">
-            <Toast ref={toast} />
-            <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
-                <div className="text-center mb-5">
-                    <Link href="/"><img src="/layout/logo.png" alt="hyper" height={50} className="mb-3" /></Link>
-                    <div className="text-900 text-3xl font-medium mb-3">Join KasambahayKo</div>
-                    <span className="text-600 font-medium line-height-3">Already have an account?</span>
-                    <a href='/auth/login' className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Sign In</a>
-                </div>
+        <div>
+            <Navbar
+                link1='About Us'
+                link1To='/about'
+                link2='Contact Us'
+                link2To='/contact'
+                link3='Subscribe'
+                link3To='/subscribe'
+            />
 
-                <form>
-                    <div>
-                        <div>
-                            <SelectButton value={formik.values.user_type} name='user_type' id='userType' options={options} onChange={(e) => { formik.setFieldValue('user_type', e.value);}} className={classNames('user-type-select m-auto w-8 flex justify-content-center', { 'p-invalid': isFormFieldInvalid('user_type') })} />
-                            {getFormErrorMessage("user_type")}
-                        </div>
-                        <Steps className='mx-auto w-10' model={items} aria-expanded="true" activeIndex={currentStep} />
-                        <Divider className='mx-auto w-10 mb-5' />
-
-                        <div className='mx-auto w-10'>
-                            <StepComponent
-                                isFormFieldInvalid={isFormFieldInvalid}
-                                getFormErrorMessage={getFormErrorMessage}
-                                formik={formik}
-                                onSubmit={onSubmit}
-                                handleNextStep={handleNextStep}
-                                handlePreviousStep={handlePreviousStep}
-                            />
-                        </div>
+            <div className="flex align-items-center justify-content-center">
+                <Toast ref={toast} />
+                <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
+                    <div className="text-center mb-5">
+                        <Link href="/"><img src="/layout/logo.png" alt="hyper" height={50} className="mb-3" /></Link>
+                        <div className="text-900 text-3xl font-medium mb-3">Join KasambahayKo</div>
+                        <span className="text-600 font-medium line-height-3">Already have an account?</span>
+                        <a href='/auth/login' className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Sign In</a>
                     </div>
-                </form>
+
+                    <form>
+                        <div>
+                            <div>
+                                <SelectButton value={formik.values.user_type} name='user_type' id='userType' options={options} onChange={(e) => { formik.setFieldValue('user_type', e.value); }} className={classNames('user-type-select m-auto w-8 flex justify-content-center', { 'p-invalid': isFormFieldInvalid('user_type') })} />
+                                {getFormErrorMessage("user_type")}
+                            </div>
+                            <Steps className='mx-auto w-10' model={items} aria-expanded="true" activeIndex={currentStep} />
+                            <Divider className='mx-auto w-10 mb-5' />
+
+                            <div className='mx-auto w-10'>
+                                <StepComponent
+                                    isFormFieldInvalid={isFormFieldInvalid}
+                                    getFormErrorMessage={getFormErrorMessage}
+                                    formik={formik}
+                                    onSubmit={onSubmit}
+                                    handleNextStep={handleNextStep}
+                                    handlePreviousStep={handlePreviousStep}
+                                />
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-
     );
 };
 

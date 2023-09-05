@@ -5,6 +5,8 @@ import 'primeflex/primeflex.css';
 import '../styles/layout/layout.scss';
 import '../styles/adjustments.css';
 
+import '../layout/demo/TimelineDemo.css' // >>> remove after testing
+
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import rootReducer from '../store/reducers/rootReducer';

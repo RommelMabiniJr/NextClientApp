@@ -1,3 +1,4 @@
+import Navbar from "../../../layout/components/Navbar";
 import { useEffect, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Checkbox } from "primereact/checkbox";
@@ -74,7 +75,15 @@ const LoginPage = () => {
     };
 
     return (
-
+        <div>
+         <Navbar
+                link1='About Us'
+                link1To='/about'
+                link2='Contact Us'
+                link2To='/contact'
+                link3='Subscribe'
+                link3To='/subscribe'
+            />
         <div className="flex align-items-center justify-content-center">
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
@@ -107,6 +116,8 @@ const LoginPage = () => {
                 <Button onClick={handleGoogleSignin} label="Sign in with Google" icon="pi pi-google" className="w-full border-gray-500 text-600" outlined />
             </div>
         </div>
+        </div>
+        
     );
 };
 
