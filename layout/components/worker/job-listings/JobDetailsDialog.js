@@ -8,7 +8,13 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-const JobDetailsDialog = ({ workerUUID, job, getDistance, onApply }) => {
+const JobDetailsDialog = ({
+  workerUUID,
+  job,
+  distances,
+  getDistance,
+  onApply,
+}) => {
   const [visible, setVisible] = useState(false);
   const dateConverter = DateConverter();
   const router = useRouter();
@@ -88,7 +94,7 @@ const JobDetailsDialog = ({ workerUUID, job, getDistance, onApply }) => {
                 <i className="pi pi-map-marker" /> {job.city_municipality}
               </label>
               <label className="block">
-                {getDistance(job.city_municipality)} Kilometers
+                {getDistance(job.city_municipality, distances)} Kilometers
               </label>
               <div className="flex mt-2 w-full flex-wrap justify-content-center">
                 <Tag

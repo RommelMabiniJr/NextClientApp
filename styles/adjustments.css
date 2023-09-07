@@ -15,6 +15,14 @@
     text-overflow: ellipsis;
 }
 
+.longtext-ellipsis {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* This is used to properly center badge in the profile image */
 .translate-badge {
     left: 50%;

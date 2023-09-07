@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useRouter } from "next/router";
 import { DataView } from "primereact/dataview";
 import { Splitter, SplitterPanel } from "primereact/splitter";
@@ -16,9 +16,10 @@ import WorkerNavbar from "@/layout/WorkerNavbar";
 import { LocationService } from "@/layout/service/LocationService";
 import JobDetailsDialog from "@/layout/components/worker/job-listings/JobDetailsDialog";
 import DateConverter from "@/lib/dateConverter";
-import RadioMultiStateCheckbox from "./_components/RadioMultiSateCheckbox";
 import { TabView, TabPanel } from "primereact/tabview";
 import { getSession } from "next-auth/react";
+import ScrollbarWrapper from "@/layout/components/ScrollbarWrapper";
+// import ScrollRestorationDisabler from "@/layout/components/ScrollRestorationDisabler";
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
@@ -51,6 +52,10 @@ export default function WorkerSearchPage({ userUUID }) {
 
   const [filteredAndSortedJobs, setFilteredAndSortedJobs] = useState([]);
   const [activeSortOption, setActiveSortOption] = useState(null);
+
+  // Will be used to restore scroll position and selected tab when navigating back to this page
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const dateConv = DateConverter();
   const workArrangeOptions = [
@@ -131,6 +136,11 @@ export default function WorkerSearchPage({ userUUID }) {
     },
   ];
 
+  // Handle scroll event to update the scroll position state
+  const handleScroll = (e) => {
+    setScrollPosition(e.target.scrollTop);
+  };
+
   // Function to handle checkbox selection and deselection
   const handleCheckboxChange = (name, value) => {
     // console.log(name, value);
@@ -168,6 +178,28 @@ export default function WorkerSearchPage({ userUUID }) {
     }
   };
 
+  const handleViewButtonClick = (job) => {
+    // Navigate to the new URL while preserving scroll position and selected tab
+
+    // Save the selected tab index to the browser's history state
+    window.history.pushState(
+      { ...window.history.state, selectedTabIndex, scrollPosition },
+      "",
+      ""
+    );
+
+    console.log(window.history.state);
+    router.push({
+      pathname: "/app/worker/job-listings/job-application/[jobId]",
+      query: { jobId: job.job_id },
+    });
+  };
+
+  const handleTabChange = (e) => {
+    const newIndex = e.index;
+    setSelectedTabIndex(newIndex);
+  };
+
   useEffect(() => {
     if (!sessionStatus && !session) {
       router.push("/auth/login");
@@ -177,7 +209,10 @@ export default function WorkerSearchPage({ userUUID }) {
       // set distance for each job by city_municipality
 
       availableJobs.forEach((job) => {
-        job.distance = getDistance(job.city_municipality);
+        job.distance = LocationService.getDistance(
+          job.city_municipality,
+          distances
+        );
       });
 
       // console.log(availableJobs);
@@ -208,6 +243,7 @@ export default function WorkerSearchPage({ userUUID }) {
         );
 
         setAppliedJobs(appliedResponse.data);
+        console.log(appliedResponse.data);
       } catch (error) {
         console.error(error);
       }
@@ -215,6 +251,34 @@ export default function WorkerSearchPage({ userUUID }) {
 
     fetchPosts();
   }, []);
+
+  useEffect(() => {
+    const handlePopstate = (event) => {
+      // When navigating back from page2, the popstate event is triggered.
+      // Store the scroll position and selected tab index from the event state.
+      const { scrollPosition, selectedTabIndex } = event.state || {};
+      setScrollPosition(scrollPosition || 0);
+      setSelectedTabIndex(selectedTabIndex || 0);
+
+      console.log("called");
+    };
+
+    window.addEventListener("popstate", handlePopstate);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   // Restore the selected tab index from the browser's history state, if available
+  //   const savedTabIndex = window.history.state?.selectedTabIndex;
+  //   if (savedTabIndex !== undefined) {
+  //     setSelectedTabIndex(savedTabIndex);
+  //   }
+
+  //   console.log(window.history.state);
+  // }, []);
 
   // Function to apply filtering and sorting to available jobs
   const applyFilterAndSort = () => {
@@ -238,7 +302,6 @@ export default function WorkerSearchPage({ userUUID }) {
     }
 
     // Apply sorting to whichever sort option is active
-    // console.log(activeSortOption);
     switch (activeSortOption) {
       case "DateRange":
         if (selectedDateRange === "Recent") {
@@ -284,7 +347,7 @@ export default function WorkerSearchPage({ userUUID }) {
         // }
         break;
       default:
-        console.log("No active sort option");
+        // console.log("No active sort option");
         break;
     }
 
@@ -304,13 +367,6 @@ export default function WorkerSearchPage({ userUUID }) {
     selectedCost,
     selectedDuration,
   ]);
-
-  const getDistance = (city_municipality) => {
-    const result = distances.find(
-      (item) => item.municipality === city_municipality
-    );
-    return result ? result.distance_val : "N/A";
-  };
 
   if (!session) {
     return (
@@ -334,6 +390,7 @@ export default function WorkerSearchPage({ userUUID }) {
       })
     );
     setAppliedJobs([...appliedJobs, { post: jobToApply }]);
+    location.reload(); // TODO: Remove this when we have a better way of updating the UI
   };
 
   const handleCancelApplication = (job) => {
@@ -439,7 +496,10 @@ export default function WorkerSearchPage({ userUUID }) {
                   <span className="mx-3"> | </span>
                   <div className="rate text-lg font-semibold mb-2">
                     <span className="ml-2">
-                      {getDistance(employer.city_municipality)}
+                      {LocationService.getDistance(
+                        employer.city_municipality,
+                        distances
+                      )}
                     </span>
                     <span className="sitance-value"> Kilometers</span>
                   </div>
@@ -454,7 +514,8 @@ export default function WorkerSearchPage({ userUUID }) {
                 workerUUID={workerUUID}
                 job={employer}
                 onApply={handleApply}
-                getDistance={getDistance}
+                distances={distances}
+                getDistance={LocationService.getDistance}
               />
               <Button
                 // label="Not Interested"
@@ -525,14 +586,27 @@ export default function WorkerSearchPage({ userUUID }) {
                 </div>
               </div>
 
-              <div className="bio col-12 ">
-                <span className="worker-bio">
+              <div className="col-12 mb-4">
+                <span className="longtext-ellipsis">
                   {employer.post.job_description}
                 </span>
               </div>
+              <div>
+                <span>
+                  Application Date:{" "}
+                  {dateConv.convertDateWithTimeToReadable(
+                    employer.application_date
+                  )}
+                </span>
+              </div>
             </div>
+
             <div className="ml-auto flex flex-column w-full md:w-auto">
-              <Button label="View" className="w-full" />
+              <Button
+                label="View"
+                className="w-full"
+                onClick={() => handleViewButtonClick(employer.post)}
+              />
 
               <Button
                 // label="Not Interested"
@@ -558,133 +632,147 @@ export default function WorkerSearchPage({ userUUID }) {
 
   return (
     <div>
-      <WorkerNavbar session={session} />
-      <Splitter>
-        <SplitterPanel size={20} minSize={20} className="px-2">
-          <div className="col-fixed" style={{ width: "25vw" }}>
-            <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
-              <span className="vertical-align-middle font-bold">
-                <i className="pi pi-filter mr-1"></i>
-                Filters
-              </span>
-              <Divider className="mt-2" />
-              <label className="font-medium">Work Arrangement</label>
-              <div className="py-3">
-                <MultiSelect
-                  value={selectedWorkArrangements}
-                  options={workArrangeOptions}
-                  onChange={(e) => setSelectedWorkArrangements(e.value)}
-                  optionLabel="name"
-                  placeholder="Select Work Arrangements"
-                  className="w-full"
-                />
-              </div>
+      <ScrollbarWrapper scrollTop={scrollPosition} onScroll={handleScroll}>
+        <div>
+          <WorkerNavbar session={session} />
+          <Splitter>
+            <SplitterPanel size={20} minSize={20} className="px-2">
+              <div className="col-fixed" style={{ width: "25vw" }}>
+                <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
+                  <span className="vertical-align-middle font-bold">
+                    <i className="pi pi-filter mr-1"></i>
+                    Filters
+                  </span>
+                  <Divider className="mt-2" />
+                  <label className="font-medium">Work Arrangement</label>
+                  <div className="py-3">
+                    <MultiSelect
+                      value={selectedWorkArrangements}
+                      options={workArrangeOptions}
+                      onChange={(e) => setSelectedWorkArrangements(e.value)}
+                      optionLabel="name"
+                      placeholder="Select Work Arrangements"
+                      className="w-full"
+                    />
+                  </div>
 
-              <label className="font-medium">Service Categories</label>
-              <div className="py-3 mb-4">
-                <MultiSelect
-                  value={selectedServiceCategories}
-                  options={serviceCategoryOptions}
-                  onChange={(e) => setSelectedServiceCategories(e.value)}
-                  optionLabel="name"
-                  placeholder="Select Service Categories"
-                  className="w-full"
-                />
-              </div>
-              <span className="vertical-align-middle font-bold">
-                <i className="pi pi-sort mr-1"></i>
-                Sort By
-              </span>
-              <Divider className="mt-2" />
+                  <label className="font-medium">Service Categories</label>
+                  <div className="py-3 mb-4">
+                    <MultiSelect
+                      value={selectedServiceCategories}
+                      options={serviceCategoryOptions}
+                      onChange={(e) => setSelectedServiceCategories(e.value)}
+                      optionLabel="name"
+                      placeholder="Select Service Categories"
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="vertical-align-middle font-bold">
+                    <i className="pi pi-sort mr-1"></i>
+                    Sort By
+                  </span>
+                  <Divider className="mt-2" />
 
-              {/* Date Range */}
-              <div className="mb-3">
-                <MultiStateCheckbox
-                  value={selectedDateRange}
-                  options={dateRangeOptions}
-                  optionValue="value"
-                  onChange={(e) => handleCheckboxChange("DateRange", e.value)}
-                />
-                <span className="vertical-align-middle ml-2">
-                  Post Date{" "}
-                  {selectedDateRange ? `(${selectedDateRange})` : "(none)"}
-                </span>
-              </div>
+                  {/* Date Range */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={selectedDateRange}
+                      options={dateRangeOptions}
+                      optionValue="value"
+                      onChange={(e) =>
+                        handleCheckboxChange("DateRange", e.value)
+                      }
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Post Date{" "}
+                      {selectedDateRange ? `(${selectedDateRange})` : "(none)"}
+                    </span>
+                  </div>
 
-              {/* Distance */}
-              <div className="mb-3">
-                <MultiStateCheckbox
-                  value={selectedDistance}
-                  options={distanceOptions}
-                  optionValue="value"
-                  onChange={(e) => handleCheckboxChange("Distance", e.value)}
-                />
-                <span className="vertical-align-middle ml-2">
-                  Distance{" "}
-                  {selectedDistance ? `(${selectedDistance})` : "(none)"}
-                </span>
-              </div>
+                  {/* Distance */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={selectedDistance}
+                      options={distanceOptions}
+                      optionValue="value"
+                      onChange={(e) =>
+                        handleCheckboxChange("Distance", e.value)
+                      }
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Distance{" "}
+                      {selectedDistance ? `(${selectedDistance})` : "(none)"}
+                    </span>
+                  </div>
 
-              {/* Cost */}
-              <div className="mb-3">
-                <MultiStateCheckbox
-                  value={selectedCost}
-                  options={costOptions}
-                  optionValue="value"
-                  onChange={(e) => handleCheckboxChange("Cost", e.value)}
-                  disabled // disable cost sorting for now
-                />
-                <span className="vertical-align-middle ml-2">
-                  Cost {selectedCost ? `(${selectedCost})` : "(none)"}
-                </span>
-              </div>
+                  {/* Cost */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={selectedCost}
+                      options={costOptions}
+                      optionValue="value"
+                      onChange={(e) => handleCheckboxChange("Cost", e.value)}
+                      disabled // disable cost sorting for now
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Cost {selectedCost ? `(${selectedCost})` : "(none)"}
+                    </span>
+                  </div>
 
-              {/* Duration */}
-              <div className="mb-3">
-                <MultiStateCheckbox
-                  value={selectedDuration}
-                  options={durationOptions}
-                  optionValue="value"
-                  onChange={(e) => handleCheckboxChange("Duration", e.value)}
-                  disabled // disable duration sorting for now
-                />
-                <span className="vertical-align-middle ml-2">
-                  Duration{" "}
-                  {selectedDuration ? `(${selectedDuration})` : "(none)"}
-                </span>
+                  {/* Duration */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={selectedDuration}
+                      options={durationOptions}
+                      optionValue="value"
+                      onChange={(e) =>
+                        handleCheckboxChange("Duration", e.value)
+                      }
+                      disabled // disable duration sorting for now
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Duration{" "}
+                      {selectedDuration ? `(${selectedDuration})` : "(none)"}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </SplitterPanel>
-        <SplitterPanel size={80} minSize={80} className="px-2">
-          <TabView className="mt-2">
-            <TabPanel header="Browse Jobs">
-              <h1 className="text-center py-4">Apply for Jobs Near You</h1>
-              <DataView
-                value={filteredAndSortedJobs}
-                itemTemplate={itemTemplate}
-                layout={"grid"}
-                paginator
-                rows={12}
-                // sortField="job_posting_date"
-                // sortOrder={-1}
-              />
-            </TabPanel>
-            <TabPanel header="Applied Jobs">
-              <h1 className="text-center py-4">Applications</h1>
-              <DataView
-                value={appliedJobs}
-                itemTemplate={appliedListTemplate}
-                layout={"grid"}
-                paginator
-                rows={12}
-                sortField="job_posting_date"
-                sortOrder={-1}
-              />
-            </TabPanel>
-          </TabView>
-        </SplitterPanel>
-      </Splitter>
+            </SplitterPanel>
+            <SplitterPanel size={80} minSize={80} className="px-2">
+              <TabView
+                className="mt-2"
+                activeIndex={selectedTabIndex}
+                onTabChange={handleTabChange}
+              >
+                <TabPanel header="Browse Jobs">
+                  <h1 className="text-center py-4">Apply for Jobs Near You</h1>
+                  <DataView
+                    value={filteredAndSortedJobs}
+                    itemTemplate={itemTemplate}
+                    layout={"grid"}
+                    paginator
+                    rows={12}
+                    // sortField="job_posting_date"
+                    // sortOrder={-1}
+                  />
+                </TabPanel>
+                <TabPanel header="Applied Jobs">
+                  <h1 className="text-center py-4">Applications</h1>
+                  <DataView
+                    value={appliedJobs}
+                    itemTemplate={appliedListTemplate}
+                    layout={"grid"}
+                    paginator
+                    rows={12}
+                    sortField="job_posting_date"
+                    sortOrder={-1}
+                  />
+                </TabPanel>
+              </TabView>
+            </SplitterPanel>
+          </Splitter>
+        </div>
+      </ScrollbarWrapper>
     </div>
   );
 }
