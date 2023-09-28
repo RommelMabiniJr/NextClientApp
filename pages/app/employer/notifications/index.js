@@ -1,6 +1,6 @@
-import Link from "next/link";
 import EmployerNavbar from "@/layout/EmployerNavbar";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export default function MessagesPage() {
   const { data: session, status: sessionStatues } = useSession();
@@ -15,21 +15,22 @@ export default function MessagesPage() {
       </div>
     );
   }
+
   return (
     <div className="bg-white h-screen">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
       <div className="px-5 py-4">
-        <h3>Messages</h3>
-        {/* render no messages */}
+        <h3>Notifications</h3>
+        {/* render no notifications */}
         <div className="flex flex-column align-items-center justify-content-center">
           <img
-            src="/layout/empty-messages.png"
+            src="/layout/empty-notifications.png"
             alt="empty"
-            className="w-19rem h-15rem mt-10"
+            className="w-15rem h-15rem mt-10"
           />
           <div className="text-center">
             <p className="text-gray-800 font-medium text-xl">
-              No messages to display yet.
+              No notifications to display yet.
             </p>
             <p className="text-gray-600 text-l mx-auto w-8">
               Begin your journey by browsing caregivers{" "}

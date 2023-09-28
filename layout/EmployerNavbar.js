@@ -1,112 +1,310 @@
-import React, { useRef } from 'react';
-import { Menubar } from 'primereact/menubar';
-import { Menu } from 'primereact/menu';
-import { InputText } from 'primereact/inputtext';
-import { Image } from 'primereact/image';
-import { Divider } from 'primereact/divider';
-import { Avatar } from 'primereact/avatar';
-import { Button } from 'primereact/button';
-import { getSession, useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
+import React, { useRef, useState, useEffect } from "react";
+import { Menubar } from "primereact/menubar";
+import { Menu } from "primereact/menu";
+import { Badge } from "primereact/badge";
+import classNames from "classnames";
+import { InputText } from "primereact/inputtext";
+import { Image } from "primereact/image";
+import { Divider } from "primereact/divider";
+import { Avatar } from "primereact/avatar";
+import { Button } from "primereact/button";
+import { getSession, useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import axios from "axios";
 
+const EmployerNavbar = ({}) => {
+  const { data: session, loading } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // The user is not authenticated, handle it here.
+      // This is usually done by redirecting to /auth.
+      router.push("/auth/login");
+    },
+  });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    // {
+    //   id: 1,
+    //   title: "Customize your profile",
+    //   message: "Add your profile picture and cover photo to stand out.",
+    //   read: false,
+    // },
+    // {
+    //   id: 2,
+    //   title: "Job Applicant",
+    //   message: "Your Job Post: Kasambahay for 1 month has one applicant.",
+    //   read: false,
+    // },
+  ]);
+  const [websocketNotifications, setWebsocketNotifications] = useState([]);
+  const notifMenu = useRef(null);
+  const menu = useRef(null);
+  const router = useRouter();
+  const toast = useRef(null);
 
-const EmployerNavbar = ({ }) => {
-    const { data: session, loading } = useSession({
-        required: true,
-        onUnauthenticated() {
-            // The user is not authenticated, handle it here.
-            // This is usually done by redirecting to /auth.
-            router.push('/auth/login');
-        }
-    });
-    const menu = useRef(null);
-    const router = useRouter();
-    const toast = useRef(null);
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/auth/login");
+  };
 
-    const handleSignOut = async () => {
-        await signOut();
-        router.push('/auth/login');
+  const handleMenuToggle = (e) => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  if (!session && !loading) {
+    return <div>Loading...</div>;
+  }
+
+  useEffect(() => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    const ws = new WebSocket(socketUrl); // Replace with your server address using process.env
+
+    ws.onopen = () => {
+      console.log("Connected to WebSocket server");
     };
-    
 
-    if (!session && !loading) {
-        return <div>Loading...</div>;
-    }
+    ws.onmessage = (event) => {
+      console.log(`Received message: ${event.data}`);
+      // Handle the incoming notification here and update your UI as needed
 
-    const items = [
-        {
-            label: 'Home',
-            icon: 'pi pi-fw pi-home',
-            url: '/app/employer-dashboard',
-        },
-        {
-            label: 'Search',
-            icon: 'pi pi-fw pi-search',
-            url: '/app/employer/worker-search',
-        },
-        {
-            label: 'Posts',
-            icon: 'pi pi-fw pi-briefcase',
-            url: '/app/posts',
-            command: () => {
-                // handle logout logic here
-            },
-        },
-        {
-            label: 'Bookings',
-            icon: 'pi pi-fw pi-calendar',
-            command: () => {
-                // handle logout logic here
-            },
-        },
-    ];
+      // check if the message is a notification
+      const message = JSON.parse(event.data);
+      console.log(message);
+      if (message.type == "notification") {
+        // check if the notification is for the current user
+        if (message.recipient == session.user.uuid) {
+          // add the notification to the list of notifications
+          setNotifications((notifications) => [...notifications, message]);
+          console.log("Notification added");
+        }
+      }
+    };
 
-    const profileItems = session && [
-        {
-            label: 'Profile',
-            icon: 'pi pi-fw pi-user',
-            url: `/app/employer/${session.user.uuid}`,
-        },
-        {
-            label: 'Wallet Balance',
-            icon: 'pi pi-fw pi-wallet',
-            command: () => {
-                // handle logout logic here
-            }
-        },
-        {
-            label: 'Logout',
-            icon: 'pi pi-fw pi-power-off',
-            command: () => {
-                // handle logout logic here
-                handleSignOut();
-            },
-        },
-    ];
+    ws.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
 
-    const start =
-        <Link href="/app/employer-dashboard" className="flex align-items-center">
-            <img src={`/layout/logo.png`} alt="Sakai Logo" height="50" className="user-avatar mr-0 lg:mr-2" />
-            <span className="text-900 font-bold text-2xl line-height-3 mr-8">KasambahayKo</span>
-        </Link>
+    return () => {
+      // Cleanup WebSocket connection when component unmounts
+      ws.close();
+    };
+  }, []);
 
+  useEffect(() => {
+    // Get notifications from the server using user_id from session
+    const fetchNotifications = async () => {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/employer/notifications/${session.user.uuid}`
+      );
+      const data = await response.data;
+      setNotifications(data);
+    };
 
-    const end = session && (
-        <div className="flex flex-row align-items-center border-circle p-d-flex p-flex-row p-ai-center">
-            {/* <Image className='w-min h-min mr-4' src='/layout/profile-default.png' width='40'/> */}
-            <Button size='small' className='mr-2' rounded icon="pi pi-inbox" aria-label="Message" />
-            <Button size='small' className='mr-2' rounded icon="pi pi-bell" aria-label="Notification" />
-            <Menu className='' model={profileItems} popup ref={menu} id='popup_menu' />
-            <Avatar className='mr-4' image={ session?.user?.imageUrl || '/layout/profile-default.png'} size='large' shape='circle' onClick={(e) => menu.current.toggle(e)}></Avatar>
-        </div>
-    );
+    fetchNotifications();
+  }, [session]);
 
-    return (
-        <div>
-            <Menubar start={start} model={items} end={end} />
-        </div>
-    );
+  const items = [
+    {
+      label: "Home",
+      icon: "pi pi-fw pi-home",
+      url: "/app/employer-dashboard",
+    },
+    {
+      label: "Search",
+      icon: "pi pi-fw pi-search",
+      url: "/app/employer/worker-search",
+    },
+    {
+      label: "Posts",
+      icon: "pi pi-fw pi-briefcase",
+      url: "/app/posts",
+      command: () => {
+        // handle logout logic here
+      },
+    },
+    {
+      label: "Bookings",
+      icon: "pi pi-fw pi-calendar",
+      command: () => {
+        // handle logout logic here
+      },
+    },
+  ];
+
+  // Function to mark a notification as read
+  const markNotificationAsRead = (notificationId) => {
+    const updatedNotifications = notifications.map((notification) => {
+      if (notification.id === notificationId) {
+        return { ...notification, read: true };
+      }
+      return notification;
+    });
+    setNotifications(updatedNotifications);
+  };
+
+  const profileItems = session && [
+    {
+      label: "Profile",
+      icon: "pi pi-fw pi-user",
+      url: `/app/employer/${session.user.uuid}`,
+    },
+    {
+      label: "Wallet Balance",
+      icon: "pi pi-fw pi-wallet",
+      command: () => {
+        // handle logout logic here
+      },
+    },
+    {
+      label: "Logout",
+      icon: "pi pi-fw pi-power-off",
+      command: () => {
+        // handle logout logic here
+        handleSignOut();
+      },
+    },
+  ];
+
+  const notificationItems = [
+    {
+      template: (item, options) => {
+        return (
+          <div className="w-full p-link flex align-items-center justify-content-between px-3 py-2">
+            <label className="font-bold">Notifications</label>
+            <div className="flex flex-column align">
+              <i className="pi pi-check" link />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      separator: true,
+    },
+    ...notifications.map((notification) => ({
+      template: (item, options) => (
+        <button
+          onClick={(e) => {
+            options.onClick(e);
+            markNotificationAsRead(notification.id); // Mark notification as read when clicked
+          }}
+          className={classNames(
+            options.className,
+            "w-full p-link flex align-items-center ",
+            { "notification-unread": !notification.read } // Add a class for unread notifications
+          )}
+        >
+          <div>
+            <div
+              className={`font-medium ${!notification.read ? "text-bold" : ""}`}
+            >
+              {notification.title}
+            </div>
+            {/* Limit message to a certain number of characters or two lines */}
+            <div className="text-sm text-gray-600">
+              {notification.message.length > 70
+                ? notification.message.substring(0, 70) + "..."
+                : notification.message}
+            </div>
+          </div>
+        </button>
+      ),
+    })),
+    { separator: true },
+    {
+      template: (item, options) => {
+        return (
+          <div className="flex justify-content-center">
+            <Button
+              label="View All Notifications"
+              onClick={() => router.push("/app/employer/notifications")}
+              className="m-2 w-10 text-sm font-light"
+              rounded
+              outlined
+              size="normal"
+            ></Button>
+          </div>
+        );
+      },
+    },
+  ];
+
+  const start = (
+    <Link href="/app/employer-dashboard" className="flex align-items-center">
+      <img
+        src={`/layout/logo.png`}
+        alt="Sakai Logo"
+        height="50"
+        className="user-avatar mr-0 lg:mr-2"
+      />
+      <span className="text-900 font-bold text-2xl line-height-3 mr-8">
+        KasambahayKo
+      </span>
+    </Link>
+  );
+
+  const end = session && (
+    <div className="flex flex-row align-items-center border-circle p-d-flex p-flex-row p-ai-center">
+      {/* <Image className='w-min h-min mr-4' src='/layout/profile-default.png' width='40'/> */}
+      <i
+        aria-label="Message"
+        onClick={() => router.push("/app/employer/messages")}
+        className="mr-2 p-overlay-badge mr-4 p-link p-cursor-pointer pi pi-envelope"
+        style={{ fontSize: "1.5rem" }}
+      >
+        {/* <Badge value="8" size="" severity="danger"></Badge> */}
+      </i>
+      <Menu
+        className="w-18rem"
+        model={notificationItems}
+        popup
+        ref={notifMenu}
+        id="popup_menu"
+      />
+      <i
+        aria-label="Notification"
+        onClick={(e) => notifMenu.current.toggle(e)}
+        className="mr-2 p-overlay-badge mr-4 p-link p-cursor-pointer pi pi-bell"
+        style={{ fontSize: "1.5rem" }}
+      >
+        {/* Do not display if no notification */}
+        {/* Update the badge value to show the count of unread notifications only when the menu is closed */}
+        {!isMenuOpen &&
+          notifications.filter((notification) => !notification.read).length >
+            0 && (
+            <Badge
+              value={
+                notifications.filter((notification) => !notification.read)
+                  .length
+              }
+              size=""
+              severity="danger"
+            ></Badge>
+          )}
+      </i>
+      <Menu
+        className=""
+        model={profileItems}
+        popup
+        ref={menu}
+        id="popup_menu"
+      />
+      <Avatar
+        className="mr-4"
+        image={session?.user?.imageUrl || "/layout/profile-default.png"}
+        size="large"
+        shape="circle"
+        onClick={(e) => menu.current.toggle(e)}
+      ></Avatar>
+    </div>
+  );
+
+  return (
+    <div>
+      <Menubar start={start} model={items} end={end} />
+    </div>
+  );
 };
 
 export default EmployerNavbar;

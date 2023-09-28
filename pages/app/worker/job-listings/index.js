@@ -33,6 +33,7 @@ export async function getServerSideProps(context) {
 export default function WorkerSearchPage({ userUUID }) {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
+  const { elementId, tabIndex } = router.query;
   const workerUUID = session ? session.user.uuid : null;
   const [availableJobs, setAvailableJobs] = useState([]);
   const [appliedJobs, setAppliedJobs] = useState([]);
@@ -54,8 +55,23 @@ export default function WorkerSearchPage({ userUUID }) {
   const [activeSortOption, setActiveSortOption] = useState(null);
 
   // Will be used to restore scroll position and selected tab when navigating back to this page
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [selectedTabIndex, setSelectedTabIndex] = useState(() => {
+    if (tabIndex !== undefined) {
+      return parseInt(tabIndex);
+    } else {
+      return 0;
+    }
+  });
+
+  const [scrollId, setScrollId] = useState(() => {
+    if (elementId !== undefined) {
+      return elementId;
+    } else {
+      return null;
+    }
+  });
+
+  const [tabReady, setTabReady] = useState();
 
   const dateConv = DateConverter();
   const workArrangeOptions = [
@@ -136,9 +152,18 @@ export default function WorkerSearchPage({ userUUID }) {
     },
   ];
 
-  // Handle scroll event to update the scroll position state
-  const handleScroll = (e) => {
-    setScrollPosition(e.target.scrollTop);
+  const scrollToID = (elID) => {
+    // Make sure error is handled if element doesn't exist
+    const el = document.getElementById(elID);
+    if (el) {
+      window.scrollTo({
+        top: el.offsetTop - 60,
+        behavior: "smooth",
+      });
+    } else {
+      // otherwise just reload the page
+      router.reload();
+    }
   };
 
   // Function to handle checkbox selection and deselection
@@ -179,19 +204,13 @@ export default function WorkerSearchPage({ userUUID }) {
   };
 
   const handleViewButtonClick = (job) => {
-    // Navigate to the new URL while preserving scroll position and selected tab
-
-    // Save the selected tab index to the browser's history state
-    window.history.pushState(
-      { ...window.history.state, selectedTabIndex, scrollPosition },
-      "",
-      ""
-    );
-
-    console.log(window.history.state);
     router.push({
-      pathname: "/app/worker/job-listings/job-application/[jobId]",
-      query: { jobId: job.job_id },
+      pathname: `/app/worker/job-listings/job-application/${job.application_id}`,
+      query: {
+        jobId: job.post.job_id,
+        elementId: `application-${job.application_id}`,
+        tabIndex: 1,
+      },
     });
   };
 
@@ -199,6 +218,17 @@ export default function WorkerSearchPage({ userUUID }) {
     const newIndex = e.index;
     setSelectedTabIndex(newIndex);
   };
+
+  useEffect(() => {
+    // This effect will run when `tabReady` becomes true
+    console.log("Scrolling to: ", tabReady);
+    if (tabReady && scrollId) {
+      // Place your code here that needs to run after the tab is ready
+      // and its items are rendered.
+      // You can call scrollToID or perform any other actions here.
+      scrollToID(scrollId);
+    }
+  }, [tabReady]);
 
   useEffect(() => {
     if (!sessionStatus && !session) {
@@ -244,6 +274,12 @@ export default function WorkerSearchPage({ userUUID }) {
 
         setAppliedJobs(appliedResponse.data);
         console.log(appliedResponse.data);
+
+        if (tabIndex == 1) {
+          setTabReady(true);
+        } else {
+          setTabReady(false);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -251,34 +287,6 @@ export default function WorkerSearchPage({ userUUID }) {
 
     fetchPosts();
   }, []);
-
-  useEffect(() => {
-    const handlePopstate = (event) => {
-      // When navigating back from page2, the popstate event is triggered.
-      // Store the scroll position and selected tab index from the event state.
-      const { scrollPosition, selectedTabIndex } = event.state || {};
-      setScrollPosition(scrollPosition || 0);
-      setSelectedTabIndex(selectedTabIndex || 0);
-
-      console.log("called");
-    };
-
-    window.addEventListener("popstate", handlePopstate);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopstate);
-    };
-  }, []);
-
-  // useEffect(() => {
-  //   // Restore the selected tab index from the browser's history state, if available
-  //   const savedTabIndex = window.history.state?.selectedTabIndex;
-  //   if (savedTabIndex !== undefined) {
-  //     setSelectedTabIndex(savedTabIndex);
-  //   }
-
-  //   console.log(window.history.state);
-  // }, []);
 
   // Function to apply filtering and sorting to available jobs
   const applyFilterAndSort = () => {
@@ -358,6 +366,7 @@ export default function WorkerSearchPage({ userUUID }) {
   useEffect(() => {
     // Apply initial filtering and sorting when availableJobs change.
     applyFilterAndSort();
+    console.log("filtering");
   }, [
     availableJobs,
     selectedWorkArrangements,
@@ -531,7 +540,10 @@ export default function WorkerSearchPage({ userUUID }) {
 
   const appliedListTemplate = (employer) => {
     return (
-      <div className="p-col-12 p-md-3 px-3 pb-4 w-full">
+      <div
+        id={`application-${employer.application_id}`}
+        className="p-col-12 p-md-3 px-3 pb-4 w-full"
+      >
         <div className="card grid col">
           <div className="bg-yellow-200 p-2 pl-3 border-round flex mr-2 w-full">
             <i
@@ -605,7 +617,7 @@ export default function WorkerSearchPage({ userUUID }) {
               <Button
                 label="View"
                 className="w-full"
-                onClick={() => handleViewButtonClick(employer.post)}
+                onClick={() => handleViewButtonClick(employer)}
               />
 
               <Button
@@ -621,6 +633,14 @@ export default function WorkerSearchPage({ userUUID }) {
                   });
 
                   handleCancelApplication(employer);
+
+                  // Change route
+                  router.push({
+                    pathname: "/app/worker/job-listings",
+                    query: {
+                      tabIndex: 1,
+                    },
+                  });
                 }}
               />
             </div>
@@ -632,147 +652,145 @@ export default function WorkerSearchPage({ userUUID }) {
 
   return (
     <div>
-      <ScrollbarWrapper scrollTop={scrollPosition} onScroll={handleScroll}>
-        <div>
-          <WorkerNavbar session={session} />
-          <Splitter>
-            <SplitterPanel size={20} minSize={20} className="px-2">
-              <div className="col-fixed" style={{ width: "25vw" }}>
-                <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
-                  <span className="vertical-align-middle font-bold">
-                    <i className="pi pi-filter mr-1"></i>
-                    Filters
-                  </span>
-                  <Divider className="mt-2" />
-                  <label className="font-medium">Work Arrangement</label>
-                  <div className="py-3">
-                    <MultiSelect
-                      value={selectedWorkArrangements}
-                      options={workArrangeOptions}
-                      onChange={(e) => setSelectedWorkArrangements(e.value)}
-                      optionLabel="name"
-                      placeholder="Select Work Arrangements"
-                      className="w-full"
-                    />
-                  </div>
-
-                  <label className="font-medium">Service Categories</label>
-                  <div className="py-3 mb-4">
-                    <MultiSelect
-                      value={selectedServiceCategories}
-                      options={serviceCategoryOptions}
-                      onChange={(e) => setSelectedServiceCategories(e.value)}
-                      optionLabel="name"
-                      placeholder="Select Service Categories"
-                      className="w-full"
-                    />
-                  </div>
-                  <span className="vertical-align-middle font-bold">
-                    <i className="pi pi-sort mr-1"></i>
-                    Sort By
-                  </span>
-                  <Divider className="mt-2" />
-
-                  {/* Date Range */}
-                  <div className="mb-3">
-                    <MultiStateCheckbox
-                      value={selectedDateRange}
-                      options={dateRangeOptions}
-                      optionValue="value"
-                      onChange={(e) =>
-                        handleCheckboxChange("DateRange", e.value)
-                      }
-                    />
-                    <span className="vertical-align-middle ml-2">
-                      Post Date{" "}
-                      {selectedDateRange ? `(${selectedDateRange})` : "(none)"}
-                    </span>
-                  </div>
-
-                  {/* Distance */}
-                  <div className="mb-3">
-                    <MultiStateCheckbox
-                      value={selectedDistance}
-                      options={distanceOptions}
-                      optionValue="value"
-                      onChange={(e) =>
-                        handleCheckboxChange("Distance", e.value)
-                      }
-                    />
-                    <span className="vertical-align-middle ml-2">
-                      Distance{" "}
-                      {selectedDistance ? `(${selectedDistance})` : "(none)"}
-                    </span>
-                  </div>
-
-                  {/* Cost */}
-                  <div className="mb-3">
-                    <MultiStateCheckbox
-                      value={selectedCost}
-                      options={costOptions}
-                      optionValue="value"
-                      onChange={(e) => handleCheckboxChange("Cost", e.value)}
-                      disabled // disable cost sorting for now
-                    />
-                    <span className="vertical-align-middle ml-2">
-                      Cost {selectedCost ? `(${selectedCost})` : "(none)"}
-                    </span>
-                  </div>
-
-                  {/* Duration */}
-                  <div className="mb-3">
-                    <MultiStateCheckbox
-                      value={selectedDuration}
-                      options={durationOptions}
-                      optionValue="value"
-                      onChange={(e) =>
-                        handleCheckboxChange("Duration", e.value)
-                      }
-                      disabled // disable duration sorting for now
-                    />
-                    <span className="vertical-align-middle ml-2">
-                      Duration{" "}
-                      {selectedDuration ? `(${selectedDuration})` : "(none)"}
-                    </span>
-                  </div>
-                </div>
+      <WorkerNavbar session={session} />
+      <Splitter>
+        <SplitterPanel size={20} minSize={20} className="px-2">
+          <div className="col-fixed" style={{ width: "25vw" }}>
+            <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
+              <span className="vertical-align-middle font-bold">
+                <i className="pi pi-filter mr-1"></i>
+                Filters
+              </span>
+              <Divider className="mt-2" />
+              <label className="font-medium">Work Arrangement</label>
+              <div className="py-3">
+                <MultiSelect
+                  value={selectedWorkArrangements}
+                  options={workArrangeOptions}
+                  onChange={(e) => setSelectedWorkArrangements(e.value)}
+                  optionLabel="name"
+                  placeholder="Select Work Arrangements"
+                  className="w-full"
+                />
               </div>
-            </SplitterPanel>
-            <SplitterPanel size={80} minSize={80} className="px-2">
-              <TabView
-                className="mt-2"
-                activeIndex={selectedTabIndex}
-                onTabChange={handleTabChange}
-              >
-                <TabPanel header="Browse Jobs">
-                  <h1 className="text-center py-4">Apply for Jobs Near You</h1>
-                  <DataView
-                    value={filteredAndSortedJobs}
-                    itemTemplate={itemTemplate}
-                    layout={"grid"}
-                    paginator
-                    rows={12}
-                    // sortField="job_posting_date"
-                    // sortOrder={-1}
-                  />
-                </TabPanel>
-                <TabPanel header="Applied Jobs">
-                  <h1 className="text-center py-4">Applications</h1>
-                  <DataView
-                    value={appliedJobs}
-                    itemTemplate={appliedListTemplate}
-                    layout={"grid"}
-                    paginator
-                    rows={12}
-                    sortField="job_posting_date"
-                    sortOrder={-1}
-                  />
-                </TabPanel>
-              </TabView>
-            </SplitterPanel>
-          </Splitter>
-        </div>
-      </ScrollbarWrapper>
+
+              <label className="font-medium">Service Categories</label>
+              <div className="py-3 mb-4">
+                <MultiSelect
+                  value={selectedServiceCategories}
+                  options={serviceCategoryOptions}
+                  onChange={(e) => setSelectedServiceCategories(e.value)}
+                  optionLabel="name"
+                  placeholder="Select Service Categories"
+                  className="w-full"
+                />
+              </div>
+              <span className="vertical-align-middle font-bold">
+                <i className="pi pi-sort mr-1"></i>
+                Sort By
+              </span>
+              <Divider className="mt-2" />
+
+              {/* Date Range */}
+              <div className="mb-3">
+                <MultiStateCheckbox
+                  value={selectedDateRange}
+                  options={dateRangeOptions}
+                  optionValue="value"
+                  onChange={(e) => handleCheckboxChange("DateRange", e.value)}
+                />
+                <span className="vertical-align-middle ml-2">
+                  Post Date{" "}
+                  {selectedDateRange ? `(${selectedDateRange})` : "(none)"}
+                </span>
+              </div>
+
+              {/* Distance */}
+              <div className="mb-3">
+                <MultiStateCheckbox
+                  value={selectedDistance}
+                  options={distanceOptions}
+                  optionValue="value"
+                  onChange={(e) => handleCheckboxChange("Distance", e.value)}
+                />
+                <span className="vertical-align-middle ml-2">
+                  Distance{" "}
+                  {selectedDistance ? `(${selectedDistance})` : "(none)"}
+                </span>
+              </div>
+
+              {/* Cost */}
+              <div className="mb-3">
+                <MultiStateCheckbox
+                  value={selectedCost}
+                  options={costOptions}
+                  optionValue="value"
+                  onChange={(e) => handleCheckboxChange("Cost", e.value)}
+                  disabled // disable cost sorting for now
+                />
+                <span className="vertical-align-middle ml-2">
+                  Cost {selectedCost ? `(${selectedCost})` : "(none)"}
+                </span>
+              </div>
+
+              {/* Duration */}
+              <div className="mb-3">
+                <MultiStateCheckbox
+                  value={selectedDuration}
+                  options={durationOptions}
+                  optionValue="value"
+                  onChange={(e) => handleCheckboxChange("Duration", e.value)}
+                  disabled // disable duration sorting for now
+                />
+                <span className="vertical-align-middle ml-2">
+                  Duration{" "}
+                  {selectedDuration ? `(${selectedDuration})` : "(none)"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </SplitterPanel>
+        <SplitterPanel size={80} minSize={80} className="px-2">
+          <TabView
+            className="mt-2"
+            activeIndex={selectedTabIndex}
+            onTabChange={handleTabChange}
+          >
+            <TabPanel header="Browse Jobs">
+              <h1 className="text-center py-4">Apply for Jobs Near You</h1>
+              <DataView
+                value={filteredAndSortedJobs}
+                itemTemplate={itemTemplate}
+                layout={"grid"}
+                paginator
+                rows={12}
+                // sortField="job_posting_date"
+                // sortOrder={-1}
+              />
+            </TabPanel>
+            <TabPanel header="Applied Jobs">
+              <h1 className="text-center py-4">Applications</h1>
+              <DataView
+                value={appliedJobs}
+                itemTemplate={appliedListTemplate}
+                layout={"grid"}
+                paginator
+                rows={12}
+                sortField="job_posting_date"
+                sortOrder={-1}
+              />
+            </TabPanel>
+          </TabView>
+          {/* Test scroll position */}
+          {/* <Button
+            onClick={() => {
+              // router.push("job-listings/#application-130");
+              scrollToID("application-130");
+            }}
+            label="Test"
+          /> */}
+        </SplitterPanel>
+      </Splitter>
     </div>
   );
 }
