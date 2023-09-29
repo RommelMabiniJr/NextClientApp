@@ -157,12 +157,12 @@ const RegistrationPage = () => {
   };
 
   async function onSubmit(values) {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
     try {
-      const response = await axios.post(
-        "http://localhost:5000/register",
-        values,
-        { withCredentials: true }
-      );
+      const response = await axios.post(`${serverUrl}/register`, values, {
+        withCredentials: true,
+      });
       console.log(response);
       toast.current.show({
         severity: "success",

@@ -84,9 +84,10 @@ const DisplayPosts = ({ session, handleSignOut }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       setIsLoading(true);
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
       try {
         const response = await axios.get(
-          `http://localhost:5000/employer/post/get-posts?uuid=${session.user.uuid}`
+          `${serverUrl}/employer/post/get-posts?uuid=${session.user.uuid}`
         );
         setPosts(response.data);
         console.log(response.data);

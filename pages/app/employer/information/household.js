@@ -24,11 +24,13 @@ const HouseholdInformation = ({ session, employer }) => {
     },
     onSubmit: async (values) => {
       try {
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
         const response = await axios({
           method: "patch",
           data: { ...values, uuid: session.user.uuid },
           withCredentials: true,
-          url: "http://localhost:5000/employer/update-info/household",
+          url: `${serverUrl}/employer/update-info/household`,
         });
 
         console.log(response.data);

@@ -29,9 +29,11 @@ export default function EmployerProfile() {
     const fetchEmployer = async () => {
       setIsLoading(true);
       try {
-        console.log(router.query.uuid);
+        // console.log(router.query.uuid);
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
         const response = await axios.get(
-          `http://localhost:5000/employer/${router.query.uuid}`
+          `${serverUrl}/employer/${router.query.uuid}`
         );
         setEmployer(response.data);
       } catch (error) {

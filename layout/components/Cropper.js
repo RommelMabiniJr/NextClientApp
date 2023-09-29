@@ -28,8 +28,10 @@ const DisplayHeader = ({}) => {
   useEffect(() => {
     const fetchProfileImage = async () => {
       // console.log(session.user.uuid)
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
       try {
-        const response = await axios.get("http://localhost:5000/profile-img", {
+        const response = await axios.get(`${serverUrl}/profile-img`, {
           params: { uuid: session.user.uuid },
           responseType: "blob",
         });
@@ -112,8 +114,11 @@ const DisplayHeader = ({}) => {
       const formData = new FormData();
       formData.append("croppedImage", croppedImage);
       formData.append("uuid", session.user.uuid);
+
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
       const response = await axios.post(
-        "http://localhost:5000/profile-img/upload",
+        `${serverUrl}/profile-img/upload`,
         formData,
         {
           headers: {

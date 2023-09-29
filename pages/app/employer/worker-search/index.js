@@ -54,9 +54,10 @@ export default function WorkerSearchPage() {
   useEffect(() => {
     const fetchPosts = async () => {
       setLoadingWorkers(true);
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
       try {
         const response = await axios.get(
-          `http://localhost:5000/employer/search/workers`
+          `${serverUrl}/employer/search/workers`
         );
         const sortedData = response.data.sort(
           (a, b) => a.hourly_rate - b.hourly_rate

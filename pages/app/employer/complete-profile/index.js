@@ -72,12 +72,14 @@ const CompleteProfile = () => {
   };
 
   async function onSubmit(values) {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
     try {
       const response = await axios({
         method: "post",
         data: { ...values, uuid: session.user.uuid },
         withCredentials: true,
-        url: "http://localhost:5000/employer/complete-profile",
+        url: `${serverUrl}/employer/complete-profile`,
       });
 
       console.log(response.data);

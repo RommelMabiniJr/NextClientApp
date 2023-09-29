@@ -46,6 +46,7 @@ const JobApplicationView = () => {
     ],
   };
 
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
   useEffect(() => {
     // Check if the application ID is valid
     if (applicationId) {
@@ -53,7 +54,7 @@ const JobApplicationView = () => {
       const fetchApplicationDetails = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:5000/worker/application/${applicationId}`
+            `${serverUrl}/worker/application/${applicationId}`
           );
 
           console.log(response.data);

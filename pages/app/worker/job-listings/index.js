@@ -258,18 +258,19 @@ export default function WorkerSearchPage({ userUUID }) {
     }
   }, [sessionStatus, session, router]);
 
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/worker/job-listings/${userUUID}`
+          `${serverUrl}/worker/job-listings/${userUUID}`
         );
 
         setAvailableJobs(response.data);
         // console.log(response.data);
 
         const appliedResponse = await axios.get(
-          `http://localhost:5000/worker/applied-jobs/${userUUID}`
+          `${serverUrl}/worker/applied-jobs/${userUUID}`
         );
 
         setAppliedJobs(appliedResponse.data);
@@ -414,7 +415,7 @@ export default function WorkerSearchPage({ userUUID }) {
   const cancelApplication = async ({ workerUUID, jobId }) => {
     try {
       const response = await axios.delete(
-        `http://localhost:5000/worker/application/${workerUUID}/${jobId}`
+        `${serverUrl}/worker/application/${workerUUID}/${jobId}`
       );
 
       return response.data; // Return response or handle as needed

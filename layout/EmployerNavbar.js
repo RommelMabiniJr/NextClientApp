@@ -95,7 +95,7 @@ const EmployerNavbar = ({}) => {
     // Get notifications from the server using user_id from session
     const fetchNotifications = async () => {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/employer/notifications/${session.user.uuid}`
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/notifications/${session.user.uuid}`
       );
       const data = await response.data;
       setNotifications(data);

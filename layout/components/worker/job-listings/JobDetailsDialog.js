@@ -42,9 +42,11 @@ const JobDetailsDialog = ({
   );
 
   const confirmApplication = async (applyDetails) => {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
     try {
       const response = await axios.post(
-        "http://localhost:5000/worker/application",
+        `${serverUrl}/worker/application`,
         applyDetails
       );
 
