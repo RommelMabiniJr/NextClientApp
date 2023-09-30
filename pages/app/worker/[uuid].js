@@ -1,14 +1,9 @@
+import WorkerNavbar from "@/layout/WorkerNavbar";
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getSession, useSession, signOut } from "next-auth/react";
-import { Dialog } from "primereact/dialog";
-import { Button } from "primereact/button";
-import { Avatar } from "primereact/avatar";
-import { Badge } from "primereact/badge";
+import { useSession, signOut } from "next-auth/react";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import ImgCropper from "@/layout/components/Cropper";
-import axios from "axios";
-import WorkerNavbar from "@/layout/WorkerNavbar";
 import ContactInformation from "@/layout/components/worker/information/contact";
 import WorkerInformation from "@/layout/components/worker/information/workerInfo";
 import ExperienceInformation from "@/layout/components/worker/information/experience";
@@ -17,13 +12,6 @@ import DisplayHeader from "@/layout/components/Cropper";
 
 export default function WorkerProfile() {
   const { data: session } = useSession();
-  const [visible, setVisible] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const handleSignOut = () => {
-    signOut();
-  };
-
   const router = useRouter();
   const [worker, setWorker] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -32,10 +20,10 @@ export default function WorkerProfile() {
   const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
   useEffect(() => {
+    // console.log("router.query.uuid:", router.query.uuid);
     const fetchWorker = async () => {
       setIsLoading(true);
       try {
-        // console.log(router.query.uuid)
         const response = await axios.get(
           `${serverUrl}/worker/${router.query.uuid}`
         );
@@ -49,16 +37,18 @@ export default function WorkerProfile() {
       }
       setIsLoading(false);
     };
-    fetchWorker();
-  }, [session, router.query.uuid]);
 
-  if (!session) {
-    return (
-      <div>
-        <p>Loading...</p>
-      </div>
-    );
-  }
+    // check if uuid is in router query before fetching worker data
+    if (router.query.uuid) {
+      fetchWorker();
+    }
+  }, [router.query.uuid]);
+
+  // console.log("worker:", worker);
+
+  const handleSignOut = () => {
+    signOut();
+  };
 
   const handleImgClick = () => {
     setVisible(true);
@@ -81,44 +71,37 @@ export default function WorkerProfile() {
     setVisible(false);
   };
 
-  const footer = (
-    <>
-      <Button label="Upload" onClick={handleFileUpload} />
-      <Button
-        label="Cancel"
-        onClick={() => setVisible(false)}
-        className="p-button-secondary"
-      />
-    </>
-  );
+  if (!session) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {/* {console.log(worker)} */}
       <WorkerNavbar session={session} handleSignOut={handleSignOut} />
-      {isLoading ? (
+      {isLoading || !worker ? (
         <p>Loading...</p>
       ) : (
-        <>
-          <div className="p-5">
-            {/* {displayHeader()} */}
-            <DisplayHeader session={session} />
-            <Accordion multiple activeIndex={[0, 1, 2, 3]}>
-              <AccordionTab header="Contact Information">
-                <ContactInformation session={session} />
-              </AccordionTab>
-              <AccordionTab header="Worker Information">
-                <WorkerInformation session={session} worker={worker} />
-              </AccordionTab>
-              <AccordionTab header="Experience">
-                <ExperienceInformation session={session} worker={worker} />
-              </AccordionTab>
-              <AccordionTab header="Background">
-                <BackgroundInformation session={session} worker={worker} />
-              </AccordionTab>
-            </Accordion>
-          </div>
-        </>
+        <div className="p-5">
+          <DisplayHeader session={session} />
+          <Accordion multiple activeIndex={[0, 1, 2, 3]}>
+            <AccordionTab header="Contact Information">
+              <ContactInformation session={session} />
+            </AccordionTab>
+            <AccordionTab header="Worker Information">
+              <WorkerInformation session={session} worker={worker} />
+            </AccordionTab>
+            <AccordionTab header="Experience">
+              <ExperienceInformation session={session} worker={worker} />
+            </AccordionTab>
+            <AccordionTab header="Background">
+              <BackgroundInformation session={session} worker={worker} />
+            </AccordionTab>
+          </Accordion>
+        </div>
       )}
     </div>
   );

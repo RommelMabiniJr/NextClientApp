@@ -1,8 +1,8 @@
+import EmployerNavbar from "@/layout/EmployerNavbar";
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSession, signOut } from "next-auth/react";
-import axios from "axios";
-import EmployerNavbar from "@/layout/EmployerNavbar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import ContactInformation from "@/layout/components/employer/information/contact";
 import HouseholdInformation from "@/layout/components/employer/information/household";
@@ -11,10 +11,6 @@ import DisplayHeader from "@/layout/components/Cropper";
 
 export default function EmployerProfile() {
   const { data: session, status } = useSession();
-  const handleSignOut = () => {
-    signOut();
-  };
-
   const router = useRouter();
   const [employer, setEmployer] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -37,9 +33,20 @@ export default function EmployerProfile() {
       }
       setIsLoading(false);
     };
-    fetchEmployer();
-    console.log(session);
-  }, [session, router.query.uuid]);
+
+    // check if uuid is in router query before fetching employer data
+    if (router.query.uuid) {
+      fetchEmployer();
+    }
+  }, [router.query.uuid]);
+
+  const handleSignOut = () => {
+    signOut();
+  };
+
+  const handleImgClick = () => {
+    console.log("clicked");
+  };
 
   if (!session) {
     return (
@@ -49,33 +56,26 @@ export default function EmployerProfile() {
     );
   }
 
-  const handleImgClick = () => {
-    console.log("clicked");
-  };
-
   return (
     <div>
-      {isLoading ? (
+      <EmployerNavbar session={session} handleSignOut={handleSignOut} />
+      {isLoading || !employer ? (
         <p>Loading...</p>
       ) : (
-        <>
-          <EmployerNavbar session={session} handleSignOut={handleSignOut} />
-          <div className="p-5">
-            <DisplayHeader session={session} />
-            <Accordion multiple activeIndex={[0, 1, 2, 3]}>
-              {/* {displayHeader()} */}
-              <AccordionTab header="Contact Information">
-                <ContactInformation session={session} />
-              </AccordionTab>
-              <AccordionTab header="Household Information">
-                <HouseholdInformation session={session} employer={employer} />
-              </AccordionTab>
-              <AccordionTab header="Payment Information">
-                <PaymentInformation session={session} employer={employer} />
-              </AccordionTab>
-            </Accordion>
-          </div>
-        </>
+        <div className="p-5">
+          <DisplayHeader session={session} />
+          <Accordion multiple activeIndex={[0, 1, 2, 3]}>
+            <AccordionTab header="Contact Information">
+              <ContactInformation session={session} />
+            </AccordionTab>
+            <AccordionTab header="Household Information">
+              <HouseholdInformation session={session} employer={employer} />
+            </AccordionTab>
+            <AccordionTab header="Payment Information">
+              <PaymentInformation session={session} employer={employer} />
+            </AccordionTab>
+          </Accordion>
+        </div>
       )}
     </div>
   );
