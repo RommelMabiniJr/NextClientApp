@@ -1,17 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
+import Link from "next/link";
+import axios from "axios";
+import classNames from "classnames";
 import { Menubar } from "primereact/menubar";
 import { Menu } from "primereact/menu";
 import { Badge } from "primereact/badge";
-import classNames from "classnames";
-import { InputText } from "primereact/inputtext";
-import { Image } from "primereact/image";
-import { Divider } from "primereact/divider";
 import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
-import { getSession, useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
-import Link from "next/link";
-import axios from "axios";
 
 const EmployerNavbar = ({}) => {
   const { data: session, loading } = useSession({
@@ -52,7 +49,7 @@ const EmployerNavbar = ({}) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  if (!session && !loading) {
+  if (!session) {
     return <div>Loading...</div>;
   }
 
@@ -108,7 +105,9 @@ const EmployerNavbar = ({}) => {
     {
       label: "Home",
       icon: "pi pi-fw pi-home",
-      url: "/app/employer-dashboard",
+      command: () => {
+        router.push("/app/employer-dashboard"); // Used router.push instead of the url property due to a bug in the employer-dashboard
+      },
     },
     {
       label: "Search",
