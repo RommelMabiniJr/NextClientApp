@@ -165,7 +165,10 @@ const HouseholdInformation = ({ session, employer }) => {
                 {Object.keys(formik.values.pets).map((pet) => {
                   if (formik.values.pets[pet]) {
                     return (
-                      <div className="flex flex-column justify-content-center mr-2">
+                      <div
+                        key={pet}
+                        className="flex flex-column justify-content-center mr-2"
+                      >
                         <img
                           key={pet}
                           src={`/layout/pets/${pet}.png`}

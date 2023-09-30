@@ -5,6 +5,7 @@ import { Button } from "primereact/button";
 import { AutoComplete } from "primereact/autocomplete";
 import { InputNumber } from "primereact/inputnumber";
 import { Checkbox } from "primereact/checkbox";
+import { ProgressBar } from "primereact/progressbar";
 import { Divider } from "primereact/divider";
 import { Password } from "primereact/password";
 import { classNames } from "primereact/utils";

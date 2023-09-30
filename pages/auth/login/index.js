@@ -104,14 +104,14 @@ const LoginPage = () => {
               Welcome Back
             </div>
             <span className="text-600 font-medium line-height-3">
-              Don't have an account?
+              Don&apos;t have an account?
             </span>
-            <a
+            <Link
               href="/register"
               className="font-medium no-underline ml-2 text-blue-500 cursor-pointer"
             >
               Create today!
-            </a>
+            </Link>
           </div>
           <form onSubmit={formik.handleSubmit}>
             <div>

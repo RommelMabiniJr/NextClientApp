@@ -17,25 +17,6 @@ const CompleteProfile = () => {
   const toast = useRef(null);
   const router = useRouter();
 
-  if (!loading && !session) {
-    return <div>Loading...</div>;
-  }
-
-  const items = [
-    {
-      label: "Profile",
-    },
-    {
-      label: "Experience",
-    },
-    {
-      label: "Background",
-    },
-    {
-      label: "Verification",
-    },
-  ];
-
   const formik = useFormik({
     initialValues: {
       bio: "",
@@ -54,6 +35,25 @@ const CompleteProfile = () => {
     validate: completeProfileValidate,
     onSubmit: onSubmit,
   });
+
+  if (!loading && !session) {
+    return <div>Loading...</div>;
+  }
+
+  const items = [
+    {
+      label: "Profile",
+    },
+    {
+      label: "Experience",
+    },
+    {
+      label: "Background",
+    },
+    {
+      label: "Verification",
+    },
+  ];
 
   const isFormFieldInvalid = (name) =>
     !!(formik.touched[name] && formik.errors[name]);

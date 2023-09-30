@@ -210,12 +210,12 @@ const RegistrationPage = () => {
             <span className="text-600 font-medium line-height-3">
               Already have an account?
             </span>
-            <a
+            <Link
               href="/auth/login"
               className="font-medium no-underline ml-2 text-blue-500 cursor-pointer"
             >
               Sign In
-            </a>
+            </Link>
           </div>
 
           <form>

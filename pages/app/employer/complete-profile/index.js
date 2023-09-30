@@ -17,6 +17,24 @@ const CompleteProfile = () => {
   const toast = useRef(null);
   const router = useRouter();
 
+  const formik = useFormik({
+    initialValues: {
+      householdSize: "",
+      pets: {
+        dog: false,
+        cat: false,
+        otherPets: false,
+      },
+      specificNeeds: "",
+      paymentMethods: [],
+      paymentFrequency: "",
+      bio: "",
+    },
+
+    validate: completeProfileValidate,
+    onSubmit,
+  });
+
   if (!session && !loading) {
     return <div>Loading...</div>;
   }
@@ -36,24 +54,6 @@ const CompleteProfile = () => {
       label: "Verification",
     },
   ];
-
-  const formik = useFormik({
-    initialValues: {
-      householdSize: "",
-      pets: {
-        dog: false,
-        cat: false,
-        otherPets: false,
-      },
-      specificNeeds: "",
-      paymentMethods: [],
-      paymentFrequency: "",
-      bio: "",
-    },
-
-    validate: completeProfileValidate,
-    onSubmit,
-  });
 
   const isFormFieldInvalid = (name) =>
     !!(formik.touched[name] && formik.errors[name]);
