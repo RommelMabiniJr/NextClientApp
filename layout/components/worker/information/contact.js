@@ -1,13 +1,9 @@
 import React, { useState, useRef } from "react";
-import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
-import { Panel } from "primereact/panel";
-import { classNames } from "primereact/utils";
-import { Divider } from "primereact/divider";
-import { Toast } from "primereact/toast";
-import EditButton from "./components/infoComponents";
-import { useFormik } from "formik";
+import EditButton from "@/layout/components/worker/information/subcomp/EditButton";
 import axios from "axios";
+import { InputText } from "primereact/inputtext";
+import { Toast } from "primereact/toast";
+import { useFormik } from "formik";
 
 const ContactInformation = ({ session }) => {
   const [isEditMode, setIsEditMode] = useState(false);
@@ -20,7 +16,6 @@ const ContactInformation = ({ session }) => {
     },
     onSubmit: async (values) => {
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
-
       try {
         const response = await axios({
           method: "patch",

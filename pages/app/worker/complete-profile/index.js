@@ -7,7 +7,7 @@ import { useFormik } from "formik";
 import axios from "axios";
 import { completeProfileValidate } from "@/lib/validate";
 import Link from "next/link";
-import setupSteps from "./component/setupSteps";
+import setupSteps from "@/layout/components/worker/complete-profile/setupSteps";
 import { useSession } from "next-auth/react";
 import { useRef } from "react";
 

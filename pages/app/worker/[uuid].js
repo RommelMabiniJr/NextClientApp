@@ -9,10 +9,10 @@ import { Accordion, AccordionTab } from "primereact/accordion";
 import ImgCropper from "@/layout/components/Cropper";
 import axios from "axios";
 import WorkerNavbar from "@/layout/WorkerNavbar";
-import ContactInformation from "./information/contact";
-import WorkerInformation from "./information/workerInfo";
-import ExperienceInformation from "./information/experience";
-import BackgroundInformation from "./information/background";
+import ContactInformation from "@/layout/components/worker/information/contact";
+import WorkerInformation from "@/layout/components/worker/information/workerInfo";
+import ExperienceInformation from "@/layout/components/worker/information/experience";
+import BackgroundInformation from "@/layout/components/worker/information/background";
 import DisplayHeader from "@/layout/components/Cropper";
 
 export default function WorkerProfile() {

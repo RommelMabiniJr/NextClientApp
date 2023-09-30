@@ -12,7 +12,7 @@ import { ToggleButton } from "primereact/togglebutton";
 import { Avatar } from "primereact/avatar";
 import axios from "axios";
 import EmployerNavbar from "@/layout/EmployerNavbar";
-import ShowWorkerDetailsBtn from "./workerDetails";
+import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/ShowWorkerDetailsBtn";
 import { LocationService } from "@/layout/service/LocationService";
 
 export default function WorkerSearchPage() {

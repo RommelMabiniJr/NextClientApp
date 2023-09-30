@@ -8,7 +8,7 @@ import { classNames } from "primereact/utils";
 import { Divider } from "primereact/divider";
 import { InputTextarea } from "primereact/inputtextarea";
 import { InputSwitch } from "primereact/inputswitch";
-import EditButton from "./components/infoComponents";
+import EditButton from "@/layout/components/employer/information/subcomp/EditButton";
 import { useFormik } from "formik";
 import axios from "axios";
 

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Card } from "primereact/card";
 import { Steps } from "primereact/steps";
 import { useFormik } from "formik";
-import jobCreateSteps from "./steps/jobCreateSteps";
+import jobCreateSteps from "@/layout/components/posts/create/steps/jobCreateSteps";
 import axios from "axios";
 
 export default function EmployerPosts() {

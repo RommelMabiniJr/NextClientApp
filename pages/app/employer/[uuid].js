@@ -1,17 +1,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getSession, useSession, signOut } from "next-auth/react";
-import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
+import { useSession, signOut } from "next-auth/react";
 import axios from "axios";
 import EmployerNavbar from "@/layout/EmployerNavbar";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import ContactInformation from "./information/contact";
-import HouseholdInformation from "./information/household";
-import PaymentInformation from "./information/payment";
+import ContactInformation from "@/layout/components/employer/information/contact";
+import HouseholdInformation from "@/layout/components/employer/information/household";
+import PaymentInformation from "@/layout/components/employer/information/payment";
 import DisplayHeader from "@/layout/components/Cropper";
-import { Avatar } from "primereact/avatar";
-import { Badge } from "primereact/badge";
 
 export default function EmployerProfile() {
   const { data: session, status } = useSession();

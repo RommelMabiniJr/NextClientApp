@@ -1,12 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
+import EditButton from "@/layout/components/worker/information/subcomp/EditButton";
+import axios from "axios";
 import { Toast } from "primereact/toast";
 import { InputTextarea } from "primereact/inputtextarea";
-import EditButton from "./components/infoComponents";
 import { useFormik } from "formik";
-import axios from "axios";
-import { Card } from "primereact/card";
 import { Chip } from "primereact/chip";
 import { AutoComplete } from "primereact/autocomplete";
 import { JobsService } from "@/layout/service/JobsService";

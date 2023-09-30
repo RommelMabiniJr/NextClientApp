@@ -388,11 +388,11 @@ const ConfirmationStep = ({ handleNextStep, handlePreviousStep, ...props }) => (
 );
 
 //
-const steps = [
+const RegistrationSteps = [
   PersonalInformationStep,
   ContactDetailsStep,
   LocationStep,
   AccountSecurityStep,
 ];
 
-export default steps;
+export default RegistrationSteps;

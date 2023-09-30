@@ -9,7 +9,7 @@ import { Chip } from "primereact/chip";
 import { PaymentService } from "@/layout/service/PaymentService";
 import { useFormik } from "formik";
 import axios from "axios";
-import EditButton from "./components/infoComponents";
+import EditButton from "@/layout/components/employer/information/subcomp/EditButton";
 import { Toast } from "primereact/toast";
 
 export function MultiplePaymentOpt({ formik, isEditMode }) {

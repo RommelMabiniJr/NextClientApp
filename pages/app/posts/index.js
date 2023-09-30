@@ -8,7 +8,7 @@ import { Divider } from "primereact/divider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Posts from "./templates/posts";
+import Posts from "@/layout/components/posts/show/Posts";
 
 export default function EmployerPosts() {
   const { data: session, status, loading } = useSession();

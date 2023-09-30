@@ -18,7 +18,7 @@ import { classNames } from "primereact/utils";
 import { Toast } from "primereact/toast";
 import { useRouter } from "next/router";
 import axios from "axios";
-import steps from "./components/steps";
+import RegistrationSteps from "../../layout/components/register/RegistrationSteps";
 import { registerValidate } from "@/lib/validate";
 import Link from "next/link";
 
@@ -188,7 +188,7 @@ const RegistrationPage = () => {
     setCurrentStep(currentStep - 1);
   };
 
-  const StepComponent = steps[currentStep];
+  const StepComponent = RegistrationSteps[currentStep];
 
   return (
     <div>

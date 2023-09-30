@@ -5,7 +5,7 @@ import { Panel } from "primereact/panel";
 import { classNames } from "primereact/utils";
 import { Divider } from "primereact/divider";
 import { Toast } from "primereact/toast";
-import EditButton from "./components/infoComponents";
+import EditButton from "@/layout/components/employer/information/subcomp/EditButton";
 import { useFormik } from "formik";
 import axios from "axios";
 
@@ -20,6 +20,7 @@ const ContactInformation = ({ session }) => {
     },
     onSubmit: async (values) => {
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
       try {
         const response = await axios({
           method: "patch",
