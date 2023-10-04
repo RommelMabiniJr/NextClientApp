@@ -65,7 +65,7 @@ const LoginPage = () => {
   // }, [])
 
   async function handleGoogleSignin() {
-    signIn("google", { callbackUrl: "http://localhost:3000/app/user-router" });
+    signIn("google", { callbackUrl: "/app/user-router" });
   }
 
   const isFormFieldInvalid = (name) =>
