@@ -33,7 +33,7 @@ const WorkerNavbar = ({}) => {
       label: "Home",
       icon: "pi pi-fw pi-home",
       command: () => {
-        router.push("/app/employer-dashboard"); // Used router.push instead of the url property due to a bug in the employer-dashboard
+        router.push("/app/worker-dashboard"); // Used router.push instead of the url property due to a bug in the employer-dashboard
       },
     },
     {

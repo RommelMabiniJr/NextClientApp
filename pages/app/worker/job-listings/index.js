@@ -23,6 +23,16 @@ import ScrollbarWrapper from "@/layout/components/ScrollbarWrapper";
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/auth/login",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
       userUUID: session.user.uuid,
@@ -287,7 +297,7 @@ export default function WorkerSearchPage({ userUUID }) {
     };
 
     fetchPosts();
-  }, []);
+  }, [userUUID]);
 
   // Function to apply filtering and sorting to available jobs
   const applyFilterAndSort = () => {
