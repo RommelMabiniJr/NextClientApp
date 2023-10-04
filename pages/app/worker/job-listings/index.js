@@ -238,7 +238,7 @@ export default function WorkerSearchPage({ userUUID }) {
       // You can call scrollToID or perform any other actions here.
       scrollToID(scrollId);
     }
-  }, [tabReady]);
+  }, [tabReady, scrollId]);
 
   useEffect(() => {
     if (!sessionStatus && !session) {
