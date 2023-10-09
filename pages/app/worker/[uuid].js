@@ -8,6 +8,7 @@ import ContactInformation from "@/layout/components/worker/information/contact";
 import WorkerInformation from "@/layout/components/worker/information/workerInfo";
 import ExperienceInformation from "@/layout/components/worker/information/experience";
 import BackgroundInformation from "@/layout/components/worker/information/background";
+import DocumentsInformation from "@/layout/components/worker/information/documents";
 import DisplayHeader from "@/layout/components/Cropper";
 
 export default function WorkerProfile() {
@@ -99,6 +100,12 @@ export default function WorkerProfile() {
             </AccordionTab>
             <AccordionTab header="Background">
               <BackgroundInformation session={session} worker={worker} />
+            </AccordionTab>
+            <AccordionTab header="Documents">
+              <DocumentsInformation
+                session={session}
+                documents={worker.documents}
+              />
             </AccordionTab>
           </Accordion>
         </div>

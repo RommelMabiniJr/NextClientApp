@@ -4,15 +4,18 @@ import { DataView } from "primereact/dataview";
 import { Tag } from "primereact/tag";
 import { Image } from "primereact/image";
 import { Divider } from "primereact/divider";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import DateConverter from "@/lib/dateConverter";
 import ShowPostButton from "./subcomp/ShowPostButton";
+import styles from "@/styles/Posts.module.css";
 
 const Posts = ({ posts }) => {
   const postTemplate = (post) => {
     // convert date string passed from server to date object
     const dateConverter = DateConverter();
     const postDate = dateConverter.convertDateToReadable(post.job_posting_date);
+    const Router = useRouter();
 
     if (post.isNew) {
       return (
@@ -39,21 +42,44 @@ const Posts = ({ posts }) => {
 
     return (
       <div className="col-12 md:col-6 lg:col-4 p-3">
-        <Card className="h-full" title={post.job_title} subTitle={postDate}>
-          <div className="p-mt-3 flex justify-content-between">
+        <Card className="h-full">
+          <div className="h-auto">
             <div className="">
-              <span className="text-sm font-medium mr-1">Type: </span>
-              <Tag value={post.job_type} severity="info" className="p-mr-2" />
+              <h5
+                className={`text-800 font-semibold my-2 ${styles.titleClamp}`}
+              >
+                {post.job_title}
+              </h5>
+              <p className="text-500 mb-3">{postDate}</p>
             </div>
-            <p className="text-300"> | </p>
-            <div>
-              <span className="text-sm font-medium mr-1">Service: </span>
-              <Tag value={post.service_name} severity="warning" />
+            <div className="p-mt-3 flex justify-content-between">
+              <div className="">
+                <span className="text-sm font-medium mr-1">Type: </span>
+                <Tag value={post.job_type} severity="info" className="p-mr-2" />
+              </div>
+              <p className="text-300"> | </p>
+              <div>
+                <span className="text-sm font-medium mr-1">Service: </span>
+                <Tag value={post.service_name} severity="warning" />
+              </div>
             </div>
+            <p className={`mt-auto ${styles.descriptionClamp}`}>
+              {post.job_description}...
+            </p>
+            {/* This is for viewing people that applied */}
+            {/* THIS IS WHERE YOU LEFT OFF DATE & TIME: 10/04/2023 6:00 PM */}
+            <Button
+              // label="View Applicants"
+              icon="pi pi-users"
+              className="p-button-secondary p-button-outlined mr-2"
+              onClick={() =>
+                Router.push({
+                  pathname: `/app/posts/applicants/${post.job_id}`,
+                })
+              }
+            />
+            <ShowPostButton post={post} />
           </div>
-          <p>{post.job_description}</p>
-          {/* <Button label='View Details' className='p-mt-3' /> */}
-          <ShowPostButton post={post} />
         </Card>
       </div>
     );
