@@ -21,21 +21,6 @@ const ShowWorkerDetailsBtn = ({ worker, getDistance }) => {
     Sunday: true,
   };
 
-  worker.documents = [
-    {
-      type: "Resume",
-      status: "Approved",
-      fileUrl:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-    {
-      type: "Barangay Clearance",
-      status: "Not Submitted",
-      fileUrl:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-  ];
-
   const formatHelper = FormatHelper();
   const languagesString = formatHelper.convertArrayToString(worker.languages);
   const servicesString = formatHelper.convertArrayToString(
@@ -145,32 +130,33 @@ const ShowWorkerDetailsBtn = ({ worker, getDistance }) => {
           {/* DOCUMENTS PART SUCH AS RESUME, BRGY CLEARANCE, ETC. */}
           <div>
             <h2 className="text-lg font-semibold mb-4">Documents</h2>
-            {worker.documents.map((document, index) => (
-              <div
-                key={index}
-                className="mb-2 flex align-content-center justify-content-between border-1 border-round border-400 p-4"
-              >
-                <div>
-                  <i
-                    className="pi pi-file mr-3"
-                    style={{ fontSize: "1.3rem" }}
-                  ></i>
-                  <span className="font-semibold">{document.type}: </span>
-                  <span>{document.status}</span>
+            {worker.documents &&
+              worker.documents.map((document, index) => (
+                <div
+                  key={index}
+                  className="mb-2 flex align-content-center justify-content-between border-1 border-round border-400 p-4"
+                >
+                  <div>
+                    <i
+                      className="pi pi-file mr-3"
+                      style={{ fontSize: "1.3rem" }}
+                    ></i>
+                    <span className="font-semibold">{document.type}: </span>
+                    <span>{document.status}</span>
+                  </div>
+                  {document.fileUrl && (
+                    <a
+                      href={document.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-blue-500"
+                    >
+                      View Document
+                      <i className="pi pi-arrow-up-right ml-3 text-base"></i>
+                    </a>
+                  )}
                 </div>
-                {document.fileUrl && (
-                  <a
-                    href={document.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-2 text-blue-500"
-                  >
-                    View Document
-                    <i className="pi pi-arrow-up-right ml-3 text-base"></i>
-                  </a>
-                )}
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </Dialog>

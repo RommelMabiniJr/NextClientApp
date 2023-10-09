@@ -52,7 +52,7 @@ export default function WorkerSearchPage() {
   }, [sessionStatus, session, router]);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchWorkers = async () => {
       setLoadingWorkers(true);
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
       try {
@@ -82,7 +82,7 @@ export default function WorkerSearchPage() {
       }
     };
 
-    fetchPosts();
+    fetchWorkers();
     fetchDistances();
   }, [sessionStatus, session, router]);
 
@@ -127,8 +127,6 @@ export default function WorkerSearchPage() {
   const itemTemplate = (worker) => {
     return (
       <div className="p-col-12 p-md-3 px-3 pb-4 col lg:col-6">
-        {/* <Card className="p-card-grid p-m-2" footer={worker.name}> */}
-        {/* </Card> */}
         <div className="card grid col">
           <div className="col-12 flex">
             <div className="pr-3">

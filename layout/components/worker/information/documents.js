@@ -5,6 +5,8 @@ import { FileUpload } from "primereact/fileupload";
 import { Tag } from "primereact/tag";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
+import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import styles from "./Information.module.css";
 
 const DocumentsInformation = ({ documents, session }) => {
   const [docs, setDocs] = useState(documents);
@@ -45,6 +47,40 @@ const DocumentsInformation = ({ documents, session }) => {
       .catch((error) => {
         console.error(error);
       });
+  };
+
+  const handleFileDelete = (documentId) => {
+    const formData = new FormData();
+    formData.append("uuid", session.user.uuid);
+
+    // Make a DELETE request to delete the document
+    axios
+      .delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/document/delete/${documentId}`
+      )
+      .then(() => {
+        // Update the documents state by filtering out the deleted document
+        setDocs(docs.filter((document) => document.document_id !== documentId));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const confirmDelete = (e, documentId) => {
+    confirmPopup({
+      target: e.currentTarget,
+      message: "Are you sure you want to proceed?",
+      icon: "pi pi-exclamation-triangle",
+      acceptClassName: "p-button-danger",
+      accept: () => {
+        // Delete the document
+        handleFileDelete(documentId);
+      },
+      reject: () => {
+        // Do nothing
+      },
+    });
   };
 
   useEffect(() => {
@@ -126,7 +162,9 @@ const DocumentsInformation = ({ documents, session }) => {
         />
       </div>
       <div className="px-4 grid w-full">
-        <h2 className="text-lg font-semibold mb-4 col-12">Documents</h2>
+        <h2 className="text-lg font-semibold mb-4 col-12">
+          Uploaded Documents
+        </h2>
         {docs &&
           docs.map((document, index) => (
             <div key={index} className="col-6">
@@ -148,17 +186,27 @@ const DocumentsInformation = ({ documents, session }) => {
                   </span>
                   <span>{document.status}</span>
                 </div>
-                {document.fileUrl && (
-                  <a
-                    href={document.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-2 text-blue-500"
-                  >
-                    View Document
-                    <i className="pi pi-arrow-up-right ml-3 text-base"></i>
-                  </a>
-                )}
+                <ConfirmPopup />
+                <div>
+                  {document.fileUrl && (
+                    <a
+                      href={document.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-blue-500"
+                    >
+                      View Document
+                      <i className="pi pi-arrow-up-right mx-3 text-base"></i>
+                    </a>
+                  )}
+
+                  <i
+                    onClick={(e) => confirmDelete(e, document.document_id)}
+                    className={
+                      "pi pi-trash text-red-600 " + styles.deleteConfirm
+                    }
+                  ></i>
+                </div>
               </div>
             </div>
           ))}
