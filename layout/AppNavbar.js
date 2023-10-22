@@ -154,13 +154,13 @@ const Navbar = () => {
           />
         </div>
       </div>
-      <div></div>
+      <Divider />
       {/* second part */}
-      <div className="flex justify-content-center mt-7 mb-7 mr-6 ml-5">
-        <figure className="col-12 md:col-6  ">
+      <div className="flex flex-col justify-center mt-7 mb-7 mr-6 ml-5 lg:flex-row lg:justify-between">
+        <figure className="col-12 md:col-6 lg:w-1/3">
           <img src="/layout/cleaning.svg" className="h-10 w-10 mr-5" />
         </figure>
-        <div className="col-12 md:col-6 p-6 text-center md:text-left flex flex-align-items  ">
+        <div className="col-12 md:col-6 lg:w-2/3 p-6 text-center md:text-left flex flex-col justify-center">
           <section>
             <h2 className="text-6xl font-bold text-black-alpha-90 mb-5">
               Your trust, security, and satisfaction are our top priorities
@@ -173,7 +173,7 @@ const Navbar = () => {
               your household tasks so you can focus on what matters most.
             </p>
 
-            <Link href="Landing/aboutus">
+            <Link href="/aboutus">
               <Button
                 label="About Us"
                 icon="pi pi-arrow-right"
@@ -183,141 +183,309 @@ const Navbar = () => {
           </section>
         </div>
       </div>
-      {/* thrid part */}
-      <div className="mr-8 ml-8 mt-7 mt-7">
-        <section>
-          {/* <h2 className="flex justify-content-center text-4xl font-bold text-black-alpha-90 mb-5"> */}
-          <h2 className="flex justify-content-center text-5xl font-bold text-primary mb-5">
-            Connecting Families through services
-          </h2>
-        </section>
-        <div className="flex justify-content-center gap-5">
-          <div className="flex justify-content-center items-center">
-            <div className="card w-1/4 p-4">
-              <img
-                src="/layout/child.png"
-                alt="Service 1"
-                className="h-3 w-3"
-              />
-              <p className="text-center font-bold mt-2">Childcare</p>
-              <p className="text-center mt-2">
-                Our childcare service connects you with pre-screened, qualified,
-                and trustworthy professionals who can take care of your children
-                while you're away.
-              </p>
-            </div>
+      <Divider />
+      {/* third part */}
+      <section>
+        {" "}
+        <div className="mr-8 ml-8">
+          <div>
+            <h2 className="flex justify-content-center text-5xl font-bold text-primary mb-5">
+              Connecting Families through services
+            </h2>
           </div>
-          <div className="flex justify-content-center items-center">
-            <div className="card w-1/4 p-4">
-              <img
-                src="/layout/grandfather.png"
-                alt="Service 2"
-                className="h-3 w-3"
-              />
-              <p className="text-center font-bold mt-2">Elderly Care</p>
-              <p className="text-center mt-2">
-                Our elderly care service connects you with pre-screened,
-                qualified, and trustworthy professionals who can take care of
-                your elderly loved ones and provide companionship.
-              </p>
+          <div className="grid flex justify-content-center">
+            <div className="col-3 flex-grow border-circle">
+              <div className="card w-1/4 p-4 ">
+                <div className="content-center text-center">
+                  <img
+                    align="center"
+                    src="/layout/child.png"
+                    className="h-3 w-3"
+                  />
+                </div>
+                <p
+                  className="text-center font-bold mt-2"
+                  style={{ maxWidth: "300px" }}
+                >
+                  Childcare
+                </p>
+                <p className="text-center mt-2" style={{ maxWidth: "300px" }}>
+                  Our childcare service connects you with pre-screened,
+                  qualified, and trustworthy professionals who can take care of
+                  your children while you're away.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-content-center gap-5 items-center">
-            <div className="card w-1/4 p-4">
-              <img
-                src="layout/pawprint.png"
-                alt="Service 3"
-                className="h-3 w-3"
-              />
-              <p className="text-center font-bold mt-2">Pet Care</p>
-              <p className="text-center mt-2">
-                Our pet care service connects you with pre-screened, qualified,
-                and trustworthy professionals who can take care of your pets
-                while you're away.
-              </p>
+            <div className="col-3 flex-grow">
+              <div className="card w-1/4 p-4">
+                <div className="content-center text-center">
+                  <img src="/layout/grandfather.png" className="h-3 w-3" />
+                </div>
+                <p
+                  className="text-center font-bold mt-2"
+                  style={{ maxWidth: "300px" }}
+                >
+                  Elderly Care
+                </p>
+                <p className="text-center mt-2" style={{ maxWidth: "300px" }}>
+                  Our elderly care service connects you with pre-screened,
+                  qualified, and trustworthy professionals who can take care of
+                  your elderly loved ones and provide companionship.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-content-center gap-5 items-center">
-            <div className="card w-1/4 p-4">
-              <img
-                src="layout/bucket.png"
-                alt="Service 4"
-                className="h-3 w-3"
-              />
-              <p className="text-center font-bold mt-2">Housekeeping</p>
-              <p className="text-center mt-2">
-                Our housekeeping service connects you with pre-screened,
-                qualified, and trustworthy professionals who can help you with
-                your household tasks such as cleaning and laundry.
-              </p>
+
+            <div className="col-3 flex-grow">
+              <div className="card w-1/4 p-4">
+                <div className="content-center text-center">
+                  <img src="layout/pawprint.png" className="h-3 w-3" />
+                </div>
+                <p
+                  className="text-center font-bold mt-2"
+                  style={{ maxWidth: "300px" }}
+                >
+                  Pet Care
+                </p>
+                <p className="text-center mt-2" style={{ maxWidth: "300px" }}>
+                  Our pet care service connects you with pre-screened,
+                  qualified, and trustworthy professionals who can take care of
+                  your pets while you're away.
+                </p>
+              </div>
+            </div>
+            <div className="col-3 flex-grow">
+              <div className="card w-1/4 p-4">
+                <div className="content-center text-center">
+                  <img src="layout/bucket.png" className="h-3 w-3" />
+                </div>
+
+                <p
+                  className="text-center font-bold mt-2"
+                  style={{ maxWidth: "300px" }}
+                >
+                  Housekeeping
+                </p>
+                <p className="text-center mt-2" style={{ maxWidth: "300px" }}>
+                  Our housekeeping service connects you with pre-screened,
+                  qualified, and trustworthy professionals who can help you with
+                  your household tasks such as cleaning and laundry.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+      <Divider />
       {/* fourth part */}
-      <div className=" flex ">
+      <div className="  ">
         <div className="mr-7 ml-7 mt-7 ">
           <section>
-            <h2 className="flex justify-content-center text-5xl font-bold text-primary mb-5">
-              What our customers say
-            </h2>
+            {/* <h2 className=" flex justify-content-center text-5xl font-bold text-primary mb-5">
+            What our customers say
+            </h2> */}
+            <Divider className="text-5xl font-bold text-primary mb-5 ">
+              <h2>Testimonials</h2>
+            </Divider>
           </section>
-          <div className="flex justify-content-center">
-            <Card>
-              <div className="p-4">
-                <div className="flex justify-content-center">
-                  <img
-                    src="/layout/qmark.png"
-                    alt="Quote"
-                    className="h-2 w-2"
-                  />
-                </div>
-                <p className="text-center font-bold mt-2">
-                  "I am very happy with the service. I was able to find a
-                  trustworthy and reliable nanny for my kids. I will definitely
-                  recommend this to my friends."
-                </p>
-                <p className="text-center font-bold mt-2">- Maria</p>
+          <div className=" flex justify-content-center">
+            {/* <Card> */}
+            <div className="p-4">
+              <div className="flex justify-content-center">
+                <img src="/layout/qmark.png" alt="Quote" className="h-2 w-2" />
               </div>
-            </Card>
-            <Card>
-              <div className="p-4">
-                <div className="flex justify-content-center">
-                  <img
-                    src="/layout/qmark.png"
-                    alt="Quote"
-                    className="h-2 w-2"
-                  />
-                </div>
-                <p className="text-center font-bold mt-2">
-                  "I was hesitant to try this service at first, but I'm so glad
-                  I did. The housekeeper I found through KasambahayKo is amazing
-                  and has made my life so much easier."
-                </p>
-                <p className="text-center font-bold mt-2">- Rommel</p>
+              <p className="text-center font-bold mt-2">
+                "I am very happy with the service. I was able to find a
+                trustworthy and reliable nanny for my kids. I will definitely
+                recommend this to my friends."
+              </p>
+              <p className="text-center font-bold mt-2">- Maria</p>
+            </div>
+            {/* </Card> */}
+            {/* <Card> */}
+            <div className="p-4">
+              <div className="flex justify-content-center">
+                <img src="/layout/qmark.png" alt="Quote" className="h-2 w-2" />
               </div>
-            </Card>
-            <Card>
-              <div className="p-4">
-                <div className="flex justify-content-center">
-                  <img
-                    src="/layout/qmark.png"
-                    alt="Quote"
-                    className="h-2 w-2"
-                  />
-                </div>
-                <p className="text-center font-bold mt-2">
-                  "I needed someone to take care of my dog while I was away on
-                  vacation and KasambahayKo helped me find the perfect pet
-                  sitter. I will definitely use this service again in the
-                  future."
-                </p>
-                <p className="text-center font-bold mt-2">- Seno</p>
+              <p className="text-center font-bold mt-2">
+                "I was hesitant to try this service at first, but I'm so glad I
+                did. The housekeeper I found through KasambahayKo is amazing and
+                has made my life so much easier."
+              </p>
+              <p className="text-center font-bold mt-2">- Rommel</p>
+            </div>
+            {/* </Card> */}
+            {/* <Card> */}
+            <div className="p-4">
+              <div className="flex justify-content-center">
+                <img src="/layout/qmark.png" alt="Quote" className="h-2 w-2" />
               </div>
-            </Card>
+              <p className="text-center font-bold mt-2">
+                "I needed someone to take care of my dog while I was away on
+                vacation and KasambahayKo helped me find the perfect pet sitter.
+                I will definitely use this service again in the future."
+              </p>
+              <p className="text-center font-bold mt-2">- Seno</p>
+            </div>
+            {/* </Card> */}
           </div>
         </div>
       </div>
+
+      {/* fifth part */}
+      <div className="text-center mt-5">
+        <section>
+          <footer className="bg-blue-800 pt-10 sm:mt-10 pt-10">
+            <div className="max-w-6xl m-auto text-gray-800 flex justify-content-center flex-wrap">
+              {/* Col-1 */}
+              <div className="p-5 w-1/2 sm:w-4/12 md:w-3/12">
+                {/* Col Title */}
+                <div className="text-xs uppercase text-gray-400 font-medium mb-6">
+                  About KasambahayKo
+                </div>
+
+                {/* Links */}
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Services
+                </a>
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Pricing
+                </a>
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Testimonials
+                </a>
+              </div>
+
+              {/* Col-2 */}
+              <div className="p-5 w-1/2 sm:w-4/12 md:w-3/12">
+                {/* Col Title */}
+                <div className="text-xs uppercase text-gray-400 font-medium mb-6">
+                  Services & Support
+                </div>
+
+                {/* Links */}
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Find a Nanny
+                </a>
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Apply as Nanny
+                </a>
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Contact Us
+                </a>
+              </div>
+
+              {/* Col-3 */}
+              <div className="p-5 w-1/2 sm:w-4/12 md:w-3/12">
+                {/* Col Title */}
+                <div className="text-xs uppercase text-gray-400 font-medium mb-6">
+                  Community
+                </div>
+
+                {/* Links */}
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  GitHub
+                </a>
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Discord
+                </a>
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Twitter
+                </a>
+              </div>
+
+              {/* Col-4 */}
+              <div className="p-5 w-1/2 sm:w-4/12 md:w-3/12">
+                {/* Col Title */}
+                <div className="text-xs uppercase text-gray-400 font-medium mb-6">
+                  Company
+                </div>
+
+                {/* Links */}
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  About Us
+                </a>
+                <a
+                  href="/aboutus"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Careers
+                </a>
+                <a
+                  href="/"
+                  className="my-3 block text-gray-300 hover:text-gray-100 text-sm font-medium duration-700"
+                >
+                  Contact Us
+                </a>
+              </div>
+            </div>
+            {/* Footer Bottom */}
+            <div className="pt-2 flex justify-content-center">
+              <div
+                className="flex pb-5 px-3 m-auto pt-5 
+          border-t border-gray-500 text-gray-400 text-sm 
+          flex-col md:flex-row max-w-6xl"
+              >
+                <div className="mt-2">
+                  © 2023 KasambahayKo. All rights reserved.
+                </div>
+
+                <div className="md:flex-auto md:flex-row-reverse mt-2 flex-row flex">
+                  <a href="/" className="w-6 mx-1">
+                    <i className="uil uil-facebook-f"></i>
+                  </a>
+                  <a href="/" className="w-6 mx-1">
+                    <i className="uil uil-twitter-alt"></i>
+                  </a>
+                  <a href="/" className="w-6 mx-1">
+                    <i className="uil uil-linkedin"></i>
+                  </a>
+                  <a href="/" className="w-6 mx-1">
+                    <i className="uil uil-instagram"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </footer>{" "}
+        </section>
+      </div>
+      {/* <div className="layout-footer">
+        <img src={`/layout/logo.png`} alt="Logo" height="20" className="mr-2" />
+        by
+        <span className="font-medium ml-2">
+          {" "}
+          © 2023 KasambahayKo. All rights reserved.
+        </span>
+      </div> */}
     </div>
   );
 };
