@@ -43,8 +43,9 @@ export default function ShowPostButton({ post }) {
   );
 
   return (
-    <>
+    <div className="flex-grow-1">
       <Button
+        className="w-full"
         label="View Details"
         icon="pi pi-external-link"
         onClick={() => setVisible(true)}
@@ -85,6 +86,7 @@ export default function ShowPostButton({ post }) {
           <div className="grid">
             <div className="col-6 mb-2">
               <strong>Start Date:</strong>{" "}
+              {console.log("DISPLAY:" + post.job_title, post.job_start_date)}
               {new Date(post.job_start_date).toDateString()}
             </div>
             <div className="col-6 mb-2">
@@ -112,6 +114,6 @@ export default function ShowPostButton({ post }) {
           </div>
         </div>
       </Dialog>
-    </>
+    </div>
   );
 }

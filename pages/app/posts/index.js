@@ -3,8 +3,6 @@ import { getSession, useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
 import { TabView, TabPanel } from "primereact/tabview";
 import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
-import { Divider } from "primereact/divider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios";

@@ -1,8 +1,7 @@
-// Create a page that shows list of applicants for a post
-
 import EmployerNavbar from "@/layout/EmployerNavbar";
+import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
-import { getSession, useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
 import { DataView } from "primereact/dataview";
 import { Button } from "primereact/button";
@@ -11,42 +10,63 @@ import { Rating } from "primereact/rating";
 import { Avatar } from "primereact/avatar";
 import { LocationService } from "@/layout/service/LocationService";
 import ServicesTemplate from "@/layout/components/ServicesTemplate";
+import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/ShowWorkerDetailsBtn";
+import ApplicationTabs from "@/layout/components/posts/applicants/ApplicationTabs";
 
 const Applicants = () => {
   const router = useRouter();
   const { data: session } = useSession();
-  //   dUMMY DATA
-  const workers = [
-    {
-      id: 1,
-      first_name: "Jasper",
-      last_name: "Dela Cruz",
-      email: "jasperdelacruz@gmail.com",
-      city_municipality: "Makati City",
-      bio: "I am a hardworking person",
-      hourly_rate: 100,
-      services: [
-        { service_id: 1, service_name: "House Cleaning" },
-        { service_id: 2, service_name: "Laundry" },
-      ],
-    },
-    {
-      id: 2,
-      first_name: "Martin",
-      last_name: "Porter",
-      email: "martinporter@gmail.com",
-      city_municipality: "Makati City",
-      bio: "I am a hardworking person but I am not a good person to work with because I am a bad person so please don't hire me",
-      hourly_rate: 100,
-      services: [
-        { service_id: 1, service_name: "House Cleaning" },
-        { service_id: 2, service_name: "Laundry" },
-      ],
-    },
-  ];
+  const [distances, setDistances] = useState([]);
+  const [applicants, setApplicants] = useState([]);
+  const [shortlistedApplicants, setShortlistedApplicants] = useState([]);
+
+  useEffect(() => {
+    // console.log(session);
+    const fetchApplicants = async () => {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/job-applicants/${router.query.postId}`
+      );
+
+      setApplicants(response.data);
+      // console.log(response.data);
+    };
+
+    const getDistances = async () => {
+      if (!session) return;
+
+      const distances =
+        await LocationService.calculateDistancesToAllMunicipalities(
+          "LEYTE",
+          session.user.city
+        );
+      setDistances(distances);
+    };
+
+    fetchApplicants(); // get applicants for the post
+    getDistances(); // get distances from employer's city to all municipalities
+  }, [session]);
 
   const handleSignOut = () => {
     signOut();
+  };
+
+  const handleShortlist = (applicant) => {
+    // Move the applicant from applicants to shortlistedApplicants
+    setApplicants((prevApplicant) =>
+      prevApplicant.filter((w) => w !== applicant)
+    );
+    setShortlistedApplicants((prevShortlisted) => [
+      ...prevShortlisted,
+      applicant,
+    ]);
+  };
+
+  const handleRemoveShortlist = (applicant) => {
+    // Move the applicant from shortlistedApplicants to applicants
+    setShortlistedApplicants((prevShortlisted) =>
+      prevShortlisted.filter((a) => a !== applicant)
+    );
+    setApplicants((prevApplicant) => [...prevApplicant, applicant]);
   };
 
   if (!session) {
@@ -60,7 +80,10 @@ const Applicants = () => {
           <div className="col-12 flex">
             <div className="pr-3">
               <Avatar
-                image={"/layout/profile-default.png"}
+                image={
+                  worker.information.profile_url ||
+                  "/layout/profile-default.png"
+                }
                 alt="profile"
                 shape="circle"
                 className="h-8rem w-8rem md:w-8rem md:h-8rem shadow-2 cursor-pointer"
@@ -68,7 +91,9 @@ const Applicants = () => {
             </div>
             <div className="">
               <h4 className="mb-2">
-                {worker.first_name + " " + worker.last_name}
+                {worker.information.first_name +
+                  " " +
+                  worker.information.last_name}
               </h4>
               <Rating
                 className="mb-2"
@@ -78,16 +103,35 @@ const Applicants = () => {
                 cancel={false}
               />
               <div className="rate text-lg font-semibold">
-                ₱{worker.hourly_rate}/hr
+                ₱{worker.information.hourly_rate}/hr
               </div>
             </div>
-            <div className="ml-auto flex flex-column justify-content-between">
-              <Button label="Hire" className="p-button-sm p-button-primary" />
+            <div className="ml-auto flex flex-column">
+              <Button
+                className="interview-btn p-button-sm p-button-primary font-bold mb-3"
+                tooltip="Shortlist Applicant"
+                tooltipOptions={{ position: "top" }}
+                onClick={() => handleShortlist(worker)}
+              >
+                <i className="pi pi-calendar mr-2" /> Shortlist
+              </Button>
+
+              <ShowWorkerDetailsBtn
+                worker={worker.information}
+                distances={distances}
+              />
             </div>
           </div>
           <div className="location col-12">
             <span className="pi pi-map-marker"></span>
-            <span className="ml-2">{worker.city_municipality}</span>
+            <span className="ml-2">
+              {worker.information.city_municipality} |{" "}
+              {LocationService.getDistance(
+                worker.information.city_municipality,
+                distances
+              )}{" "}
+              Kilometers
+            </span>
           </div>
           <div className="badges col-12 p-0 pl-2 grid">
             <span className="text-600 font-medium col-3">Badges: </span>
@@ -96,17 +140,117 @@ const Applicants = () => {
               <Tag
                 className="mr-2"
                 icon="pi pi-verified"
-                severity={worker.is_verified == "true" ? "success" : "warning"}
-                value={worker.is_verified == "true" ? "Verified" : "Unverified"}
+                severity={
+                  worker.information.is_verified == "true"
+                    ? "success"
+                    : "warning"
+                }
+                value={
+                  worker.information.is_verified == "true"
+                    ? "Verified"
+                    : "Unverified"
+                }
               ></Tag>
             </div>
           </div>
           <div className="services col-12 p-0 pl-2 grid">
             <span className="text-600 font-medium col-3">Services: </span>
-            <ServicesTemplate services={worker.services} />
+            <ServicesTemplate services={worker.information.services} />
           </div>
           <div className="bio col-12 ">
-            <span className="worker-bio">{worker.bio}</span>
+            <span className="worker-bio">{worker.information.bio}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const shortlistItemTemplate = (worker) => {
+    return (
+      <div className="p-col-12 p-md-3 px-3 pb-4 col lg:col-6">
+        <div className="card grid col">
+          <div className="col-12 flex">
+            <div className="pr-3">
+              <Avatar
+                image={
+                  worker.information.profile_url ||
+                  "/layout/profile-default.png"
+                }
+                alt="profile"
+                shape="circle"
+                className="h-8rem w-8rem md:w-8rem md:h-8rem shadow-2 cursor-pointer"
+              />
+            </div>
+            <div className="">
+              <h4 className="mb-2">
+                {worker.information.first_name +
+                  " " +
+                  worker.information.last_name}
+              </h4>
+              <Rating
+                className="mb-2"
+                value={0}
+                readOnly
+                stars={5}
+                cancel={false}
+              />
+              <div className="rate text-lg font-semibold">
+                ₱{worker.information.hourly_rate}/hr
+              </div>
+            </div>
+            <div className="ml-auto flex flex-column">
+              <Button
+                className="interview-btn p-button-sm p-button-primary font-bold mb-3"
+                tooltip="Unshortlist Applicant"
+                tooltipOptions={{ position: "top" }}
+                onClick={() => handleRemoveShortlist(worker)}
+              >
+                <i className="pi pi-calendar mr-2" /> Remove
+              </Button>
+
+              <ShowWorkerDetailsBtn
+                worker={worker.information}
+                distances={distances}
+              />
+            </div>
+          </div>
+          <div className="location col-12">
+            <span className="pi pi-map-marker"></span>
+            <span className="ml-2">
+              {worker.information.city_municipality} |{" "}
+              {LocationService.getDistance(
+                worker.information.city_municipality,
+                distances
+              )}{" "}
+              Kilometers
+            </span>
+          </div>
+          <div className="badges col-12 p-0 pl-2 grid">
+            <span className="text-600 font-medium col-3">Badges: </span>
+            {/* Replace this with dynamically generated services */}
+            <div className="col">
+              <Tag
+                className="mr-2"
+                icon="pi pi-verified"
+                severity={
+                  worker.information.is_verified == "true"
+                    ? "success"
+                    : "warning"
+                }
+                value={
+                  worker.information.is_verified == "true"
+                    ? "Verified"
+                    : "Unverified"
+                }
+              ></Tag>
+            </div>
+          </div>
+          <div className="services col-12 p-0 pl-2 grid">
+            <span className="text-600 font-medium col-3">Services: </span>
+            <ServicesTemplate services={worker.information.services} />
+          </div>
+          <div className="bio col-12 ">
+            <span className="worker-bio">{worker.information.bio}</span>
           </div>
         </div>
       </div>
@@ -114,21 +258,14 @@ const Applicants = () => {
   };
 
   return (
-    <div>
+    <div className="bg-white">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
-      <div className="border-round bg-white m-4 p-4">
-        <div className="font-medium text-800 text-2xl mb-3">Applicants</div>
-        <div className="mb-5">People that Applied</div>
-        <div className="p-grid">
-          <DataView
-            value={workers}
-            layout="grid"
-            itemTemplate={itemTemplate}
-            paginator
-            rows={12}
-            className="p-col-12"
-          />
-        </div>
+      <div className="border-round m-4 p-4">
+        <div className="font-medium text-900 text-2xl mb-2">Candidates</div>
+
+        {applicants.length > 0 && distances.length > 0 && (
+          <ApplicationTabs applicants={applicants} distances={distances} />
+        )}
       </div>
     </div>
   );

@@ -88,6 +88,7 @@ const WorkerNavbar = ({}) => {
         src={`/layout/logo.png`}
         alt="Sakai Logo"
         height="50"
+        width="50"
         className="mr-0 lg:mr-2"
       />
       <span className="text-900 font-bold text-2xl line-height-3 mr-8">

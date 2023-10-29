@@ -8,78 +8,84 @@ import DateConverter from "@/lib/dateConverter";
 import FormatHelper from "@/lib/formatHelper";
 import AvailabilityInfo from "@/layout/components/employer/worker-search/AvailabilityInfo";
 import { LocationService } from "@/layout/service/LocationService";
+import ListItem from "./AppliedListItem";
 
-const ShowWorkerDetailsBtn = ({ worker, distances }) => {
+const ShowApplicantDialog = ({ applicant, distances, displayAs }) => {
   const [visible, setVisible] = useState(false);
-  const [dialogVisible, setDialogVisible] = useState(false);
+  const [documentVisible, setDocumentVisible] = useState(false);
   const [selectedDocUrl, setSelectedDocUrl] = useState([]);
   const dateConverter = DateConverter();
 
-  // TO BE TESTED
-  const availability = {
-    Monday: true,
-    Tuesday: false,
-    Wednesday: true,
-    Thursday: true,
-    Friday: false,
-    Saturday: false,
-    Sunday: true,
-  };
+  // console.log(applicant);
 
   const formatHelper = FormatHelper();
-  const languagesString = formatHelper.convertArrayToString(worker.languages);
+  const languagesString = formatHelper.convertArrayToString(
+    applicant.information.languages
+  );
   const servicesString = formatHelper.convertArrayToString(
-    worker.services,
+    applicant.information.services,
     "service_name"
   );
 
   return (
     <>
-      <Button
-        label="View Profile"
-        className="p-button-sm p-button-secondary"
-        onClick={() => setVisible(true)}
-      />
+      <div className="relative">
+        <ListItem
+          applicant={applicant.information}
+          applicationDate={applicant.application_date}
+          distances={distances}
+          onOpen={() => setVisible(true)}
+          displayAs={displayAs}
+        />
+      </div>
+
       <Dialog
         visible={visible}
         className="w-full md:w-8 border-solid border-1 border-black-alpha-90"
-        onHide={() => setVisible(false)}
+        onHide={() => {
+          setVisible(false);
+        }}
       >
         <div className="mx-3">
           <div className="grid">
             <div className="col-5">
               <center>
                 <Avatar
-                  image={worker.profile_url || "/layout/profile-default.png"}
+                  image={
+                    applicant.information.profile_url ||
+                    "/layout/profile-default.png"
+                  }
                   alt="profile"
                   shape="circle"
                   className="h-8rem w-8rem md:w-8rem md:h-8rem shadow-2 cursor-pointer"
                 />
                 <div className="flex flex-column align-items-center">
                   <h1 className="my-2">
-                    {worker.first_name + " " + worker.last_name}
+                    {applicant.information.first_name +
+                      " " +
+                      applicant.information.last_name}
                   </h1>
                   <div className="flex align-items-center mb-2">
                     <Rating value={0} readOnly cancel={false} />
                   </div>
                   <label className="text-base">
-                    ₱ {worker.hourly_rate} / hr
+                    ₱ {applicant.information.hourly_rate} / hr
                   </label>
                   <label className="block mb-2">
                     <i className="pi pi-map-marker" />{" "}
                     {LocationService.getDistance(
-                      worker.city_municipality,
+                      applicant.information.city_municipality,
                       distances
                     )}{" "}
-                    Kilometers - {worker.city_municipality}
+                    Kilometers - {applicant.information.city_municipality}
                   </label>
                 </div>
-                <div className="btn-action-container">
+                <div className="btn-action-container ">
+                  <Button className="py-2 px-4 mr-2" outlined label="Message" />
                   <Button
-                    className="p-mt-2 p-w-13"
+                    className="py-2 px-4"
                     outlined
-                    label="Hire Nanny"
-                    rounded
+                    label="Hire Directly"
                   />
                 </div>
               </center>
@@ -111,7 +117,7 @@ const ShowWorkerDetailsBtn = ({ worker, distances }) => {
                   <label style={{ display: "block", paddingBottom: "2vh" }}>
                     {/* Experience 1 <br />
                                     Experience 2 */}
-                    {worker.work_experience}
+                    {applicant.information.work_experience}
                   </label>
                 </div>
                 <div style={{ flexBasis: "50%" }}>
@@ -120,7 +126,7 @@ const ShowWorkerDetailsBtn = ({ worker, distances }) => {
                   </label>
                   <label style={{ display: "block", paddingBottom: "2vh" }}>
                     {" "}
-                    {worker.availability}
+                    {applicant.information.availability}
                   </label>
                   {/* <AvailabilityInfo availability={availability}/> */}
                 </div>
@@ -132,15 +138,15 @@ const ShowWorkerDetailsBtn = ({ worker, distances }) => {
               <i className="pi pi-megaphone" /> Bio
             </label>
             <label style={{ display: "block", paddingBottom: "2vh" }}>
-              {worker.bio}
+              {applicant.information.bio}
             </label>
           </div>
 
           {/* DOCUMENTS PART SUCH AS RESUME, BRGY CLEARANCE, ETC. */}
           <div>
             <h2 className="text-lg font-semibold mb-4">Documents</h2>
-            {worker.documents &&
-              worker.documents.map((document, index) => (
+            {applicant.information.documents &&
+              applicant.information.documents.map((document, index) => (
                 <div
                   key={index}
                   className="mb-2 flex align-content-center justify-content-between border-1 border-round border-400 p-4"
@@ -148,9 +154,9 @@ const ShowWorkerDetailsBtn = ({ worker, distances }) => {
                   <Dialog
                     header="Document Preview"
                     maximizable
-                    visible={dialogVisible}
+                    visible={documentVisible}
                     className="w-5 h-screen"
-                    onHide={() => setDialogVisible(false)}
+                    onHide={() => setDocumentVisible(false)}
                   >
                     <div className="flex w-full relative flex flex-column">
                       {/* Check how many urls are there in selectedDocUrl, then renders the image*/}
@@ -189,7 +195,7 @@ const ShowWorkerDetailsBtn = ({ worker, distances }) => {
                         e.preventDefault();
                         console.log(document.fileUrl);
                         setSelectedDocUrl(document.fileUrl); // stores an array of URLs
-                        setDialogVisible(true);
+                        setDocumentVisible(true);
                       }}
                     >
                       View Document
@@ -205,4 +211,4 @@ const ShowWorkerDetailsBtn = ({ worker, distances }) => {
   );
 };
 
-export default ShowWorkerDetailsBtn;
+export default ShowApplicantDialog;

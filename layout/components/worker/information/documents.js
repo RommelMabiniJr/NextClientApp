@@ -6,12 +6,15 @@ import { Tag } from "primereact/tag";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { Dialog } from "primereact/dialog";
 import styles from "./Information.module.css";
 
 const DocumentsInformation = ({ documents, session }) => {
   const [docs, setDocs] = useState(documents);
-  const [selectedFile, setSelectedFile] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
+  const [selectedDocToUpload, setSelectedDocToUpload] = useState(null);
+  const [selectedDocUrl, setSelectedDocUrl] = useState([]); // An array of URLs
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   const docOptions = [
     { label: "NBI Clearance", value: "nbi clearance" },
@@ -20,16 +23,16 @@ const DocumentsInformation = ({ documents, session }) => {
     { label: "Resume", value: "resume" },
   ];
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.files[0]);
+  const handleDocumentChange = (event) => {
+    setSelectedDocToUpload(event.files[0]);
   };
 
-  const handleFileUpload = () => {
+  const handleDocumentUpload = () => {
     // Create a new FormData object
     const formData = new FormData();
 
     // Append the selected file to the FormData object
-    formData.append("pdfDocument", selectedFile);
+    formData.append("pdfDocument", selectedDocToUpload);
     formData.append("type", selectedType);
 
     console.log(formData);
@@ -155,9 +158,9 @@ const DocumentsInformation = ({ documents, session }) => {
           //   maxFileSize={1000000}
           emptyTemplate={emptyTemplate}
           itemTemplate={itemTemplate}
-          onSelect={handleFileChange}
+          onSelect={handleDocumentChange}
           customUpload
-          uploadHandler={handleFileUpload}
+          uploadHandler={handleDocumentUpload}
           className="w-8"
         />
       </div>
@@ -165,6 +168,39 @@ const DocumentsInformation = ({ documents, session }) => {
         <h2 className="text-lg font-semibold mb-4 col-12">
           Uploaded Documents
         </h2>
+        <Dialog
+          header="Document Preview"
+          maximizable
+          visible={dialogVisible}
+          className="w-5 h-screen"
+          onHide={() => setDialogVisible(false)}
+        >
+          <div className="flex w-full relative flex flex-column">
+            {/* Check how many urls are there in selectedDocUrl, then renders the image*/}
+            {selectedDocUrl &&
+              selectedDocUrl.map((url, index) => (
+                <img
+                  key={index}
+                  src={url}
+                  alt=""
+                  className="w-full border-round border-solid border-1 mb-2"
+                />
+              ))}
+
+            {/* <object
+              width="100%"
+              height="100%"
+              type="application/pdf"
+              data={
+                selectedDocUrl + "#zoom=55&scrollbar=0&toolbar=0&navpanes=0"
+              }
+            ></object> */}
+
+            {/* Cover to prevent right clicking */}
+            <div className="absolute top-0 bottom-0 left-0 right-0 "></div>
+          </div>
+        </Dialog>
+
         {docs &&
           docs.map((document, index) => (
             <div key={index} className="col-6">
@@ -175,14 +211,8 @@ const DocumentsInformation = ({ documents, session }) => {
                     style={{ fontSize: "1.3rem" }}
                   ></i>
                   <span className="font-semibold">
-                    {/* Capitalize each word */}
-                    {document.type
-                      .split(" ")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                      )
-                      .join(" ")}
-                    :{" "}
+                    {/* Capitalize each letter */}
+                    {document.type.toUpperCase()}:{" "}
                   </span>
                   <span>{document.status}</span>
                 </div>
@@ -190,10 +220,17 @@ const DocumentsInformation = ({ documents, session }) => {
                 <div>
                   {document.fileUrl && (
                     <a
-                      href={document.fileUrl}
+                      // href={document.fileUrl}
+                      href="#"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-2 text-blue-500"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log(document.fileUrl);
+                        setSelectedDocUrl(document.fileUrl); // stores an array of URLs
+                        setDialogVisible(true);
+                      }}
                     >
                       View Document
                       <i className="pi pi-arrow-up-right mx-3 text-base"></i>

@@ -6,7 +6,9 @@ import { Timeline } from "primereact/timeline";
 import { Avatar } from "primereact/avatar";
 import { Tag } from "primereact/tag";
 import { useRouter } from "next/router";
+import { Dialog } from "primereact/dialog";
 import { LocationService } from "@/layout/service/LocationService";
+import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import DateConverter from "@/lib/dateConverter";
 import axios from "axios";
 
@@ -16,6 +18,9 @@ const JobApplicationView = () => {
   const PROVINCE = "LEYTE";
   const { applicationId, elementId, tabIndex } = router.query;
   const [applicationDetails, setApplicationDetails] = useState(null);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [selectedDocUrl, setSelectedDocUrl] = useState([]); // An array of URLs
+  const [docs, setDocs] = useState(null);
   const dateConverter = DateConverter();
   const defaultAvatar = "/layout/profile-default.png";
 
@@ -57,10 +62,12 @@ const JobApplicationView = () => {
             `${serverUrl}/worker/application/${applicationId}`
           );
 
-          console.log(response.data);
+          // console.log(response.data);
           if (response.data) {
             // Set the application details
             setApplicationDetails(response.data);
+            // Set the documents
+            setDocs(response.data.workerDocs);
           }
         } catch (error) {
           console.error("Error fetching application details: ", error);
@@ -77,7 +84,7 @@ const JobApplicationView = () => {
 
   // Function to handle navigation back to the job listing
   const handleBack = () => {
-    console.log(router.query);
+    // console.log(router.query);
     const query = {
       elementId: elementId, // Replace with the actual scroll position
       tabIndex: tabIndex, // Replace with the actual selected tab index
@@ -183,7 +190,7 @@ const JobApplicationView = () => {
   return (
     // render only when application details are fetched
     applicationDetails && (
-      <div>
+      <div className="">
         <WorkerNavbar session={session} />
         <div className="grid justify-center">
           <span className="col-12 flex flex align-items-center mt-4">
@@ -343,6 +350,84 @@ const JobApplicationView = () => {
                 )}
                 marker={customizedMarker}
               ></Timeline>
+            </div>
+            {/* Documents Shared */}
+            <div className="col-7 bg-white p-4 m-4 ml-6 mt-2">
+              <h5 className="text-center mb-5">Documents Submitted</h5>
+              <div>
+                <Dialog
+                  header="Document Preview"
+                  maximizable
+                  visible={dialogVisible}
+                  className="w-5 h-screen"
+                  onHide={() => setDialogVisible(false)}
+                >
+                  <div className="flex w-full relative flex flex-column">
+                    {/* Check how many urls are there in selectedDocUrl, then renders the image*/}
+                    {selectedDocUrl &&
+                      selectedDocUrl.map((url, index) => (
+                        <img
+                          key={index}
+                          src={url}
+                          alt=""
+                          className="w-full border-round border-solid border-1 mb-2"
+                        />
+                      ))}
+
+                    {/* <object
+              width="100%"
+              height="100%"
+              type="application/pdf"
+              data={
+                selectedDocUrl + "#zoom=55&scrollbar=0&toolbar=0&navpanes=0"
+              }
+            ></object> */}
+
+                    {/* Cover to prevent right clicking */}
+                    <div className="absolute top-0 bottom-0 left-0 right-0 "></div>
+                  </div>
+                </Dialog>
+
+                {docs &&
+                  docs.map((document, index) => (
+                    <div key={index} className="col-12">
+                      <div className="border-1 border-round border-400 p-4 flex align-content-center justify-content-between ">
+                        <div>
+                          <i
+                            className="pi pi-file mr-3"
+                            style={{ fontSize: "1.3rem" }}
+                          ></i>
+                          <span className="font-semibold">
+                            {/* Capitalize each letter */}
+                            {document.type.toUpperCase()}:{" "}
+                          </span>
+                          <span>Unverified</span>
+                        </div>
+                        <ConfirmPopup />
+                        <div>
+                          {document.fileUrl && (
+                            <a
+                              // href={document.fileUrl}
+                              href="#"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-2 text-blue-500"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                // console.log(document.fileUrl);
+                                setSelectedDocUrl(document.fileUrl); // stores an array of URLs
+                                setDialogVisible(true);
+                              }}
+                            >
+                              View Document
+                              <i className="pi pi-arrow-up-right mx-3 text-base"></i>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
         </div>

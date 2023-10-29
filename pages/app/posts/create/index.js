@@ -98,14 +98,17 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
         .toISOString()
         .slice(11, 19);
 
-      const response = await axios({
-        method: "post",
-        data: { ...values, uuid: session.user.uuid },
-        withCredentials: true,
-        url: `${serverUrl}/employer/post/create`,
-      });
+      // access livingArrangement optName property
+      values.livingArrangement = values.livingArrangement.optName;
 
-      console.log(response.data);
+      // const response = await axios({
+      //   method: "post",
+      //   data: { ...values, uuid: session.user.uuid },
+      //   withCredentials: true,
+      //   url: `${serverUrl}/employer/post/create`,
+      // });
+
+      // console.log(response.data);
 
       toast.current.show({
         severity: "success",
@@ -140,17 +143,6 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       jobEndDate: edit ? postData.job_end_date : "",
       jobStartTime: edit ? postData.job_start_time : "",
       jobEndTime: edit ? postData.job_end_time : "",
-
-      // Original code
-
-      // serviceId: '',
-      // jobTitle: '',
-      // jobType: '',
-      // jobDescription: '',
-      // jobStartDate: '',
-      // jobEndDate: '',
-      // jobStartTime: '',
-      // jobEndTime: '',
     },
     onSubmit: onSubmit,
   });

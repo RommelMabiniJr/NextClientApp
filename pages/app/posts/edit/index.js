@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import EmployerNavbar from "@/layout/EmployerNavbar";
 import { getSession, useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -46,6 +46,7 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
   //NOTE; postData is in MySQL variable format
   if (edit) {
     postData = JSON.parse(post);
+    // console.log(postData);
     postData.job_start_date = new Date(postData.job_start_date);
     postData.job_end_date = new Date(postData.job_end_date);
     postData.job_start_time = new Date(
@@ -60,16 +61,16 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
 
   const items = [
     {
-      label: "",
+      label: "Service Name",
     },
     {
-      label: "",
+      label: "Job Type",
     },
     {
-      label: "",
+      label: "Schedule",
     },
     {
-      label: "",
+      label: "Job Details",
     },
   ];
 
@@ -82,21 +83,27 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       // No need to convert jobStartTime and jobEndTime to MySQL time format
 
       // Convert jobStartDate to MySQL date format
-      values.jobStartDate = new Date(values.jobStartDate)
-        .toISOString()
-        .slice(0, 10);
-      // Convert jobEndDate to MySQL date format
-      values.jobEndDate = new Date(values.jobEndDate)
-        .toISOString()
-        .slice(0, 10);
+      // values.jobStartDate = new Date(values.jobStartDate)
+      //   .toLocaleDateString("en-US", { timeZone: "UTC" })
+      //   .slice(0, 10);
+
+      // values.jobEndDate = new Date(values.jobEndDate)
+      //   .toLocaleDateString("en-US", { timeZone: "UTC" })
+      //   .slice(0, 10);
+
       values.jobStartTime = new Date(values.jobStartTime)
         .toISOString()
         .slice(11, 19)
         .replace("T", " ");
+
       values.jobEndTime = new Date(values.jobEndTime)
         .toISOString()
         .slice(11, 19)
         .replace("T", " ");
+
+      // access livingArrangement optName property
+      values.livingArrangement = values.livingArrangement.optName;
+      console.log(values);
 
       const response = await axios({
         method: "put",
@@ -167,6 +174,10 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       <small className="p-error">&nbsp;</small>
     );
   };
+
+  useEffect(() => {
+    console.log(formik.values.jobStartDate);
+  }, [formik.values.jobStartDate]);
 
   const handleNextStep = () => {
     setCurrentStep(currentStep + 1);

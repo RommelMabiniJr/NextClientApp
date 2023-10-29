@@ -46,7 +46,7 @@ const Posts = ({ posts }) => {
           <div className="h-auto">
             <div className="">
               <h5
-                className={`text-800 font-semibold my-2 ${styles.titleClamp}`}
+                className={`text-800 font-semibold my-2 ${styles.titleClamp}`} // clamp title to 2 lines
               >
                 {post.job_title}
               </h5>
@@ -66,19 +66,22 @@ const Posts = ({ posts }) => {
             <p className={`mt-auto ${styles.descriptionClamp}`}>
               {post.job_description}...
             </p>
-            {/* This is for viewing people that applied */}
-            {/* THIS IS WHERE YOU LEFT OFF DATE & TIME: 10/04/2023 6:00 PM */}
-            <Button
-              // label="View Applicants"
-              icon="pi pi-users"
-              className="p-button-secondary p-button-outlined mr-2"
-              onClick={() =>
-                Router.push({
-                  pathname: `/app/posts/applicants/${post.job_id}`,
-                })
-              }
-            />
-            <ShowPostButton post={post} />
+
+            <div className="flex justify-content-center">
+              <Button
+                // label="View Applicants"
+                icon="pi pi-users"
+                className="p-button-secondary p-button-outlined mr-2 flex-1"
+                // badge="2"
+                // badgeClassName="p-badge-danger"
+                onClick={() =>
+                  Router.push({
+                    pathname: `/app/posts/applicants/${post.job_id}`,
+                  })
+                }
+              />
+              <ShowPostButton post={post} />
+            </div>
           </div>
         </Card>
       </div>

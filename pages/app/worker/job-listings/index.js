@@ -48,10 +48,6 @@ export default function WorkerSearchPage({ userUUID }) {
   const [availableJobs, setAvailableJobs] = useState([]);
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [distances, setDistances] = useState([]);
-  const [selectedJobOption, setSelectedJobOption] = useState(null);
-  const [distanceAO, setdistanceAO] = useState(false);
-  const [costAO, setcostAO] = useState(false);
-  const [bookingsAO, setbookingsAO] = useState(false);
   const [selectedWorkArrangements, setSelectedWorkArrangements] = useState([]);
   const [selectedServiceCategories, setSelectedServiceCategories] = useState(
     []
@@ -213,13 +209,24 @@ export default function WorkerSearchPage({ userUUID }) {
     }
   };
 
-  const handleViewButtonClick = (job) => {
+  const handleViewApplicationButtonClick = (job) => {
     router.push({
       pathname: `/app/worker/job-listings/job-application/${job.application_id}`,
       query: {
         jobId: job.post.job_id,
         elementId: `application-${job.application_id}`,
         tabIndex: 1,
+      },
+    });
+  };
+
+  const handleViewPostButtonClick = (job) => {
+    router.push({
+      pathname: `/app/worker/job-listings/${job.job_id}`,
+      query: {
+        jobId: job.job_id,
+        elementId: `post-${job.job_id}`,
+        tabIndex: 0,
       },
     });
   };
@@ -628,12 +635,10 @@ export default function WorkerSearchPage({ userUUID }) {
               <Button
                 label="View"
                 className="w-full"
-                onClick={() => handleViewButtonClick(employer)}
+                onClick={() => handleViewApplicationButtonClick(employer)}
               />
 
               <Button
-                // label="Not Interested"
-                // icon="pi pi-eye-slash"
                 label="Cancel Application"
                 className="flex-grow-1 md:flex-grow-0 p-button-sm p-button-danger mt-2 w-full"
                 onClick={async () => {

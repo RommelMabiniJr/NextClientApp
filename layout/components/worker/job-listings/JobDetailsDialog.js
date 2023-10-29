@@ -3,10 +3,12 @@ import { Dialog } from "primereact/dialog";
 import { Tag } from "primereact/tag";
 import { useState } from "react";
 import { Avatar } from "primereact/avatar";
+import { Checkbox } from "primereact/checkbox";
 import DateConverter from "@/lib/dateConverter";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { Divider } from "primereact/divider";
 
 const JobDetailsDialog = ({
   workerUUID,
@@ -16,6 +18,10 @@ const JobDetailsDialog = ({
   onApply,
 }) => {
   const [visible, setVisible] = useState(false);
+  const [documents, setDocuments] = useState([]); // This is for the documents to include
+  const [userDocuments, setUserDocuments] = useState([]); // This is for the documents that the user has uploaded
+  const [userUploadedDocuments, setUserUploadedDocuments] = useState([]); // types that are only included in the user's uploaded documents
+  const [filteredDocSelection, setFilteredDocSelection] = useState([]);
   const dateConverter = DateConverter();
   const router = useRouter();
   const postingDateReadable = dateConverter.convertDateToReadable(
@@ -32,6 +38,30 @@ const JobDetailsDialog = ({
   );
   const endTimeReadable = dateConverter.convertTimeToReadable(job.job_end_time);
 
+  const onDocumentsChange = (e) => {
+    let _documents = [...documents];
+
+    if (e.checked) _documents.push(e.value);
+    else _documents.splice(_documents.indexOf(e.value), 1);
+
+    setDocuments(_documents);
+  };
+
+  const onDocumentSelectAll = (e) => {
+    if (e.checked) {
+      // If "Select All" is checked, set all documents
+      setDocuments([
+        "Resume",
+        "Police Clearance",
+        "NBI Clearance",
+        "Barangay Clearance",
+      ]);
+    } else {
+      // If "Select All" is unchecked, clear all documents
+      setDocuments([]);
+    }
+  };
+
   const header = (
     <div className="flex justify-content-between">
       <h5 className="font-bold">{job.job_title}</h5>
@@ -43,6 +73,8 @@ const JobDetailsDialog = ({
 
   const confirmApplication = async (applyDetails) => {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
+    applyDetails.documents = documents;
 
     try {
       const response = await axios.post(
@@ -67,6 +99,44 @@ const JobDetailsDialog = ({
     }
   }, [visible]);
 
+  useEffect(() => {
+    const fetchUserDocuments = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/worker/documents-simple/${workerUUID}`
+        );
+        setUserDocuments(response.data); // Assuming the response is an array of documents
+      } catch (error) {
+        console.error("Error fetching user documents: ", error);
+      }
+    };
+
+    fetchUserDocuments();
+  }, [workerUUID]); // Empty dependency array to run the effect only once on mount
+
+  useEffect(() => {
+    const ALLDOCUMENTS = [
+      "resume",
+      "police clearance",
+      "nbi clearance",
+      "barangay clearance",
+    ];
+
+    // Assuming userDocuments is an array of objects with a 'type' property
+    const userDocumentTypes = userDocuments.map((userDoc) =>
+      userDoc.type.toLowerCase()
+    );
+
+    console.log(userDocumentTypes);
+
+    const filteredDocuments = ALLDOCUMENTS.filter((doc) => {
+      return userDocumentTypes.includes(doc);
+    });
+
+    console.log(filteredDocuments);
+    setFilteredDocSelection(filteredDocuments);
+  }, [userDocuments]);
+
   return (
     <>
       <Button
@@ -80,7 +150,7 @@ const JobDetailsDialog = ({
         visible={visible}
         onHide={() => setVisible(false)}
       >
-        <div className="grid">
+        <div className="grid mb-5">
           <div className="col-3">
             <center>
               <Avatar
@@ -158,16 +228,107 @@ const JobDetailsDialog = ({
               <label className="pt-4 font-medium text-lg">
                 <i className="pi pi-id-card" /> Application Requirements
               </label>
-              <label className="w-full">Barangay Clearance</label>
+              <label className="w-full">Covid Vaccine Certificate</label>
               <label className="w-full">Social Security System (SSS)</label>
               <label className="w-full">Government-Issued ID</label>
               <label className="w-full">PhilHealth Membership</label>
             </div>
           </div>
         </div>
-        <div className="mt-4 flex justify-content-end">
+        {/* Add divider */}
+        <Divider type="solid" align="right">
+          <span className="font-medium text-xl">CONFIRM YOUR APPLICATION</span>
+        </Divider>
+        <div className="grid">
+          <div className="col mb-3">
+            <div className="flex justify-content-between my-3">
+              <label className="font-medium">Documents to Submit: </label>
+              <span>
+                <label htmlFor="selectDocAll">Select All: </label>
+                <Checkbox
+                  inputId="selectDocAll"
+                  name="document"
+                  value="Resume"
+                  onChange={onDocumentSelectAll}
+                  checked={documents.length === 4}
+                />
+              </span>
+            </div>
+            <div className="col grid flex-wrap">
+              {/* Render checkbox for Resume if it's one of the user's documents */}
+              {filteredDocSelection.includes("resume") && (
+                <div className="flex align-items-center col-3">
+                  <Checkbox
+                    inputId="resume"
+                    name="document"
+                    value="Resume"
+                    onChange={onDocumentsChange}
+                    checked={documents.includes("Resume")}
+                  />
+                  <label htmlFor="resume" className="ml-2">
+                    Resume
+                  </label>
+                </div>
+              )}
+              {/* Render checkbox for Police Clearance if it's one of the user's documents */}
+              {filteredDocSelection.includes("police clearance") && (
+                <div className="flex align-items-center col-3">
+                  <Checkbox
+                    inputId="police-clearance"
+                    name="document"
+                    value="Police Clearance"
+                    onChange={onDocumentsChange}
+                    checked={documents.includes("Police Clearance")}
+                  />
+                  <label htmlFor="police-clearance" className="ml-2">
+                    Police Clearance
+                  </label>
+                </div>
+              )}
+              {/* Render checkbox for NBI Clearance if it's one of the user's documents */}
+              {filteredDocSelection.includes("nbi clearance") && (
+                <div className="flex align-items-center col-3">
+                  <Checkbox
+                    inputId="nbi-clearance"
+                    name="document"
+                    value="NBI Clearance"
+                    onChange={onDocumentsChange}
+                    checked={documents.includes("NBI Clearance")}
+                  />
+                  <label htmlFor="nbi-clearance" className="ml-2">
+                    NBI Clearance
+                  </label>
+                </div>
+              )}
+              {/* Render checkbox for Barangay Clearance if it's one of the user's documents */}
+              {filteredDocSelection.includes("barangay clearance") && (
+                <div className="flex align-items-center col-3">
+                  <Checkbox
+                    inputId="barangay-clearance"
+                    name="document"
+                    value="Barangay Clearance"
+                    onChange={onDocumentsChange}
+                    checked={documents.includes("Barangay Clearance")}
+                  />
+                  <label htmlFor="barangay-clearance" className="ml-2">
+                    Barangay Clearance
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* This is for configuring the application:
+    1. Add selection of uploaded documents to be sent upon application
+    2. Add an application message
+    3. Add a confirmation message
+  */}
+        </div>
+
+        <div className="flex justify-content-end">
           <Button
             label="Confirm Application"
+            className="p-button-outlined"
             onClick={async () => {
               console.log(job);
               const confirmationResult = await confirmApplication({

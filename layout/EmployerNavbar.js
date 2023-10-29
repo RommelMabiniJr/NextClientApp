@@ -125,6 +125,7 @@ const EmployerNavbar = ({}) => {
     {
       label: "Bookings",
       icon: "pi pi-fw pi-calendar",
+      url: "/app/employer/bookings",
       command: () => {
         // handle logout logic here
       },
@@ -235,6 +236,7 @@ const EmployerNavbar = ({}) => {
         src={`/layout/logo.png`}
         alt="Sakai Logo"
         height="50"
+        width="50"
         className="user-avatar mr-0 lg:mr-2"
       />
       <span className="text-900 font-bold text-2xl line-height-3 mr-8">
