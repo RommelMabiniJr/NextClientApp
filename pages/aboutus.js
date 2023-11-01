@@ -1,58 +1,81 @@
-import { Card } from "primereact/card";
-import { Divider } from "primereact/divider";
+import Head from "next/head";
 import { Button } from "primereact/button";
-import Link from "next/link";
+import { Chip } from "primereact/chip";
 
 const AboutUs = () => {
-  const header = <img alt="Kasambahay ko Logo" src="/layout/logo.pg" />;
-
-  const footer = (
-    <Link href="/register">
-      <Button
-        label="Join Us"
-        icon="pi pi-envelope"
-        className="p-button-rounded p-button-secondary"
-      />
-    </Link>
-  );
-
   return (
-    <div
-      className="p-d-flex p-jc-center p-ai-center p-mt-6"
-      style={{ backgroundColor: "#F5F5F5", height: "100vh" }}
-    >
-      <div className="p-grid p-justify-center">
-        <div className="p-col-12 p-md-8 p-lg-6">
-          <Card
-            header={header}
-            footer={footer}
-            className="p-shadow-24"
-            style={{ backgroundColor: "#FFFFFF" }}
-          >
-            <div className="text-5xl font-bold" style={{ color: "#1E90FF" }}>
-              <p className="p-m-0">About Us</p>
-              <Divider style={{ backgroundColor: "#1E90FF" }} />
-            </div>
-            <div>
-              <p className="p-m-0" style={{ color: "#333333" }}>
-                We are a platform that connects employers with caretakers,
-                making it easier for both parties to find the right match.
-              </p>
-              <Divider style={{ backgroundColor: "#1E90FF" }} />
-              <p className="p-m-0" style={{ color: "#333333" }}>
-                Our mission is to simplify the process of finding a caretaker or
-                employer, and to provide a safe and reliable platform for both
-                parties.
-              </p>
-              <Divider style={{ backgroundColor: "#1E90FF" }} />
-              <p className="p-m-0" style={{ color: "#333333" }}>
-                Contact us to learn more about how we can help you find the
-                right match
-              </p>
-            </div>
-          </Card>
-        </div>
+    <div className=" card surface-0">
+      <div className="font-medium text-3xl text-900 mb-3">
+        Movie Information
       </div>
+      <div className="text-500 mb-5">
+        Morbi tristique blandit turpis. In viverra ligula id nulla hendrerit
+        rutrum.
+      </div>
+      <ul className="list-none p-0 m-0">
+        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
+          <div className="text-500 w-6 md:w-2 font-medium">Title</div>
+          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+            Heat
+          </div>
+          <div className="w-6 md:w-2 flex justify-content-end"></div>
+        </li>
+        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
+          <div className="text-500 w-6 md:w-2 font-medium">Genre</div>
+          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+            <Chip label="Crime" className="mr-2" />
+            <Chip label="Drama" className="mr-2" />
+            <Chip label="Thriller" />
+          </div>
+          <div className="w-6 md:w-2 flex justify-content-end">
+            <Button
+              label="Edit"
+              icon="pi pi-pencil"
+              className="p-button-text"
+            />
+          </div>
+        </li>
+        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
+          <div className="text-500 w-6 md:w-2 font-medium">Director</div>
+          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+            Michael Mann
+          </div>
+          <div className="w-6 md:w-2 flex justify-content-end">
+            <Button
+              label="Edit"
+              icon="pi pi-pencil"
+              className="p-button-text"
+            />
+          </div>
+        </li>
+        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
+          <div className="text-500 w-6 md:w-2 font-medium">Actors</div>
+          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+            Robert De Niro, Al Pacino
+          </div>
+          <div className="w-6 md:w-2 flex justify-content-end">
+            <Button
+              label="Edit"
+              icon="pi pi-pencil"
+              className="p-button-text"
+            />
+          </div>
+        </li>
+        <li className="flex align-items-center py-3 px-2 border-top-1 border-bottom-1 border-300 flex-wrap">
+          <div className="text-500 w-6 md:w-2 font-medium">Plot</div>
+          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1 line-height-3">
+            A group of professional bank robbers start to feel the heat from
+            police when they unknowingly leave a clue at their latest heist.
+          </div>
+          <div className="w-6 md:w-2 flex justify-content-end">
+            <Button
+              label="Edit"
+              icon="pi pi-pencil"
+              className="p-button-text"
+            />
+          </div>
+        </li>
+      </ul>
     </div>
   );
 };

@@ -1,0 +1,14 @@
+.rounded-card {
+  border-radius: 25px; /* Adjust the value as needed for your desired roundness */
+}
+.rounded-image {
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+}
+.service-card {
+  border-radius: 50px;
+}
+/* .services-description {
+  max-width: 300px;
+  max-height: 50px;
+} */
