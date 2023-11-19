@@ -13,12 +13,25 @@ const BookingList = ({ bookings }) => {
     return (
       <div
         className="booking-item w-full px-2 py-4 cursor-pointer rounded-md hover:bg-gray-100"
-        onClick={() => router.push(`/app/employer/bookings/view/${booking.id}`)}
+        onClick={() => router.push(`/app/worker/bookings/view/${booking.id}`)}
       >
         <div className="booking-item__header flex justify-between">
           <div className="booking-item__header__left ">
             <h3 className="m-0 mb-2  text-xl">{booking.title}</h3>
             <div>
+              <div className="flex items-center justify-start gap-2">
+                <p className="m-0 text-right font-bold">Employer: </p>
+                <img
+                  src={booking.profile_url}
+                  alt="profile picture"
+                  className="h-6 rounded-full"
+                />
+                <span className="">{booking.employer}</span>
+              </div>
+            </div>
+          </div>
+          <div className="booking-item__header__right flex flex-column justify-center">
+            <div className="text-right">
               <div className="flex align-items-center gap-3">
                 <span className="flex align-items-center gap-2">
                   <i className="pi pi-tag"></i>
@@ -27,20 +40,7 @@ const BookingList = ({ bookings }) => {
 
                 <BookingStatus status={booking.progress} />
               </div>
-            </div>
-          </div>
-          <div className="booking-item__header__right flex flex-column justify-center">
-            <div className="text-right">
               {booking.date} • <span>{booking.time}</span>
-            </div>
-            <div className="flex items-center justify-end">
-              {/* <p className="m-0 text-right">Kasambahay: </p> */}
-              <img
-                src={booking.profile_url}
-                alt="profile picture"
-                className="mr-2 h-6 rounded-full"
-              />
-              <span>{booking.worker}</span>
             </div>
           </div>
         </div>

@@ -302,7 +302,8 @@ const EmployerNavbar = ({}) => {
   );
 
   return (
-    <div>
+    // make sticky
+    <div className="sticky top-0 z-50 ">
       <Menubar start={start} model={items} end={end} />
     </div>
   );

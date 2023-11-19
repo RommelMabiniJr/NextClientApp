@@ -1,13 +1,12 @@
-import EmployerNavbar from "@/layout/EmployerNavbar";
+import WorkerNavbar from "@/layout/WorkerNavbar";
 import Footer from "@/layout/Footer";
-import BookingViewContent from "@/layout/components/employer/bookings/view/BookingViewContent";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import BookingViewContent from "@/layout/components/worker/bookings/view/BookingViewContent";
 
 const BookingView = () => {
   const { data: session, status, loading } = useSession();
-  const [booking, setBooking] = useState({}); // [booking, setBooking
   const router = useRouter();
   const { bookingId } = router.query;
 
@@ -17,7 +16,8 @@ const BookingView = () => {
 
   return (
     <div className="bg-white">
-      <EmployerNavbar session={session} />
+      <WorkerNavbar session={session} />
+      {/* TODO: Add a BookingViewContent component */}
       <BookingViewContent />
       <Footer />
     </div>

@@ -1,13 +1,13 @@
 import { Dropdown } from "primereact/dropdown";
-import BookingList from "./subcomp/BookingList";
 import { useEffect, useState } from "react";
 import { BookingService } from "@/layout/service/BookingService";
 import { UUIDService } from "@/layout/service/UUIDService";
+import BookingList from "./subcomp/BookingList";
 
-const BookingsContent = ({ bookings, loading, error, session }) => {
+const BookingsContent = ({ session }) => {
   const [simpleBookings, setSimpleBookings] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [selectedWorker, setSelectedWorker] = useState(null);
+  const [selectedEmployer, setSelectedEmployer] = useState(null);
 
   const bookingStatus = [
     { name: "All", code: "all" },
@@ -17,20 +17,25 @@ const BookingsContent = ({ bookings, loading, error, session }) => {
     { name: "Canceled", code: "cancelled" },
   ];
 
-  const FAQs = [
+  const WorkerFAQs = [
     {
-      question: "How do I post a job?",
+      question: "How to apply to a job?",
       answer:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam voluptas, natus, voluptatum, dolorum quidem voluptatibus dolor consequatur quos quae quibusdam quia. Quisquam voluptas, natus, voluptatum, dolorum quidem voluptatibus dolor consequatur quos quae quibusdam quia.",
     },
     {
-      question: "How do I post a job?",
+      question: "Are there any fees?",
+      answer:
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam voluptas, natus, voluptatum, dolorum quidem voluptatibus dolor consequatur quos quae quibusdam quia. Quisquam voluptas, natus, voluptatum, dolorum quidem voluptatibus dolor consequatur quos quae quibusdam quia.",
+    },
+    {
+      question: "How do I get paid?",
       answer:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam voluptas, natus, voluptatum, dolorum quidem voluptatibus dolor consequatur quos quae quibusdam quia. Quisquam voluptas, natus, voluptatum, dolorum quidem voluptatibus dolor consequatur quos quae quibusdam quia.",
     },
   ];
 
-  const workerOptions = [
+  const employerOptions = [
     { name: "All", code: "all" },
     { name: "John Doe", code: "john-doe" },
     { name: "Jane Smith", code: "jane-smith" },
@@ -41,8 +46,7 @@ const BookingsContent = ({ bookings, loading, error, session }) => {
     // get bookings simple
     const fetchBookings = async () => {
       const { userId } = await UUIDService.getUserId(session.user.uuid);
-      const bookings = await BookingService.getEmployerBookingsSimple(userId);
-      console.log(userId);
+      const bookings = await BookingService.getWorkerBookingsSimple(userId);
       setSimpleBookings(bookings);
     };
     fetchBookings();
@@ -95,12 +99,12 @@ const BookingsContent = ({ bookings, loading, error, session }) => {
           />
         </div>
         <div className="flex-1 md:flex-none">
-          <p className="font-medium text-gray-900 mb-2">Kasambahay:</p>
+          <p className="font-medium text-gray-900 mb-2">Employer:</p>
           <Dropdown
-            value={selectedWorker}
-            options={workerOptions}
+            value={selectedEmployer}
+            options={employerOptions}
             optionLabel="name"
-            onChange={(e) => setSelectedWorker(e.value)}
+            onChange={(e) => setSelectedEmployer(e.value)}
             className="mr-2 w-full md:w-min"
             placeholder="Filter by Status"
           />
@@ -117,7 +121,7 @@ const BookingsContent = ({ bookings, loading, error, session }) => {
             Frequently Asked Questions
           </h3>
           <div className="divide-y mb-6">
-            {FAQs.map((faq, index) => (
+            {WorkerFAQs.map((faq, index) => (
               <div className="py-1.5" key={index}>
                 <p className="font-medium text-gray-900 mb-1">{faq.question}</p>
                 <TextLimit text={faq.answer} limit={100} />

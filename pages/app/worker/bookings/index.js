@@ -1,7 +1,9 @@
-import EmployerNavbar from "@/layout/EmployerNavbar";
+import React from "react";
+import WorkerNavbar from "@/layout/WorkerNavbar";
 import Footer from "@/layout/Footer";
-import BookingsContent from "@/layout/components/employer/bookings/BookingsContent";
-import { useSession } from "next-auth/react";
+import BookingsContent from "@/layout/components/worker/bookings/BookingsContent";
+
+const { useSession } = require("next-auth/react");
 
 const Bookings = () => {
   const { data: session, status, loading } = useSession();
@@ -12,7 +14,7 @@ const Bookings = () => {
 
   return (
     <div className="bg-white">
-      <EmployerNavbar session={session} />
+      <WorkerNavbar session={session} />
       <BookingsContent session={session} />
       <Footer />
     </div>

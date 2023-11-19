@@ -52,6 +52,7 @@ const WorkerNavbar = ({}) => {
     {
       label: "Bookings",
       icon: "pi pi-fw pi-calendar",
+      url: "/app/worker/bookings",
       command: () => {
         // handle logout logic here
       },
@@ -100,20 +101,35 @@ const WorkerNavbar = ({}) => {
   const end = session && (
     <div className="flex flex-row align-items-center border-circle p-d-flex p-flex-row p-ai-center">
       {/* <Image className='w-min h-min mr-4' src='/layout/profile-default.png' width='40'/> */}
-      <Button
-        size="small"
-        className="mr-2"
-        rounded
-        icon="pi pi-inbox"
+      <i
         aria-label="Message"
-      />
-      <Button
-        size="small"
-        className="mr-2"
-        rounded
-        icon="pi pi-bell"
+        onClick={() => router.push("/app/employer/messages")}
+        className="mr-2 p-overlay-badge mr-4 p-link p-cursor-pointer pi pi-envelope"
+        style={{ fontSize: "1.5rem" }}
+      >
+        {/* <Badge value="8" size="" severity="danger"></Badge> */}
+      </i>
+      <i
         aria-label="Notification"
-      />
+        onClick={(e) => notifMenu.current.toggle(e)}
+        className="mr-2 p-overlay-badge mr-4 p-link p-cursor-pointer pi pi-bell"
+        style={{ fontSize: "1.5rem" }}
+      >
+        {/* Do not display if no notification */}
+        {/* Update the badge value to show the count of unread notifications only when the menu is closed */}
+        {/* {!isMenuOpen &&
+          notifications.filter((notification) => !notification.read).length >
+            0 && (
+            <Badge
+              value={
+                notifications.filter((notification) => !notification.read)
+                  .length
+              }
+              size=""
+              severity="danger"
+            ></Badge>
+          )} */}
+      </i>
       <Menu
         className=""
         model={profileItems}
@@ -132,7 +148,7 @@ const WorkerNavbar = ({}) => {
   );
 
   return (
-    <div>
+    <div className="sticky top-0 z-50 ">
       <Menubar start={start} model={items} end={end} />
     </div>
   );

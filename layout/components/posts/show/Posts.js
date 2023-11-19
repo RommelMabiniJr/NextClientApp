@@ -67,19 +67,7 @@ const Posts = ({ posts }) => {
               {post.job_description}...
             </p>
 
-            <div className="flex justify-content-center">
-              <Button
-                // label="View Applicants"
-                icon="pi pi-users"
-                className="p-button-secondary p-button-outlined mr-2 flex-1"
-                // badge="2"
-                // badgeClassName="p-badge-danger"
-                onClick={() =>
-                  Router.push({
-                    pathname: `/app/posts/applicants/${post.job_id}`,
-                  })
-                }
-              />
+            <div className="flex flex-column justify-content-center ">
               <ShowPostButton post={post} />
             </div>
           </div>

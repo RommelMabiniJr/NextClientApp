@@ -1,86 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import WorkerNavbar from "@/layout/WorkerNavbar";
 import { Button } from "primereact/button";
 import { Timeline } from "primereact/timeline";
 import { Avatar } from "primereact/avatar";
 import { Tag } from "primereact/tag";
 import { useRouter } from "next/router";
 import { Dialog } from "primereact/dialog";
-import { LocationService } from "@/layout/service/LocationService";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
-import DateConverter from "@/lib/dateConverter";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Toast } from "primereact/toast";
+import { useRef } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import DateConverter from "@/lib/dateConverter";
+import WorkerNavbar from "@/layout/WorkerNavbar";
+import { ApplicationStageServices } from "@/layout/service/ApplicationStageService";
+import { LocationService } from "@/layout/service/LocationService";
+import {
+  mapTimelineData,
+  structureOfferTimeline,
+} from "@/layout/components/utils/timelineUtils";
+import { ApplicationTimelineService } from "@/layout/service/ApplicationTimelineService";
+import DocumentPreview from "@/layout/components/worker/job-listings/job-application/DocumentPreview";
+import ApplicationTimeline from "@/layout/components/worker/job-listings/job-application/ApplicationTimeline";
 
 const JobApplicationView = () => {
   const { data: session } = useSession();
   const router = useRouter();
+  const toast = useRef(null);
   const PROVINCE = "LEYTE";
   const { applicationId, elementId, tabIndex } = router.query;
+  const [timelineData, setTimelineData] = useState(null);
+  const [offerData, setOfferData] = useState(null); // [TODO] - get offer data from the API
   const [applicationDetails, setApplicationDetails] = useState(null);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedDocUrl, setSelectedDocUrl] = useState([]); // An array of URLs
   const [docs, setDocs] = useState(null);
+  const [loading, setLoading] = useState(false);
   const dateConverter = DateConverter();
   const defaultAvatar = "/layout/profile-default.png";
 
-  // DUMMY DATA
-  const job = {
-    job_title: "We are looking for a nanny for our 2 children in Abuyog.",
-    job_description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla euismod, nisl eget aliquam ultrices, nunc nunc aliquet nunc, eget aliquam",
-    job_posting_date: "2021-10-15T10:30:00.000Z",
-    job_start_date: "2021-10-15T10:30:00.000Z",
-    job_end_date: "2024-03-25T10:30:00.000Z",
-    job_start_time: "2021-10-15T10:30:00.000Z",
-    job_end_time: "2021-10-15T10:30:00.000Z",
-    working_hours: "8:00 AM - 5:00 PM",
-    job_type: "Full-time",
-    first_name: "Jessica",
-    city_municipality: "Abuyog",
-    distance: 3.5,
-    pay_rate: 16.5,
-    // compensation: "₱ 10,000.00",
-    application_date: "2021-10-15T10:30:00.000Z",
-    application_status: "Pending",
-    services: [
-      {
-        service_id: 1,
-        service_name: "Child Care",
-      },
-    ],
+  const offerAction = {
+    ACCEPT: "accepted the offer",
+    DECLINE: "declined the offer",
   };
 
+  // Use the UTC plugin, as your timestamp is in UTC
+  dayjs.extend(utc);
+
   const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
-  useEffect(() => {
-    // Check if the application ID is valid
-    if (applicationId) {
-      // Fetch the application details
-      const fetchApplicationDetails = async () => {
-        try {
-          const response = await axios.get(
-            `${serverUrl}/worker/application/${applicationId}`
-          );
-
-          // console.log(response.data);
-          if (response.data) {
-            // Set the application details
-            setApplicationDetails(response.data);
-            // Set the documents
-            setDocs(response.data.workerDocs);
-          }
-        } catch (error) {
-          console.error("Error fetching application details: ", error);
-        }
-      };
-
-      fetchApplicationDetails();
-    }
-  }, [applicationId]);
-
-  useEffect(() => {
-    // TODO: retrieve the worker's location from the session ...
-  }, [session]);
 
   // Function to handle navigation back to the job listing
   const handleBack = () => {
@@ -97,311 +66,313 @@ const JobApplicationView = () => {
     });
   };
 
-  const customizedMarker = (item) => {
-    return (
-      <span
-        className="flex w-2rem h-2rem align-items-center justify-content-center text-white border-circle z-1 shadow-1"
-        style={{ backgroundColor: item.color }}
-      >
-        <i className={item.icon}></i>
-      </span>
-    );
+  const handleAcceptOffer = async (item) => {
+    confirmDialog({
+      message: "Are you sure you want to accept this job offer?",
+      header: "Delete Confirmation",
+      icon: "pi pi-info-circle",
+      position: "bottom",
+      accept: async () => {
+        const response = await ApplicationStageServices.acceptOffer(
+          applicationId
+        );
+        console.log(response);
+
+        if (response) {
+          // create the event object
+          // create the event
+          const structuredTimeline = structureOfferTimeline(
+            response.offer_id,
+            "simple",
+            offerAction.ACCEPT,
+            session.user
+          );
+
+          // Add the event to the timeline
+          const eventResponse = ApplicationStageServices.addOfferTimelineEvent(
+            applicationId,
+            structuredTimeline
+          );
+
+          if (eventResponse) {
+            toast.current.show({
+              severity: "success",
+              summary: "Success",
+              detail: "Job offer sent",
+              life: 3000,
+            });
+          }
+
+          // add new timeline event
+          const timelineEvent = {
+            event_description: "Job Offer Accepted",
+            event_timestamp: dayjs.utc().format(),
+          };
+
+          // attach to timelineData
+          const newTimelineData = [...timelineData, timelineEvent];
+
+          // call mapTimelineData to update the timelineData
+          setTimelineData(mapTimelineData(newTimelineData));
+
+          toast.current.show({
+            severity: "success",
+            summary: "Success",
+            detail: "Job offer accepted",
+            life: 3000,
+          });
+        }
+      },
+    });
   };
 
-  const customizedContent = (item) => {
-    let statusStyle = {}; // Define an empty style object
+  const handleDeclineOffer = async (item) => {
+    confirmDialog({
+      message: "Are you sure you want to decline this job offer?",
+      header: "Delete Confirmation",
+      icon: "pi pi-info-circle",
+      position: "bottom",
+    });
+  };
 
-    // Define styles based on the status
-    if (item.current) {
-      statusStyle = {
-        fontWeight: "bold", // Make it bold
-        color: "#4CAF50", // Make it green
-      };
-    } else {
-      // For other statuses
-      statusStyle = {
-        color: "#9E9E9E", // Make it grey
-      };
+  useEffect(() => {
+    // Function to fetch application details and update state
+    const fetchApplicationDetails = async () => {
+      try {
+        // Fetch application details
+        const applicationResponse = await axios.get(
+          `${serverUrl}/worker/application/${applicationId}`
+        );
+
+        if (applicationResponse.data) {
+          const applicationData = applicationResponse.data;
+
+          // Set application details
+          setApplicationDetails(applicationData);
+          // Set documents
+          setDocs(applicationData.workerDocs);
+
+          // Fetch timeline data
+          const timelineResponse =
+            await ApplicationTimelineService.getApplicationTimeline(
+              applicationData.job_id,
+              applicationId
+            );
+
+          // Map API timeline data to client-side data
+          const clientTimelineData = mapTimelineData(timelineResponse);
+
+          // Set timeline data
+          setTimelineData(clientTimelineData);
+
+          // Get additional data if the application is in the job offer stage
+          if (
+            clientTimelineData[clientTimelineData.length - 1]
+              .event_description === "Job Offer"
+          ) {
+            const offerData = await ApplicationStageServices.getOfferDetails(
+              applicationData.job_id,
+              applicationId
+            );
+
+            console.log(offerData);
+            // Set offer data
+            setOfferData(offerData);
+          }
+        }
+      } catch (error) {
+        // Handle errors
+        console.error("Error fetching application details: ", error);
+      } finally {
+        // Set loading state to false, whether the request was successful or not
+        setLoading(false);
+      }
+    };
+
+    // Check if the application ID is valid
+    if (applicationId) {
+      // Set loading state to true
+      setLoading(true);
+      // Fetch application details
+      fetchApplicationDetails();
     }
+  }, [applicationId]);
 
+  if (loading) {
     return (
-      <div className="p-grid">
-        <div className="p-col-12" style={statusStyle}>
-          {item.status}
+      <div className="grid justify-center bg-white">
+        <div className="col-12 md:col-8">
+          <div className="col-11 md:col-10 bg-white p-4 m-4 mx-auto flex flex-column justify-content-between rounded-md border-2 ">
+            <div className="flex justify-center">
+              <div className="loader">Loading...</div>
+            </div>
+          </div>
         </div>
       </div>
     );
-  };
-
-  // Sample timeline data (replace with your actual data)
-  // bottom to top
-  const timelineData = [
-    {
-      status: "Application Completed",
-      date: "16/11/2020 08:00",
-      // green icon
-      color: "#4CAF50",
-      // pending
-      icon: "pi pi-check",
-      current: true,
-    },
-    {
-      status: "Job Offer",
-      date: "16/11/2020 08:00",
-      // grey icon
-      color: "#9E9E9E",
-      // pending
-      icon: "pi pi-circle-fill",
-    },
-    {
-      status: "Qualification Outcome",
-      date: "16/10/2020 10:00",
-      // grey icon
-      color: "#9E9E9E",
-      // pending
-      icon: "pi pi-circle-fill",
-    },
-    {
-      status: "Qualifying Process",
-      date: "16/10/2020 10:00",
-      // grey icon
-      color: "#9E9E9E",
-      // pending
-      icon: "pi pi-circle-fill",
-    },
-
-    {
-      status: "Application Under Review",
-      date: "15/10/2020 14:00",
-      //make this grey
-      color: "#9E9E9E",
-      // loading icon
-      icon: "pi pi-spin pi-circle-fill",
-    },
-    {
-      status: "Application Submitted",
-      date: "15/10/2020 10:30",
-      //make this grey
-      color: "#9E9E9E",
-      icon: "pi pi-circle-fill",
-    },
-  ];
+  }
 
   return (
     // render only when application details are fetched
     applicationDetails && (
       <div className="">
         <WorkerNavbar session={session} />
-        <div className="grid justify-center">
-          <span className="col-12 flex flex align-items-center mt-4">
-            <Button
-              label="Back to Job Listings"
-              icon="pi pi-chevron-left"
-              onClick={handleBack}
-              className="p-button-secondary p-button"
-              link
-            />
-            <h3 className="inline m-0 ml-8">Viewing Job Application</h3>
-          </span>
-          <div className="grid col-12 md-8">
-            <div className="col-7 bg-white p-4 m-4 ml-6 flex flex-column justify-content-between">
-              <div className="content">
-                <div className="flex">
-                  <div className="mr-4">
+        <Toast ref={toast} />
+        <ConfirmDialog />
+        <div className="grid justify-center bg-white">
+          <div style={{ display: "grid" }} className="col-12 md-8">
+            <div className="col-11 md:col-10 bg-white p-4 m-4 mx-auto flex flex-column justify-content-between rounded-md border-2 ">
+              {/* <h5 className="ml-2 mb-5">Application Details</h5> */}
+              <span className="col-12 flex flex align-items-center mb-4 ">
+                <Button
+                  icon="pi pi-arrow-left"
+                  onClick={handleBack}
+                  className="p-button-secondary p-button"
+                  // link
+                  text
+                />
+                <h3 className="inline font-bold m-0 ml-4">
+                  Viewing Job Application
+                </h3>
+              </span>
+              <div className="content px-8 flex flex-column gap-3">
+                <div className="flex items-center">
+                  <div className="ml-2 mr-4">
                     <Avatar
                       image={
                         applicationDetails.post.profile_url || defaultAvatar
                       }
                       alt="profile"
                       shape="circle"
-                      className="h-5rem w-5rem md:w-8rem md:h-8rem shadow-2 cursor-pointer"
+                      className="h-5rem w-5rem shadow-2 cursor-pointer"
                     />
                   </div>
                   <div className="">
-                    <h5>{applicationDetails.post.job_title}</h5>
+                    <h5 className="text-3xl mb-2">
+                      {applicationDetails.post.job_title}
+                    </h5>
                     {/* <p>Application Status: {applicationDetails.application_status}</p> */}
+                    <div className="flex flex-wrap">
+                      <div className="rate text-lg font-semibold">
+                        <span className="text-600 font-medium">By: </span>
+                        <span className="ml-2">
+                          {applicationDetails.post.first_name}
+                        </span>
+                      </div>
+                      <span className="mx-3"> | </span>
+                      <div className="rate text-lg font-semibold">
+                        <span className="pi pi-map-marker"></span>
+                        <span className="ml-2">
+                          {applicationDetails.post.city_municipality}
+                        </span>
+                      </div>
+                      <span className="mx-3"> | </span>
+                      <div className="rate text-lg font-semibold">
+                        <span className="ml-2">
+                          {applicationDetails.distance}
+                        </span>
+                        <span className="sitance-value"> Kilometers</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-11">
+                  <div className="grid w-full">
+                    <div className="col flex flex-wrap py-1">
+                      <span className="text-600 font-medium">
+                        Service Type:{" "}
+                      </span>
+                      <Tag
+                        // icon="pi pi-tag"
+                        className="ml-2"
+                        value={applicationDetails.post.services[0].service_name}
+                      />
+                    </div>
+                    <div className="col flex flex-wrap py-1">
+                      <span className="text-600 font-medium ">
+                        Arrangement:{" "}
+                      </span>
+                      <Tag
+                        className="ml-2"
+                        // icon="pi pi-clock"
+                        value={
+                          applicationDetails.post.job_type
+                            .charAt(0)
+                            .toUpperCase() +
+                          applicationDetails.post.job_type.slice(1)
+                        }
+                      />
+                    </div>
                     <div className="grid w-full">
-                      <div className="col flex flex-wrap py-1">
-                        <span className="text-600 font-medium">
-                          Service Type:{" "}
+                      <div className="col mr-4 pl-3 pt-3 flex gap-4">
+                        <span className="text-600 font-medium mr-1">
+                          Job Dates:{" "}
                         </span>
-                        <Tag
-                          icon="pi pi-tag"
-                          className="ml-2"
-                          value={
-                            applicationDetails.post.services[0].service_name
-                          }
-                        />
-                      </div>
-                      <div className="col flex flex-wrap py-1">
-                        <span className="text-600 font-medium ">
-                          Arrangement:{" "}
-                        </span>
-                        <Tag
-                          className="ml-2"
-                          icon="pi pi-clock"
-                          value={applicationDetails.post.job_type}
-                        />
-                      </div>
-                      <div className="grid w-full">
-                        <div className="col mr-4 pl-3 pt-3">
-                          <span className="text-600 font-medium mr-1">
-                            Job Dates:{" "}
-                          </span>
-                          <div className="text-700 font-medium">
-                            {dateConverter.toNumbers(
-                              applicationDetails.post.job_start_date
-                            )}{" "}
-                            -{" "}
-                            {dateConverter.toNumbers(
-                              applicationDetails.post.job_end_date
-                            )}
-                          </div>
+                        <div className="text-900 font-medium">
+                          {dateConverter.toNumbers(
+                            applicationDetails.post.job_start_date
+                          )}{" "}
+                          -{" "}
+                          {dateConverter.toNumbers(
+                            applicationDetails.post.job_end_date
+                          )}
                         </div>
-                        <div className="col mr-4 pl-3 pt-3">
-                          <span className="text-600 font-medium mr-1">
-                            Working Hours:{" "}
-                          </span>
-                          <div className="text-700 font-medium">
-                            {applicationDetails.working_hours ||
-                              "8:00 AM - 5:00PM"}
-                          </div>
+                      </div>
+                      <div className="col mr-4 pl-3 pt-3 flex gap-4">
+                        <span className="text-600 font-medium mr-1">
+                          Working Hours:{" "}
+                        </span>
+                        <div className="text-900 font-medium">
+                          {applicationDetails.working_hours ||
+                            "8:00 AM - 5:00PM"}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="col-12">
-                  <div className="flex flex-wrap">
-                    <div className="rate text-lg font-semibold mb-2">
-                      <span className="text-600 font-medium">By: </span>
-                      <span className="ml-2">
-                        {applicationDetails.post.first_name}
-                      </span>
-                    </div>
-                    <span className="mx-3"> | </span>
-                    <div className="rate text-lg font-semibold mb-2">
-                      <span className="pi pi-map-marker"></span>
-                      <span className="ml-2">
-                        {applicationDetails.post.city_municipality}
-                      </span>
-                    </div>
-                    <span className="mx-3"> | </span>
-                    <div className="rate text-lg font-semibold mb-2">
-                      <span className="ml-2">
-                        {applicationDetails.distance}
-                      </span>
-                      <span className="sitance-value"> Kilometers</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="p-2">{applicationDetails.post.job_description}</p>
-                {/* <p>
-              Application Date:{" "}
-              {dateConverter.convertDateWithTimeToReadable(
-                applicationDetails.application_date
-              )}
-            </p> */}
+                <p className="px-2 pb-4">
+                  {applicationDetails.post.job_description}
+                </p>
               </div>
-              <div className="footer">
-                <div className="flex flex-wrap justify-content-between">
-                  <div className="rate text-lg font-semibold mb-2 flex align-items-center -ml-2">
-                    <Button
-                      icon="pi pi-sort-alt"
-                      size="small"
-                      rounded
-                      text
-                      aria-label="Filter"
-                      link
-                    />
-                    <span className="text-600 font-medium">Pay: </span>
-                    <span className="font-bold ml-3">
-                      {applicationDetails.post.pay_rate}
-                    </span>
-                    <span className="text-00 ml-1"> /hr</span>
-                  </div>
-                  {/* ADD Action Buttons = Message & Cancel Application */}
-                  <div className="flex flex-wrap">
-                    <Button
-                      label="Message"
-                      icon="pi pi-envelope"
-                      className=" p-button mr-2"
-                      size="small"
-                    />
+              <div className="footer px-8">
+                <div className="flex flex-wrap justify-content-start">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       label="Cancel Application"
                       className="p-button-danger p-button"
-                      text
+                      // outlined
                       size="small"
+                    />
+                    <Button
+                      label="Message"
+                      // icon="pi pi-envelope"
+                      className=" p-button"
+                      size="small"
+                      severity="secondary"
                     />
                   </div>
                 </div>
               </div>
             </div>
             {/* Timeline */}
-            <div className="pt-3 bg-white col-4 p-4 mt-4">
-              <h5 className="text-center mb-5">Tracking Your Application</h5>
-              <Timeline
-                value={timelineData}
-                className="custom"
-                opposite={customizedContent}
-                content={(item) => (
-                  <small className="text-color-secondary">{item.date}</small>
-                )}
-                marker={customizedMarker}
-              ></Timeline>
-            </div>
             {/* Documents Shared */}
-            <div className="col-7 bg-white p-4 m-4 ml-6 mt-2">
-              <h5 className="text-center mb-5">Documents Submitted</h5>
+            <div className="col-11 md:col-10 bg-white p-4 m-4 mt-2 mx-auto rounded rounded-md border-2 ">
+              <h5 className="ml-2 mb-5">- Attached Documents</h5>
               <div>
-                <Dialog
-                  header="Document Preview"
-                  maximizable
-                  visible={dialogVisible}
-                  className="w-5 h-screen"
-                  onHide={() => setDialogVisible(false)}
-                >
-                  <div className="flex w-full relative flex flex-column">
-                    {/* Check how many urls are there in selectedDocUrl, then renders the image*/}
-                    {selectedDocUrl &&
-                      selectedDocUrl.map((url, index) => (
-                        <img
-                          key={index}
-                          src={url}
-                          alt=""
-                          className="w-full border-round border-solid border-1 mb-2"
-                        />
-                      ))}
-
-                    {/* <object
-              width="100%"
-              height="100%"
-              type="application/pdf"
-              data={
-                selectedDocUrl + "#zoom=55&scrollbar=0&toolbar=0&navpanes=0"
-              }
-            ></object> */}
-
-                    {/* Cover to prevent right clicking */}
-                    <div className="absolute top-0 bottom-0 left-0 right-0 "></div>
-                  </div>
-                </Dialog>
-
                 {docs &&
                   docs.map((document, index) => (
                     <div key={index} className="col-12">
                       <div className="border-1 border-round border-400 p-4 flex align-content-center justify-content-between ">
                         <div>
                           <i
-                            className="pi pi-file mr-3"
+                            className="pi pi-link mr-3"
                             style={{ fontSize: "1.3rem" }}
                           ></i>
                           <span className="font-semibold">
                             {/* Capitalize each letter */}
                             {document.type.toUpperCase()}:{" "}
                           </span>
-                          <span>Unverified</span>
+                          {/* <span>Unverified</span> */}
                         </div>
                         <ConfirmPopup />
                         <div>
@@ -428,6 +399,22 @@ const JobApplicationView = () => {
                     </div>
                   ))}
               </div>
+              {/* Document Preview Dialog */}
+              {dialogVisible && (
+                <DocumentPreview
+                  selectedDocUrl={selectedDocUrl}
+                  onClose={() => setDialogVisible(false)}
+                />
+              )}
+            </div>
+            <div className="col-11 md:col-10 bg-white p-4 m-4 mt-2 mx-auto rounded-md border-2 ">
+              <h5 className="ml-2 mb-5">- Application Progress</h5>
+              <ApplicationTimeline
+                timelineData={timelineData}
+                handleAcceptOffer={handleAcceptOffer}
+                handleDeclineOffer={handleDeclineOffer}
+                offerData={offerData}
+              />
             </div>
           </div>
         </div>

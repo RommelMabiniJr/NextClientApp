@@ -14,7 +14,6 @@ import { Toast } from "primereact/toast";
 import BookingProgress from "../subcomp/BookingProgress";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Rating } from "primereact/rating";
-import RatingAndReviewModal from "../subcomp/RatingAndReviewModal";
 import { RatingAndReviewService } from "@/layout/service/RatingAndReviewService";
 import ReviewComments from "../subcomp/ReviewComments";
 
@@ -24,8 +23,6 @@ const BookingViewContent = () => {
   const { bookingId } = router.query;
 
   const [booking, setBooking] = useState(null);
-  const [startConfirmationReceived, setStartConfirmationReceived] =
-    useState(false);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewObject, setReviewObject] = useState({}); // {rating: 0, comment: ""}
@@ -72,99 +69,6 @@ const BookingViewContent = () => {
     return <div>Loading...</div>;
   }
 
-  const handleRatingChange = (e) => {
-    setRating(e);
-  };
-
-  const handleCommentsChange = (e) => {
-    setComments(e);
-  };
-
-  const handleCloseReviewModal = () => {
-    setShowReviewModal(false);
-  };
-
-  const handleCreateReview = async () => {
-    // TODO: Save review to database
-    const success = await RatingAndReviewService.setReviewOfBooking(bookingId, {
-      rating: rating,
-      comments: comments,
-    });
-
-    if (success) {
-      toast.current.show({
-        severity: "success",
-        summary: "Review Saved",
-        detail: "Your review has been saved.",
-        life: 3000,
-      });
-
-      // close the modal
-      setShowReviewModal(false);
-
-      // refetch data
-      fetchData();
-    } else {
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: "There was an error saving your review.",
-        life: 3000,
-      });
-    }
-  };
-
-  const handleUpdateReview = async () => {
-    const success = await RatingAndReviewService.updateReviewOfBooking(
-      reviewObject.review_id,
-      {
-        rating: rating,
-        comments: comments,
-      }
-    );
-
-    console.log(success);
-
-    if (success) {
-      toast.current.show({
-        severity: "success",
-        summary: "Review Updated",
-        detail: "Your review has been updated.",
-        life: 3000,
-      });
-
-      // close the modal
-      setShowReviewModal(false);
-
-      // refetch data
-      fetchData();
-    } else {
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: "There was an error updating your review.",
-        life: 3000,
-      });
-    }
-  };
-
-  const markBookingStart = async () => {
-    const result = await BookingService.markBookingStart(bookingId);
-
-    console.log(result);
-
-    if (result) {
-      // refetch data
-      fetchData();
-      toast.current.show({
-        severity: "success",
-        summary: "Booking Started",
-        detail: "The booking has been started.",
-        life: 3000,
-      });
-    }
-  };
-
   const markBookingComplete = async () => {
     const result = await BookingService.markBookingComplete(bookingId);
 
@@ -184,10 +88,10 @@ const BookingViewContent = () => {
 
   const confirmCompleteBooking = () => {
     confirmDialog({
-      message: "Are you sure you want finish this booking?",
+      message: "Are you sure you want to mark this booking as complete?",
       header: "Confirm Booking Completion",
       icon: "pi pi-exclamation-triangle",
-      // position: "right",
+      position: "right",
       accept: () => markBookingComplete(),
       reject: () => {},
     });
@@ -240,25 +144,15 @@ const BookingViewContent = () => {
       return (
         <>
           {/* Display a button to prompt the start of work */}
-          {!startConfirmationReceived ? (
-            <Button
-              label="Acknowledge Start"
-              className="w-full"
-              onClick={() => markBookingStart()}
-              // outlined
-              // size="small"
-            />
-          ) : (
-            <p className="text-center">
-              You have acknowledged the start of work.
-            </p>
-          )}
+          <Button
+            label="Send Message"
+            className="w-full"
+            // onClick={() => markBookingStart()}
+          />
           <Button
             label="Cancel Booking"
             severity="danger"
             className="w-full mt-2"
-            // outlined
-            // size="small"
           />
         </>
       );
@@ -269,9 +163,9 @@ const BookingViewContent = () => {
         <>
           {/* Display a "Mark as Complete" button */}
           <Button
-            label="Mark as Complete"
+            label="Send Message"
             className="w-full"
-            onClick={() => confirmCompleteBooking()}
+            // onClick={() => confirmCompleteBooking()}
           />
           <Button
             label="Cancel Booking"
@@ -287,17 +181,6 @@ const BookingViewContent = () => {
       return (
         <>
           {/* Display a rating and leave a review button */}
-          <RatingAndReviewModal
-            show={showReviewModal}
-            hasReview={reviewObject.rating > 0}
-            handleClose={handleCloseReviewModal}
-            handleCreate={handleCreateReview}
-            handleUpdate={handleUpdateReview}
-            handleRatingChange={handleRatingChange}
-            handleCommentsChange={handleCommentsChange}
-            rating={rating}
-            comments={comments}
-          />
           <div className="w-full mb-2 flex flex-column items-center">
             <label className="font-bold">Rating & Review </label>
             <Rating
@@ -314,10 +197,7 @@ const BookingViewContent = () => {
             <ReviewComments comments={reviewObject.comments} />
 
             <Button
-              label={(reviewObject.rating > 0
-                ? "Edit Review"
-                : "Leave a Review"
-              ).toUpperCase()}
+              label="Send Message"
               className="w-full mt-2"
               onClick={() => setShowReviewModal(true)}
               outlined
@@ -344,7 +224,7 @@ const BookingViewContent = () => {
             size="small"
             text
             className="p-button-secondary"
-            onClick={() => router.push("/app/employer/bookings")}
+            onClick={() => router.push("/app/worker/bookings")}
           />
           <h3 className="font-bold m-0">
             {/* Nanny Needed For My Children In Waltham. */}
@@ -519,7 +399,7 @@ const BookingViewContent = () => {
           <div className="flex flex-column">
             <div className="flex justify-center">
               <img
-                src={booking.worker.profile_url}
+                src={booking.employer.profile_url}
                 alt="profile picture"
                 className="h-24 w-24 rounded-full"
               />
@@ -527,21 +407,21 @@ const BookingViewContent = () => {
             <div className="flex flex-column justify-center items-center">
               <h3 className="font-bold text-center mb-2">
                 {/* Maria Cristina */}
-                {booking.worker.first_name + " " + booking.worker.last_name}
+                {booking.employer.first_name + " " + booking.employer.last_name}
               </h3>
               <p className="text-center mb-2">
                 <span className="mr-2">
                   <i className="pi pi-envelope"></i>
                 </span>
                 {/* maria.cristina@gmail */}
-                {booking.worker.email}
+                {booking.employer.email}
               </p>
               <p className="text-center">
                 <span className="mr-2">
                   <i className="pi pi-phone"></i>
                 </span>
                 {/* 09123456789 */}
-                {booking.worker.phone}
+                {booking.employer.phone}
               </p>
               <div className="flex flex-column justify-center items-center py-2 mb-2">
                 <p className="font-bold text-center mb-1">Booking Status:</p>
@@ -555,24 +435,6 @@ const BookingViewContent = () => {
             <div className="flex flex-column justify-center items-center my-4">
               {renderButtons()}
             </div>
-            {/* <div className="flex flex-column justify-center items-center my-4">
-              <Button
-                label="Send Message"
-                className="w-full"
-                onClick={() => router.push("/app/employer/messages")}
-              />
-              <Button
-                label="Mark as Complete"
-                className="w-full mt-2"
-                // onClick={markAsComplete}
-              />
-              <Button
-                label="Cancel Booking"
-                className="w-full mt-2"
-                severity="danger"
-                onClick={() => router.push("/app/employer/bookings")}
-              />
-            </div> */}
           </div>
         </div>
       </div>

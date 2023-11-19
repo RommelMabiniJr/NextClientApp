@@ -28,7 +28,6 @@ const Applicants = () => {
       );
 
       setApplicants(response.data);
-      // console.log(response.data);
     };
 
     const getDistances = async () => {
@@ -261,10 +260,13 @@ const Applicants = () => {
     <div className="bg-white">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
       <div className="border-round m-4 p-4">
-        <div className="font-medium text-900 text-2xl mb-2">Candidates</div>
-
         {applicants.length > 0 && distances.length > 0 && (
-          <ApplicationTabs applicants={applicants} distances={distances} />
+          <ApplicationTabs
+            applicants={applicants}
+            distances={distances}
+            postId={router.query.postId}
+            session={session}
+          />
         )}
       </div>
     </div>

@@ -1,0 +1,3 @@
+.calendarUnroundedDays table td > span {
+    border-radius: 0;
+}

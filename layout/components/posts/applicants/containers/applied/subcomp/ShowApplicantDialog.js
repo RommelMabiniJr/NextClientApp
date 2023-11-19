@@ -10,7 +10,13 @@ import AvailabilityInfo from "@/layout/components/employer/worker-search/Availab
 import { LocationService } from "@/layout/service/LocationService";
 import ListItem from "./AppliedListItem";
 
-const ShowApplicantDialog = ({ applicant, distances, displayAs }) => {
+const ShowApplicantDialog = ({
+  applicant,
+  distances,
+  displayAs,
+  mode,
+  handleAddApplicantAsPassed,
+}) => {
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(false);
   const [selectedDocUrl, setSelectedDocUrl] = useState([]);
@@ -31,7 +37,10 @@ const ShowApplicantDialog = ({ applicant, distances, displayAs }) => {
     <>
       <div className="relative">
         <ListItem
+          handleAddApplicantAsPassed={handleAddApplicantAsPassed}
+          mode={mode}
           applicant={applicant.information}
+          applicant_full={applicant}
           applicationDate={applicant.application_date}
           distances={distances}
           onOpen={() => setVisible(true)}
