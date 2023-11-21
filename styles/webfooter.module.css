@@ -1,0 +1,21 @@
+#section_footer {
+  width: 100%;
+  /* margin-top: auto; */
+  position: absolute bottom 0;
+
+  /* a, */
+
+  /* a:hover {
+          text-decoration: underline;
+        } */
+
+  /* p {
+        color: #fff;
+        font-size: 0.5em;
+      } */
+}
+.separator {
+  color: #fff;
+  font-size: 0.75em;
+  text-decoration: none;
+}

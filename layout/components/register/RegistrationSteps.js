@@ -332,7 +332,7 @@ const AccountSecurityStep = ({
             className="mr-2"
           />
           <label htmlFor="termsAndConditions">
-            I agree to the <a href="#">terms and conditions</a>
+            I agree to the <a href="/ ">terms and conditions</a>
           </label>
         </div>
       </div>

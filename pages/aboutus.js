@@ -4,78 +4,47 @@ import { Chip } from "primereact/chip";
 
 const AboutUs = () => {
   return (
-    <div className=" card surface-0">
-      <div className="font-medium text-3xl text-900 mb-3">
-        Movie Information
+    <div>
+      <div className="text-center p-5">
+        <h1 className="text-5xl font-bold text-900">About Us</h1>
       </div>
-      <div className="text-500 mb-5">
-        Morbi tristique blandit turpis. In viverra ligula id nulla hendrerit
-        rutrum.
-      </div>
-      <ul className="list-none p-0 m-0">
-        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
-          <div className="text-500 w-6 md:w-2 font-medium">Title</div>
-          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
-            Heat
+      <div className="grid">
+        <div className="font-medium text-3xl text-900 text-center">
+          <div className="flex justify-content-center flex-wrap">
+            <div className="col-12 md:col-6">
+              <div className="text-xl p-5 shadow-2">
+                <p>
+                  "Our mission is to streamline the search for the perfect care
+                  services, providing peace of mind to our users. We are
+                  committed to connecting individuals and families with
+                  dedicated and skilled service providers, ensuring the
+                  well-being and happiness of their loved ones. Our platform is
+                  designed to simplify the process of finding high-quality care,
+                  making it accessible, safe, and efficient. We strive to
+                  empower our users to make informed choices, fostering trust
+                  and satisfaction in every care service experience."
+                </p>
+              </div>
+            </div>
+            <div className="col-12 sm:col-6">
+              <div className="text-xl p-5 shadow-2">
+                <p>
+                  "Our vision is to be the leading and most trusted platform for
+                  care services, recognized for our dedication to excellence,
+                  safety, and convenience. We aspire to create a world where
+                  finding the perfect care services is as easy as a click away.
+                  Kasambahayko envisions a community of users who can rely on
+                  our platform to access a diverse range of exceptional care
+                  services, offered by skilled and compassionate service
+                  providers. We aim to set new standards in the care services
+                  industry, making a positive impact on the lives of individuals
+                  and families by providing a seamless and caring experience."
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="w-6 md:w-2 flex justify-content-end"></div>
-        </li>
-        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
-          <div className="text-500 w-6 md:w-2 font-medium">Genre</div>
-          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
-            <Chip label="Crime" className="mr-2" />
-            <Chip label="Drama" className="mr-2" />
-            <Chip label="Thriller" />
-          </div>
-          <div className="w-6 md:w-2 flex justify-content-end">
-            <Button
-              label="Edit"
-              icon="pi pi-pencil"
-              className="p-button-text"
-            />
-          </div>
-        </li>
-        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
-          <div className="text-500 w-6 md:w-2 font-medium">Director</div>
-          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
-            Michael Mann
-          </div>
-          <div className="w-6 md:w-2 flex justify-content-end">
-            <Button
-              label="Edit"
-              icon="pi pi-pencil"
-              className="p-button-text"
-            />
-          </div>
-        </li>
-        <li className="flex align-items-center py-3 px-2 border-top-1 border-300 flex-wrap">
-          <div className="text-500 w-6 md:w-2 font-medium">Actors</div>
-          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
-            Robert De Niro, Al Pacino
-          </div>
-          <div className="w-6 md:w-2 flex justify-content-end">
-            <Button
-              label="Edit"
-              icon="pi pi-pencil"
-              className="p-button-text"
-            />
-          </div>
-        </li>
-        <li className="flex align-items-center py-3 px-2 border-top-1 border-bottom-1 border-300 flex-wrap">
-          <div className="text-500 w-6 md:w-2 font-medium">Plot</div>
-          <div className="text-900 w-full md:w-8 md:flex-order-0 flex-order-1 line-height-3">
-            A group of professional bank robbers start to feel the heat from
-            police when they unknowingly leave a clue at their latest heist.
-          </div>
-          <div className="w-6 md:w-2 flex justify-content-end">
-            <Button
-              label="Edit"
-              icon="pi pi-pencil"
-              className="p-button-text"
-            />
-          </div>
-        </li>
-      </ul>
+        </div>
+      </div>{" "}
     </div>
   );
 };

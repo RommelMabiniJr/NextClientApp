@@ -12,3 +12,11 @@
   max-width: 300px;
   max-height: 50px;
 } */
+
+/* Add this to your existing styles or a separate CSS file */
+
+/* @media (max-width: 768px) {
+  .center-on-small-screen {
+    justify-content: center !important;
+  }
+} */
