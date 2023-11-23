@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Timeline } from "primereact/timeline";
 import { COLORS } from "../../../utils/timelineUtils";
 import dayjs from "dayjs";
@@ -7,12 +7,15 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputTextarea } from "primereact/inputtextarea";
 import { RadioButton } from "primereact/radiobutton";
+import { ApplicationStageServices } from "@/layout/service/ApplicationStageService";
+import OfferTimeline from "./subcomp/OfferTimeline";
 
 // Use the UTC plugin, as your timestamp is in UTC
 dayjs.extend(utc);
 
 const ApplicationTimeline = ({
   offerData,
+  interviewData,
   timelineData,
   handleAcceptOffer,
   handleDeclineOffer,
@@ -21,7 +24,9 @@ const ApplicationTimeline = ({
     useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [selectedReason, setSelectedReason] = useState("");
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receiveUpdates, setReceiveUpdates] = useState("yes");
+  const [offerEvents, setOfferEvents] = useState([]);
 
   const declineReasonsCategories = [
     {
@@ -52,6 +57,35 @@ const ApplicationTimeline = ({
     },
   ];
 
+  useEffect(() => {
+    const fetchOfferEvents = async () => {
+      const offerTimelineEvents =
+        await ApplicationStageServices.getOfferTimelineEvents(
+          offerData.offer_id
+        );
+
+      if (!offerTimelineEvents) {
+        return;
+      }
+
+      const structuredOfferTimelineEvents = offerTimelineEvents.map(
+        (event) => ({
+          offerId: event.offer_id,
+          eventType: event.event_type,
+          user: event.user,
+          profile_url: event.profile_url,
+          action: event.action,
+          timestamp: event.timestamp,
+          content: event.content,
+        })
+      );
+
+      setOfferEvents(structuredOfferTimelineEvents);
+    };
+
+    fetchOfferEvents();
+  }, []);
+
   const onDeclineOffer = () => {
     setDeclineReasonDialogVisible(true);
   };
@@ -63,7 +97,7 @@ const ApplicationTimeline = ({
           label="Confirm"
           className="p-button-sm"
           severity="danger"
-          onClick={handleDeclineOffer}
+          onClick={() => handleDeclineOffer(selectedReason, declineReason)}
         />
         <Button
           label="Cancel"
@@ -77,6 +111,47 @@ const ApplicationTimeline = ({
 
   const getEventDescriptionContent = (item) => {
     switch (item.event_description) {
+      case "Interview Scheduled":
+        return (
+          <>
+            <div className="mt-3 border-t ">
+              <dl className="divide-y divide-gray-100 ">
+                <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Interview Date and Time:
+                  </dt>
+                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    {dayjs
+                      .utc(interviewData.scheduled_date)
+                      .format("MMMM DD, YYYY")}{" "}
+                    at{" "}
+                    {dayjs(`2023-11-09T${interviewData.scheduled_time}`).format(
+                      "h:mm A"
+                    )}
+                  </dd>
+                </div>
+
+                {/* Show the link of interview */}
+                <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Interview Link:
+                  </dt>
+                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    <a
+                      href={interviewData.interview_link}
+                      target="_blank"
+                      className="text-blue-500 underline"
+                    >
+                      {interviewData.interview_link}
+                    </a>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </>
+        );
+        break;
+
       case "Job Offer":
         return (
           <>
@@ -88,11 +163,31 @@ const ApplicationTimeline = ({
                       Last Updated:
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {offerData.updated_at
-                        ? dayjs
-                            .utc(offerData.updated_at)
-                            .format("DD/MM/YYYY h:mm A")
-                        : "Not updated yet"}
+                      <div className="flex w-full">
+                        <div className="flex flex-col w-1/2 flex-1">
+                          <div className="text-sm">
+                            {offerData.updated_at
+                              ? dayjs
+                                  .utc(offerData.updated_at)
+                                  .format("dddd, MMMM DD, YYYY [at] h:mmA")
+                              : "Not updated yet"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <span
+                            className="cursor-pointer rounded-md hover:bg-gray-200 py-2 px-3"
+                            onClick={() => setSidebarVisible(true)}
+                          >
+                            <i className="pi pi-history"></i>
+                          </span>
+                          <OfferTimeline
+                            offerEvents={offerEvents}
+                            setSidebarVisible={setSidebarVisible}
+                            sidebarVisible={sidebarVisible}
+                          />
+                        </div>
+                      </div>
                     </dd>
                   </div>
                   <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -141,18 +236,41 @@ const ApplicationTimeline = ({
                       Response
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      <button
-                        onClick={() => handleAcceptOffer(item)}
-                        className="font-bold mr-2 py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => onDeclineOffer()}
-                        className="font-bold py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Decline
-                      </button>
+                      {offerData.status === "accepted" ? (
+                        <button
+                          disabled
+                          className="font-bold mr-2 py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600"
+                        >
+                          Accepted
+                        </button>
+                      ) : null}
+
+                      {offerData.status === "declined" ? (
+                        <button
+                          disabled
+                          className="font-bold py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          Declined
+                        </button>
+                      ) : null}
+
+                      {offerData.status === "updated" ||
+                      offerData.status === "other" ? (
+                        <>
+                          <button
+                            onClick={() => handleAcceptOffer(item)}
+                            className="font-bold mr-2 py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => onDeclineOffer()}
+                            className="font-bold py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
+                          >
+                            Decline
+                          </button>
+                        </>
+                      ) : null}
                       <Dialog
                         visible={declineReasonDialogVisible}
                         onHide={() => setDeclineReasonDialogVisible(false)}
@@ -161,7 +279,7 @@ const ApplicationTimeline = ({
                         className=""
                         footer={footerDeclineDialog}
                       >
-                        <div className="font-semibold pb-3 ml-3">
+                        {/* <div className="font-semibold pb-3 ml-3">
                           Allow to recieve more offer updates?
                         </div>
                         <div className="p-fluid flex flex-column gap-3 ml-3 mb-3">
@@ -189,7 +307,7 @@ const ApplicationTimeline = ({
                               No
                             </label>
                           </div>
-                        </div>
+                        </div> */}
 
                         <div className="font-semibold pb-3 ml-3">
                           Please select a reason for declining the job offer:

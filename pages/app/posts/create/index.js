@@ -101,12 +101,12 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       // access livingArrangement optName property
       values.livingArrangement = values.livingArrangement.optName;
 
-      // const response = await axios({
-      //   method: "post",
-      //   data: { ...values, uuid: session.user.uuid },
-      //   withCredentials: true,
-      //   url: `${serverUrl}/employer/post/create`,
-      // });
+      const response = await axios({
+        method: "post",
+        data: { ...values, uuid: session.user.uuid },
+        withCredentials: true,
+        url: `${serverUrl}/employer/post/create`,
+      });
 
       // console.log(response.data);
 

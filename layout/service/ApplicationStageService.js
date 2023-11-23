@@ -12,6 +12,40 @@ export const ApplicationStageServices = {
     }
   },
 
+  async getCurrentStage(jobpostId) {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/post/${jobpostId}/application/current-stage`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  async setCurrentStage(jobpostId, stage) {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/post/${jobpostId}/application/current-stage`,
+        { stage }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  async resetStage(jobpostId) {
+    try {
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/post/${jobpostId}/reset-current-stage`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
   async setInterviewSchedule(jobpostId, applicationId, interviewResult) {
     try {
       const response = await axios.post(
@@ -45,6 +79,9 @@ export const ApplicationStageServices = {
    *   scheduled_date: string,
    *   scheduled_time: string,
    *   interview_link: string
+   *   is_passed: boolean,
+   *   timestamp: string,
+   *   status: string,
    * }>>} - A promise that resolves to an array of scheduled interviews.
    */
   async getScheduledInterviews(jobpostId) {

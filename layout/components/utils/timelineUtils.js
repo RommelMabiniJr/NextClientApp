@@ -60,7 +60,8 @@ export const getStatusInfo = (status) => {
       return {
         icon: "pi pi-info-circle",
         color: COLORS.BLUE,
-        content: "An interview has been scheduled for you. Prepare well!",
+        content:
+          "An interview has been scheduled for you. Prepare and good luck!",
       };
     case EVENT_DESCRIPTIONS.SCREENING_PASSED:
       return {

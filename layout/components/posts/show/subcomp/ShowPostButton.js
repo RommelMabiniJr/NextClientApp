@@ -1,32 +1,74 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Tag } from "primereact/tag";
+import { Avatar } from "primereact/avatar";
+import { AvatarGroup } from "primereact/avatargroup";
+import { Badge } from "primereact/badge";
 // import { confirmPopup, ConfirmPopup } from "primereact/confirmpopup";
 import { Toast } from "primereact/toast";
 // import Link from "next/link";
 import Router from "next/router";
 import DeletePopup from "@/layout/components/posts/show/subcomp/DeletePopup";
+import { JobPostService } from "@/layout/service/JobPostService";
+import axios from "axios";
 
 export default function ShowPostButton({ post }) {
   const [visible, setVisible] = useState(false);
   const [displayDelConfirm, setDisplayDelConfirm] = useState(false); // for delete confirm
+  const [applicants, setApplicants] = useState([]);
   const toast = useRef(null);
 
+  useEffect(() => {
+    const fetchApplicants = async () => {
+      const fetchedApplicants = await JobPostService.getApplicants(post.job_id);
+      console.log("FETCHED APPLICANTS: ", fetchedApplicants);
+      setApplicants(fetchedApplicants);
+    };
+    fetchApplicants();
+  }, [post]);
+
   const footerContent = (
-    <div>
+    <div className="flex">
       {/* Component for delete confirm */}
-      <Button
-        label="SHOW APPLICANTS"
-        // icon="pi pi-angle-double-right"
-        iconPos="right"
-        className="p-button-secondary p-button-outlined flex-1 "
-        onClick={() =>
-          Router.push({
-            pathname: `/app/posts/applicants/${post.job_id}`,
-          })
-        }
-      />
+      <div className="flex items-center">
+        <label className="mr-2 text-large font-bold">APPLICANTS:</label>
+        <AvatarGroup>
+          {/* If more than 4, show 4 and +{applicants.length - 4} */}
+          {applicants.slice(0, 4).map((applicant) => (
+            <Avatar
+              key={applicant.application_id}
+              image={applicant.information.profile_url}
+              size="normal"
+              shape="circle"
+              className="p-mr-2"
+              tooltip={applicant.information.first_name}
+              tooltipOptions={{ position: "top" }}
+            />
+          ))}
+          {applicants.length > 4 && (
+            <Avatar
+              label={`+${applicants.length - 4}`}
+              size="normal"
+              shape="circle"
+              className="p-mr-2"
+            />
+          )}
+        </AvatarGroup>
+      </div>
+      <div className="flex-grow-1">
+        <Button
+          label="MANAGE APPLICATIONS"
+          // icon="pi pi-angle-double-right"
+          iconPos="right"
+          className="p-button-secondary p-button-outlined flex-1 "
+          onClick={() =>
+            Router.push({
+              pathname: `/app/posts/applicants/${post.job_id}`,
+            })
+          }
+        />
+      </div>
     </div>
   );
 

@@ -8,7 +8,6 @@ export default function AppliedContainer({ applicants, distances }) {
       <div className="flex justify-between items-center">
         <span>Total Applied: {applicants.length}</span>
       </div>
-
       <AppliedLists applicants={applicants} distances={distances} />
     </div>
   );

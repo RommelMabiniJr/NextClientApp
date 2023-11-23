@@ -2,9 +2,7 @@ import { Timeline } from "primereact/timeline";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
-import { InputTextarea } from "primereact/inputtextarea";
 import { useState } from "react";
-import { Button } from "primereact/button";
 import { Sidebar } from "primereact/sidebar";
 
 const OfferTimeline = ({

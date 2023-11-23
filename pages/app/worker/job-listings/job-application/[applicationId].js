@@ -24,6 +24,8 @@ import {
 import { ApplicationTimelineService } from "@/layout/service/ApplicationTimelineService";
 import DocumentPreview from "@/layout/components/worker/job-listings/job-application/DocumentPreview";
 import ApplicationTimeline from "@/layout/components/worker/job-listings/job-application/ApplicationTimeline";
+import { InterviewService } from "@/layout/service/InterviewService";
+import { OfferService } from "@/layout/service/OfferService";
 
 const JobApplicationView = () => {
   const { data: session } = useSession();
@@ -32,6 +34,7 @@ const JobApplicationView = () => {
   const PROVINCE = "LEYTE";
   const { applicationId, elementId, tabIndex } = router.query;
   const [timelineData, setTimelineData] = useState(null);
+  const [interviewData, setInterviewData] = useState(null);
   const [offerData, setOfferData] = useState(null); // [TODO] - get offer data from the API
   const [applicationDetails, setApplicationDetails] = useState(null);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -44,6 +47,7 @@ const JobApplicationView = () => {
   const offerAction = {
     ACCEPT: "accepted the offer",
     DECLINE: "declined the offer",
+    REASON: "declined the offer due to",
   };
 
   // Use the UTC plugin, as your timestamp is in UTC
@@ -69,7 +73,7 @@ const JobApplicationView = () => {
   const handleAcceptOffer = async (item) => {
     confirmDialog({
       message: "Are you sure you want to accept this job offer?",
-      header: "Delete Confirmation",
+      header: "Accept Confirmation",
       icon: "pi pi-info-circle",
       position: "bottom",
       accept: async () => {
@@ -126,12 +130,82 @@ const JobApplicationView = () => {
     });
   };
 
-  const handleDeclineOffer = async (item) => {
+  const handleDeclineOffer = async (selectedReason, declineReason) => {
     confirmDialog({
       message: "Are you sure you want to decline this job offer?",
-      header: "Delete Confirmation",
+      header: "Decline Confirmation",
       icon: "pi pi-info-circle",
       position: "bottom",
+      accept: async () => {
+        const response = await OfferService.declineOffer(applicationId);
+        console.log(response);
+
+        if (response) {
+          // create the event object
+          const declineDetails = structureOfferTimeline(
+            response.offer_id,
+            "simple",
+            offerAction.DECLINE,
+            session.user
+          );
+
+          // Add the event to the timeline
+          await ApplicationStageServices.addOfferTimelineEvent(
+            applicationId,
+            declineDetails
+          );
+
+          // create another event object
+          let declineReasonDetails = structureOfferTimeline(
+            response.offer_id,
+            "detailed",
+            offerAction.REASON,
+            session.user
+          );
+
+          // add a reason to the event object
+          // if the reason is "other", add the reason to the object
+          if (selectedReason.key === "other") {
+            declineReasonDetails.content = declineReason
+              ? declineReason
+              : "No reason provided";
+          } else {
+            declineReasonDetails.content = selectedReason.name;
+          }
+
+          // Add the event to the timeline
+          await ApplicationStageServices.addOfferTimelineEvent(
+            applicationId,
+            declineReasonDetails
+          );
+
+          // // add new timeline event
+          // const timelineEvent = {
+          //   event_description: "Job Offer Declined",
+          //   event_timestamp: dayjs.utc().format(),
+          // };
+
+          // // attach to timelineData
+          // const newTimelineData = [...timelineData, timelineEvent];
+
+          // // call mapTimelineData to update the timelineData
+          // setTimelineData(mapTimelineData(newTimelineData));
+
+          toast.current.show({
+            severity: "success",
+            summary: "Decline Success",
+            detail: "Job offer declined",
+            life: 3000,
+          });
+        } else {
+          toast.current.show({
+            severity: "error",
+            summary: "Error",
+            detail: "Something went wrong",
+            life: 3000,
+          });
+        }
+      },
     });
   };
 
@@ -165,6 +239,22 @@ const JobApplicationView = () => {
           // Set timeline data
           setTimelineData(clientTimelineData);
 
+          // Get additional data if the application is in the interview stage
+          if (
+            clientTimelineData[clientTimelineData.length - 1]
+              .event_description === "Interview Scheduled"
+          ) {
+            const interviewData = await InterviewService.getInterviewDetails(
+              applicationData.job_id,
+              applicationId
+            );
+
+            // console.log("Interview Data: ", interviewData); // [TODO] - remove console.log
+
+            // Set interview data
+            setInterviewData(interviewData);
+          }
+
           // Get additional data if the application is in the job offer stage
           if (
             clientTimelineData[clientTimelineData.length - 1]
@@ -175,7 +265,7 @@ const JobApplicationView = () => {
               applicationId
             );
 
-            console.log(offerData);
+            console.log("Offer Data: ", offerData); // [TODO] - remove console.log
             // Set offer data
             setOfferData(offerData);
           }
@@ -414,6 +504,7 @@ const JobApplicationView = () => {
                 handleAcceptOffer={handleAcceptOffer}
                 handleDeclineOffer={handleDeclineOffer}
                 offerData={offerData}
+                interviewData={interviewData}
               />
             </div>
           </div>

@@ -18,12 +18,14 @@ import { Badge } from "primereact/badge";
 import { Toast } from "primereact/toast";
 import { ApplicationStageServices } from "@/layout/service/ApplicationStageService";
 import { ScreeningService } from "@/layout/service/ScreeningService";
+import { InterviewService } from "@/layout/service/InterviewService";
 
 export default function InterviewContainer({
   applicants,
   postId,
   distances,
   setInterviewResults,
+  setHasInterview,
 }) {
   const MAX_VISIBLE_ITEMS = 3;
   const [bestCandidate, setBestCandidate] = useState();
@@ -137,6 +139,15 @@ export default function InterviewContainer({
       // reset candidate for cancel
       setCandidateForCancel(null);
 
+      // if there is no at least one completed interview, disallow moving to next stage
+      if (
+        !scheduledApplicants.some(
+          (applicant) => applicant.interview.status === "completed"
+        )
+      ) {
+        setHasInterview(false);
+      }
+
       toastRef.current.show({
         severity: "success",
         summary: "Success",
@@ -177,6 +188,9 @@ export default function InterviewContainer({
 
       // reset candidate for cancel
       setCandidateForComplete(null);
+
+      // allow moving to next stage if at least one interview has been completed
+      setHasInterview(true);
 
       toastRef.current.show({
         severity: "success",
@@ -306,8 +320,9 @@ export default function InterviewContainer({
 
   const fetchScheduledApplicants = async () => {
     // Fetch the latest scheduled applicants from the database/API
-    const scheduledApplicants =
-      await ApplicationStageServices.getScheduledInterviews(postId); // This only returns interview date details
+    const scheduledApplicants = await InterviewService.getScheduledInterviews(
+      postId
+    ); // This only returns interview date details
 
     // assign applicants information to scheduled applicants
     // assign interview date and time to applicants
@@ -795,7 +810,7 @@ export default function InterviewContainer({
           <div className="pt-4 pb-2">
             <div className="flex justify-between items-center">
               <p className="text-base font-semibold leading-6 text-gray-900 mb-3">
-                Awaiting Schedule (5)
+                Awaiting Schedule ({unScheduledApplicants.length})
               </p>
             </div>
             <DataTable value={unScheduledApplicants}>

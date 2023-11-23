@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export const JobPostService = {
   /**
    * Gets all job posts.

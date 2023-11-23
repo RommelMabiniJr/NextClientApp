@@ -16,6 +16,7 @@ export default function ScreeningContainer({
   applicants,
   distances,
   setScreeningResults,
+  screeningResults,
   postId,
 }) {
   const toast = useRef(null);
@@ -185,7 +186,6 @@ export default function ScreeningContainer({
       header: "Confirmation",
       icon: "pi pi-exclamation-triangle",
       accept: () => {
-        console.log(isFinished);
         handleSaveScreening(isFinished);
       },
       reject: () => {}, // Do nothing
@@ -253,8 +253,6 @@ export default function ScreeningContainer({
   const applyFilterAndSort = () => {
     let filteredWorkers = [...applicantsPool];
 
-    // console.log(applicants);
-
     // Apply filters
     if (selectedDocuments.length > 0) {
       filteredWorkers = filteredWorkers.filter((worker) =>
@@ -305,9 +303,10 @@ export default function ScreeningContainer({
         break;
     }
 
-    // console.log(filteredWorkers);
     // Update the state with filtered and sorted workers.
     setShortlistedApplicants(filteredWorkers);
+
+    console.log("Filtered and sorted workers: ", filteredWorkers);
   };
 
   const handleResetFilterAndSort = () => {
@@ -324,9 +323,9 @@ export default function ScreeningContainer({
     if (isFinished) return "hidden";
   };
 
-  const EmptyMessage = () => (
-    <div className="text-center">
-      <p>No qualified applicants found.</p>
+  const EmptyMessage = (message) => (
+    <div className="">
+      <p className="">No qualified applicants found.</p>
       {/* You can customize the message or add additional content here */}
     </div>
   );
@@ -334,7 +333,9 @@ export default function ScreeningContainer({
   const fetchScreeningResults = async () => {
     const response = await ScreeningService.getScreeningResults(postId);
 
-    if (response) {
+    console.log("response: ", response.length);
+
+    if (response.length > 0) {
       // Iterate over screening results and find corresponding applicant
       const updatedPassedApplicants = response
         .filter((result) => result.result === "passed")
@@ -349,6 +350,7 @@ export default function ScreeningContainer({
         })
         .filter(Boolean);
 
+      // this is saved screening results of failed
       const updatedApplicantsPool = response
         .filter((result) => result.result === "failed")
         .map((result) => {
@@ -362,11 +364,26 @@ export default function ScreeningContainer({
         })
         .filter(Boolean);
 
+      // determine if there is a new applicant added that is not yet screened
+      const newApplicants = applicants.filter(
+        (applicant) =>
+          !response.some(
+            (result) => result.worker.email === applicant.information.email
+          )
+      );
+
+      // add the new applicants to the pool
+      updatedApplicantsPool.push(...newApplicants);
+
       setPassedApplicants(updatedPassedApplicants);
       setApplicantsPool(updatedApplicantsPool);
 
       // since there is an existing screening result, disable set isFinished to true
       setIsFinished(true);
+    }
+    // If there is no screening result saved, set the applicants pool to all applicants
+    else if (response.length === 0) {
+      setApplicantsPool(applicants);
     }
   };
 
@@ -412,6 +429,7 @@ export default function ScreeningContainer({
         <div className="flex justify-between items-center">
           <p className="text-lg font-semibold leading-6 text-gray-900">
             Qualified Applicants
+            {/* {console.log(shortlistedApplicants)} */}
           </p>
           <div className="flex items-center justify-center pl-3 rounded-md mb-3">
             {!isFinished && (
@@ -422,7 +440,7 @@ export default function ScreeningContainer({
                 className="align-middle"
                 iconPos="right"
                 onClick={() => confirmSaveScreening()}
-                disabled={!shortlistedApplicants}
+                disabled={!passedApplicants.length}
               />
             )}
             {isFinished && (
@@ -433,7 +451,6 @@ export default function ScreeningContainer({
                 className="align-middle"
                 iconPos="right"
                 onClick={() => handleSaveScreening(isFinished)}
-                disabled={!shortlistedApplicants}
               />
             )}
             {!isFinished && (
@@ -514,15 +531,6 @@ export default function ScreeningContainer({
                 Select or Shortlist Applicants
                 <i className="pi pi-chevron-bottom"></i>
               </p>
-              {/* <div className="mr-3">
-                <Button
-                  label="Confirm"
-                  size="small"
-                  className="w-full ml-3"
-                  onClick={() => handleConfirmScreening()}
-                  outlined
-                />
-              </div> */}
             </div>
             <div className="flex items-center justify-center mb-2">
               <div className="flex-grow">
@@ -697,12 +705,15 @@ export default function ScreeningContainer({
         ) : (
           <div className="disqualified-area">
             <p className="text-lg font-semibold leading-6 text-gray-900 mb-4">
-              Disqualified Applicants
+              Applicants Pool
               <i className="pi pi-chevron-bottom"></i>
             </p>
             {applicantsPool.length > 0 ? (
               applicantsPool.map((applicant, index) => (
-                <div className="flex items-center justify-between mb-2.5 ml-2">
+                <div
+                  className="flex items-center justify-between mb-2.5 ml-2"
+                  key={index}
+                >
                   <div className="flex items-center">
                     <p className="mr-3">{index + 1}.</p>
                     <div className="mr-3">
@@ -728,7 +739,10 @@ export default function ScreeningContainer({
                 </div>
               ))
             ) : (
-              <EmptyMessage />
+              <p>
+                No applicants left. Please go back to the previous step to
+                select more applicants.
+              </p>
             )}
           </div>
         )}
