@@ -31,19 +31,26 @@ const JobApplicationView = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const toast = useRef(null);
-  const PROVINCE = "LEYTE";
   const { applicationId, elementId, tabIndex } = router.query;
+
+  // States
   const [timelineData, setTimelineData] = useState(null);
   const [interviewData, setInterviewData] = useState(null);
-  const [offerData, setOfferData] = useState(null); // [TODO] - get offer data from the API
+  const [offerData, setOfferData] = useState(null); // Used to store the offer data
+  const [offerEvents, setOfferEvents] = useState([]); // Used to store the offer events
+  const [offerStatus, setOfferStatus] = useState(null); // Used to store the offer status [accepted, declined, pending, updated]
   const [applicationDetails, setApplicationDetails] = useState(null);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [selectedDocUrl, setSelectedDocUrl] = useState([]); // An array of URLs
+  const [selectedDocUrl, setSelectedDocUrl] = useState([]); // An array of URLs for the documents
   const [docs, setDocs] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Helper functions or constants
   const dateConverter = DateConverter();
   const defaultAvatar = "/layout/profile-default.png";
 
+  // Constants
+  const PROVINCE = "LEYTE";
   const offerAction = {
     ACCEPT: "accepted the offer",
     DECLINE: "declined the offer",
@@ -77,7 +84,8 @@ const JobApplicationView = () => {
       icon: "pi pi-info-circle",
       position: "bottom",
       accept: async () => {
-        const response = await ApplicationStageServices.acceptOffer(
+        const response = await OfferService.acceptOffer(
+          applicationDetails.post.job_id,
           applicationId
         );
         console.log(response);
@@ -118,6 +126,9 @@ const JobApplicationView = () => {
 
           // call mapTimelineData to update the timelineData
           setTimelineData(mapTimelineData(newTimelineData));
+
+          // update the offer status
+          setOfferStatus("accepted");
 
           toast.current.show({
             severity: "success",
@@ -179,17 +190,16 @@ const JobApplicationView = () => {
             declineReasonDetails
           );
 
-          // // add new timeline event
-          // const timelineEvent = {
-          //   event_description: "Job Offer Declined",
-          //   event_timestamp: dayjs.utc().format(),
-          // };
+          // add the the two decline events to the offerEvents state
+          // const newOfferEvents = [...offerEvents, declineDetails];
+          setOfferEvents([
+            ...offerEvents,
+            declineDetails,
+            declineReasonDetails,
+          ]);
 
-          // // attach to timelineData
-          // const newTimelineData = [...timelineData, timelineEvent];
-
-          // // call mapTimelineData to update the timelineData
-          // setTimelineData(mapTimelineData(newTimelineData));
+          // update the offer status
+          setOfferStatus("declined");
 
           toast.current.show({
             severity: "success",
@@ -268,6 +278,9 @@ const JobApplicationView = () => {
             console.log("Offer Data: ", offerData); // [TODO] - remove console.log
             // Set offer data
             setOfferData(offerData);
+
+            //Set offer status
+            setOfferStatus(offerData.status);
           }
         }
       } catch (error) {
@@ -287,6 +300,39 @@ const JobApplicationView = () => {
       fetchApplicationDetails();
     }
   }, [applicationId]);
+
+  useEffect(() => {
+    const fetchOfferEvents = async () => {
+      if (!offerData) {
+        return;
+      }
+
+      const offerTimelineEvents =
+        await ApplicationStageServices.getOfferTimelineEvents(
+          offerData.offer_id
+        );
+
+      if (!offerTimelineEvents) {
+        return;
+      }
+
+      const structuredOfferTimelineEvents = offerTimelineEvents.map(
+        (event) => ({
+          offerId: event.offer_id,
+          eventType: event.event_type,
+          user: event.user,
+          profile_url: event.profile_url,
+          action: event.action,
+          timestamp: event.timestamp,
+          content: event.content,
+        })
+      );
+
+      setOfferEvents(structuredOfferTimelineEvents);
+    };
+
+    fetchOfferEvents();
+  }, [offerData]);
 
   if (loading) {
     return (
@@ -500,6 +546,8 @@ const JobApplicationView = () => {
             <div className="col-11 md:col-10 bg-white p-4 m-4 mt-2 mx-auto rounded-md border-2 ">
               <h5 className="ml-2 mb-5">- Application Progress</h5>
               <ApplicationTimeline
+                offerEvents={offerEvents}
+                offerStatus={offerStatus}
                 timelineData={timelineData}
                 handleAcceptOffer={handleAcceptOffer}
                 handleDeclineOffer={handleDeclineOffer}

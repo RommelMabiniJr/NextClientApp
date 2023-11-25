@@ -15,6 +15,8 @@ dayjs.extend(utc);
 
 const ApplicationTimeline = ({
   offerData,
+  offerStatus,
+  offerEvents,
   interviewData,
   timelineData,
   handleAcceptOffer,
@@ -26,7 +28,6 @@ const ApplicationTimeline = ({
   const [selectedReason, setSelectedReason] = useState("");
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receiveUpdates, setReceiveUpdates] = useState("yes");
-  const [offerEvents, setOfferEvents] = useState([]);
 
   const declineReasonsCategories = [
     {
@@ -53,38 +54,9 @@ const ApplicationTimeline = ({
     {
       key: "other",
       title: "Other Reason (Specify)",
-      name: "(Other) Please specify the reason for declining the job offer.",
+      name: "(Other) Specify the reason for declining the job offer.",
     },
   ];
-
-  useEffect(() => {
-    const fetchOfferEvents = async () => {
-      const offerTimelineEvents =
-        await ApplicationStageServices.getOfferTimelineEvents(
-          offerData.offer_id
-        );
-
-      if (!offerTimelineEvents) {
-        return;
-      }
-
-      const structuredOfferTimelineEvents = offerTimelineEvents.map(
-        (event) => ({
-          offerId: event.offer_id,
-          eventType: event.event_type,
-          user: event.user,
-          profile_url: event.profile_url,
-          action: event.action,
-          timestamp: event.timestamp,
-          content: event.content,
-        })
-      );
-
-      setOfferEvents(structuredOfferTimelineEvents);
-    };
-
-    fetchOfferEvents();
-  }, []);
 
   const onDeclineOffer = () => {
     setDeclineReasonDialogVisible(true);
@@ -97,7 +69,10 @@ const ApplicationTimeline = ({
           label="Confirm"
           className="p-button-sm"
           severity="danger"
-          onClick={() => handleDeclineOffer(selectedReason, declineReason)}
+          onClick={() => {
+            handleDeclineOffer(selectedReason, declineReason);
+            setDeclineReasonDialogVisible(false);
+          }}
         />
         <Button
           label="Cancel"
@@ -236,26 +211,27 @@ const ApplicationTimeline = ({
                       Response
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {offerData.status === "accepted" ? (
-                        <button
+                      {offerStatus === "accepted" ? (
+                        <Button
+                          label="Accepted"
+                          size="small"
+                          severity="success"
                           disabled
-                          className="font-bold mr-2 py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600"
-                        >
-                          Accepted
-                        </button>
+                        ></Button>
                       ) : null}
 
-                      {offerData.status === "declined" ? (
-                        <button
+                      {offerStatus === "declined" ? (
+                        <Button
+                          label="Declined"
+                          size="small"
+                          severity="danger"
                           disabled
-                          className="font-bold py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Declined
-                        </button>
+                          // className="font-bold py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
+                        ></Button>
                       ) : null}
 
-                      {offerData.status === "updated" ||
-                      offerData.status === "other" ? (
+                      {offerStatus === "updated" ||
+                      offerStatus === "pending" ? (
                         <>
                           <button
                             onClick={() => handleAcceptOffer(item)}
@@ -274,7 +250,7 @@ const ApplicationTimeline = ({
                       <Dialog
                         visible={declineReasonDialogVisible}
                         onHide={() => setDeclineReasonDialogVisible(false)}
-                        header="Decline Reason"
+                        header="PLEASE SELECT A REASON FOR DECLINING THE OFFER:"
                         modal
                         className=""
                         footer={footerDeclineDialog}
@@ -309,11 +285,11 @@ const ApplicationTimeline = ({
                           </div>
                         </div> */}
 
-                        <div className="font-semibold pb-3 ml-3">
+                        {/* <div className="font-semibold pb-3 ml-3">
                           Please select a reason for declining the job offer:
-                        </div>
+                        </div> */}
 
-                        <div className="p-fluid flex flex-column gap-3 w-full">
+                        <div className="p-fluid flex flex-column gap-3 w-full mt-1">
                           {declineReasonsCategories.map((reason) => (
                             <div className="flex items-center gap-2 text-sm ml-3 w-full">
                               <RadioButton
@@ -323,7 +299,10 @@ const ApplicationTimeline = ({
                                 onChange={(e) => setSelectedReason(e.value)}
                                 checked={selectedReason.key === reason.key}
                               />
-                              <label htmlFor={reason.key} className="ml-2">
+                              <label
+                                htmlFor={reason.key}
+                                className="ml-2 text-base"
+                              >
                                 {reason.name}
                               </label>
                             </div>

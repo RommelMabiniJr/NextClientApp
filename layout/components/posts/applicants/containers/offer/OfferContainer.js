@@ -107,7 +107,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
     const result = await ApplicationStageServices.sendOffer(
       postId,
       selectedCandidate.application_id,
-      offerDetails
+      tempOfferDetails
     );
 
     // console.log("Result:", result);
@@ -136,6 +136,9 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
       setLoading(false);
       setIsEditMode(false);
       setHasExistingOffer(true);
+
+      // update the offer status
+      setOfferStatus("pending");
 
       // Show notification for successful offer submission
       showNotification("success", "Offer submitted successfully!");
@@ -177,6 +180,9 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
       setLoading(false);
       setIsEditMode(false);
       setHasExistingOffer(true);
+
+      // update the offer status
+      setOfferStatus("updated");
 
       // Show notification for successful offer submission
       showNotification("success", "Offer updated successfully!");

@@ -138,7 +138,7 @@ export default function ApplicationTabs({
         setHasInterview(true);
       }
 
-      if (offerResult.length > 0) {
+      if (offerResult.status == "accepted") {
         setHasOffer(true);
       }
 
@@ -264,16 +264,16 @@ export default function ApplicationTabs({
     }
   };
 
-  const handleRevertStage = () => {
+  const handleRevertStage = async () => {
     // make sure the stage is not less than the first stage
     if (currentStageIndex == 0) {
       return;
     }
 
     // reset any progress made in the current stage in the database
-    const resetResult = ApplicationStageServices.resetStage(postId);
+    const resetResult = await ApplicationStageServices.resetStage(postId);
 
-    const result = ApplicationStageServices.setCurrentStage(
+    const result = await ApplicationStageServices.setCurrentStage(
       postId,
       stages[currentStageIndex - 1]
     );

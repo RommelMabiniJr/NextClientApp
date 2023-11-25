@@ -39,7 +39,7 @@ const BookingViewContent = () => {
         setBooking(data);
 
         // console.log(data);
-        if (data.booking_info.booking_status === "Completed") {
+        if (data.booking_info.booking_progress === "Completed") {
           // check and see if the employer has already left a review
           // if they have, then show the review
           const review = await RatingAndReviewService.getReviewOfBooking(
@@ -236,7 +236,7 @@ const BookingViewContent = () => {
     }
 
     // Display buttons based on the booking status
-    if (booking.booking_info.booking_status.toLowerCase() == "confirmed") {
+    if (booking.booking_info.booking_progress.toLowerCase() == "confirmed") {
       return (
         <>
           {/* Display a button to prompt the start of work */}
@@ -263,7 +263,7 @@ const BookingViewContent = () => {
         </>
       );
     } else if (
-      booking.booking_info.booking_status.toLowerCase() === "in progress"
+      booking.booking_info.booking_progress.toLowerCase() === "in progress"
     ) {
       return (
         <>
@@ -282,7 +282,7 @@ const BookingViewContent = () => {
         </>
       );
     } else if (
-      booking.booking_info.booking_status.toLowerCase() === "completed"
+      booking.booking_info.booking_progress.toLowerCase() === "completed"
     ) {
       return (
         <>
@@ -545,8 +545,8 @@ const BookingViewContent = () => {
               </p>
               <div className="flex flex-column justify-center items-center py-2 mb-2">
                 <p className="font-bold text-center mb-1">Booking Status:</p>
-                {/* <Tag value={booking.booking_info.booking_status}></Tag> */}
-                <BookingStatus status={booking.booking_info.booking_status} />
+                {/* <Tag value={booking.booking_info.booking_progress}></Tag> */}
+                <BookingStatus status={booking.booking_info.booking_progress} />
               </div>
 
               {renderAdditionalInfo()}

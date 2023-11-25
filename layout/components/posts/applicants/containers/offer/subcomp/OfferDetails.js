@@ -129,7 +129,7 @@ const OfferDetails = ({
         badgeClass = "bg-gray-50 text-gray-600 ring-gray-600/10";
         badgeText = "Expired";
         break;
-      case null:
+      case "pending":
         badgeClass = "bg-yellow-50 text-yellow-800 ring-yellow-500/10";
         badgeText = "Pending";
         break;
@@ -218,7 +218,7 @@ const OfferDetails = ({
               </div>
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-primary-400">
                 Benefits
               </label>
               <div className="mb-3">

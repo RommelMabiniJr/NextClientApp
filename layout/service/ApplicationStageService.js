@@ -185,10 +185,10 @@ export const ApplicationStageServices = {
     }
   },
 
-  async acceptOffer(applicationId) {
+  async acceptOffer(jobPostId, applicationId) {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/worker/job-offer/${applicationId}/accept`
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/worker/post/${jobPostId}/job-offer/${applicationId}/accept`
       );
       return response.data;
     } catch (error) {
