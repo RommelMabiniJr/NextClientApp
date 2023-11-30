@@ -192,7 +192,7 @@ const RegistrationPage = () => {
 
   return (
     <div>
-      <div className="flex align-items-center justify-content-center">
+      <div className="flex align-items-center justify-content-center p-5">
         <Toast ref={toast} />
         <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
           <div className="text-center mb-5">
@@ -200,8 +200,7 @@ const RegistrationPage = () => {
               <img
                 src="/layout/logo.png"
                 alt="hyper"
-                height={50}
-                className="mb-3"
+                className="mb-3 h-40 mx-auto"
               />
             </Link>
             <div className="text-900 text-3xl font-medium mb-3">
