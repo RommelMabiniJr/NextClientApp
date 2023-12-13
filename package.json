@@ -4,7 +4,7 @@
   "proxy": "https://kasambahayko.onrender.com",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "server": "nodemon server/index.js",
     "build": "next build",
     "start": "next start",

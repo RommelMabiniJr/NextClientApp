@@ -1,7 +1,23 @@
 import { Button } from "primereact/button";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { HiredService } from "@/layout/service/HiredService";
 
-const HiredContainer = ({ applicant, offer, workDetails }) => {
+const HiredContainer = ({ postId }) => {
+  const [hiredApplicant, setHiredApplicant] = useState({});
+
+  useEffect(() => {
+    const fetchHiredApplicant = async () => {
+      const response = await HiredService.getHiredApplicant(postId);
+      setHiredApplicant(response);
+    };
+
+    fetchHiredApplicant();
+  }, [postId]);
+
+  if (!hiredApplicant) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="py-10">
       <div className="flex items-center">
@@ -16,9 +32,7 @@ const HiredContainer = ({ applicant, offer, workDetails }) => {
             Congratulations!! You hired{" "}
             <a>
               <span>
-                {applicant.information.first_name +
-                  " " +
-                  applicant.information.last_name}
+                {hiredApplicant.first_name + " " + hiredApplicant.last_name}
               </span>
             </a>
           </p>

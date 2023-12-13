@@ -1,12 +1,38 @@
 import EmployerNavbar from "@/layout/EmployerNavbar";
+import EmptyNotification from "@/layout/components/employer/notifications/EmptyNotification";
+import EmpNotificationList from "@/layout/components/employer/notifications/EmpNotificationList";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { NotificationService } from "@/layout/service/NotificationService";
+import NotificationHeader from "@/layout/components/employer/notifications/NotificationHeader";
 
-export default function MessagesPage() {
-  const { data: session, status: sessionStatues } = useSession();
+const NotificationPage = () => {
+  const { data: session, status: sessionStatus } = useSession();
+  const [notifications, setNotifications] = useState([]);
+  const [notificationMode, setNotificationMode] = useState("all");
+
   const handleSignOut = () => {
     signOut();
   };
+
+  useEffect(() => {
+    // Get notifications from the server using user_id from session
+    const fetchNotifications = async () => {
+      if (!session) {
+        return;
+      }
+
+      const response = await NotificationService.getEmployerNotifications(
+        session.user.uuid
+      );
+      setNotifications(response);
+    };
+
+    console.log(session);
+
+    fetchNotifications();
+  }, [session]);
 
   if (!session) {
     return (
@@ -19,29 +45,23 @@ export default function MessagesPage() {
   return (
     <div className="bg-white h-screen">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
-      <div className="px-5 py-4">
-        <h3>Notifications</h3>
-        {/* render no notifications */}
-        <div className="flex flex-column align-items-center justify-content-center">
-          <img
-            src="/layout/empty-notifications.png"
-            alt="empty"
-            className="w-15rem h-15rem mt-10"
+      <div className="px-5 py-4 ml-5">
+        <NotificationHeader
+          notificationMode={notificationMode}
+          setNotificationMode={setNotificationMode}
+        />
+        {/* Check if there are notifications */}
+        {notifications.length > 0 ? (
+          <EmpNotificationList
+            notifications={notifications}
+            setNotifications={setNotifications}
           />
-          <div className="text-center">
-            <p className="text-gray-800 font-medium text-xl">
-              No notifications to display yet.
-            </p>
-            <p className="text-gray-600 text-l mx-auto w-8">
-              Begin your journey by browsing caregivers{" "}
-              <Link href={"/app/employer/worker-search"}>kasambahays</Link> now
-              to initiate chats or enlist job opportunities. Or,{" "}
-              <Link href="/app/posts">post a job</Link> to discover interested
-              candidates..
-            </p>
-          </div>
-        </div>
+        ) : (
+          <EmptyNotification />
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default NotificationPage;

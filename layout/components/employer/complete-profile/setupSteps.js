@@ -144,7 +144,12 @@ const HouseholdInformationStep = ({
 };
 
 const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
-  const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
+  const {
+    isFormFieldInvalid,
+    getFormErrorMessage,
+    paymentFrequencyOptions,
+    formik,
+  } = props;
   const [payments, setPayments] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState(null);
@@ -172,7 +177,7 @@ const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
 
   useEffect(() => {
     PaymentService.getPaymentMethods().then((data) => setPayments(data));
-    PaymentService.getFrequencyOfPayments().then((data) => setOptions(data));
+    // PaymentService.getFrequencyOfPayments().then((data) => setOptions(data));
   }, []);
 
   const handleSelectedPaymentChange = (e) => {
@@ -217,10 +222,11 @@ const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           placeholder="Select Frequency of Pay"
           value={formik.values.paymentFrequency}
           id="paymentFrequency"
-          options={options.map((option) => ({
-            label: option.name,
-            value: option.name,
-          }))}
+          // options={options.map((option) => ({
+          //   label: option.name,
+          //   value: option.name,
+          // }))}
+          options={paymentFrequencyOptions}
           onChange={handleSelectedFrequencyChange}
         />
       </div>

@@ -44,12 +44,13 @@ const BookingsContent = ({ session }) => {
 
   useEffect(() => {
     // get bookings simple
-    const fetchBookings = async () => {
+    const fetchAllBookings = async () => {
       const { userId } = await UUIDService.getUserId(session.user.uuid);
-      const bookings = await BookingService.getWorkerBookingsSimple(userId);
+      const bookings = await BookingService.getWorkerAllBookingsSimple(userId);
       setSimpleBookings(bookings);
     };
-    fetchBookings();
+
+    fetchAllBookings();
   }, []);
   const TextLimit = ({ text, limit }) => {
     const [showMore, setShowMore] = useState(false);

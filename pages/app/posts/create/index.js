@@ -1,105 +1,108 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import EmployerNavbar from "@/layout/EmployerNavbar";
 import { getSession, useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
-import { TabView, TabPanel } from "primereact/tabview";
-import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { Toast } from "primereact/toast";
-import Link from "next/link";
-import { Card } from "primereact/card";
 import { Steps } from "primereact/steps";
 import { useFormik } from "formik";
 import jobCreateSteps from "@/layout/components/posts/create/steps/jobCreateSteps";
 import axios from "axios";
+import dayjs from "dayjs";
+import { postJobTitleAndDescriptionValidate } from "@/lib/validators/postValidator";
+import { ConfigService } from "@/layout/service/ConfigService";
 
-export default function EmployerPosts() {
+export default function CreateJobPostPage() {
   const { data: session } = useSession();
+  const router = useRouter();
+  const toast = useRef(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [jobTitleMaxLength, setJobTitleMaxLength] = useState(10);
+  const [jobDescriptionMaxLength, setJobDescriptionMaxLength] = useState(10);
+  const [livingArrangementOptions, setLivingArrangementOptions] = useState([]);
+  const items = [
+    {
+      label: "Type of Service",
+    },
+    {
+      label: "Job Type",
+    },
+    {
+      label: "Job Schedule",
+    },
+    {
+      label: "Additional Details",
+    },
+  ];
 
   const handleSignOut = () => {
     signOut();
   };
 
-  return (
-    <div className="h-screen">
-      {session ? (
-        <DisplayPostCreation session={session} handleSignOut={handleSignOut} />
-      ) : (
-        <div>loading...</div>
-      )}
-    </div>
-  );
-}
+  useEffect(() => {
+    const fetchJobConfig = async () => {
+      const titleResponse = await ConfigService.getConfig(
+        "Job Title",
+        "job_posting"
+      );
 
-const RenderCreateJobPostButton = () => {
-  return (
-    <div className="mx-auto">
-      <Link href="/app/posts/create">
-        <Button icon="pi-angle-double-right" className="btn btn-primary">
-          Continue
-        </Button>
-      </Link>
-    </div>
-  );
-};
+      if (titleResponse.status === 200) {
+        setJobTitleMaxLength(titleResponse.data.config_value);
+      } else {
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: "Something went wrong",
+          life: 3000,
+        });
+      }
 
-const DisplayPostCreation = ({ session, handleSignOut }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const router = useRouter();
-  const { id } = router.query;
-  const { edit, post } = router.query;
-  let postData = {};
+      const descriptionResponse = await ConfigService.getConfig(
+        "Job Description",
+        "job_posting"
+      );
 
-  // if edit mode, get the assign values to postData
-  // else, set postData to null
-  if (edit) {
-    postData = JSON.parse(post);
-  } else {
-    postData = null;
-  }
+      if (descriptionResponse.status === 200) {
+        setJobDescriptionMaxLength(descriptionResponse.data.config_value);
+      } else {
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: "Something went wrong",
+          life: 3000,
+        });
+      }
 
-  const toast = useRef(null);
+      const livingArrangementResponse = await ConfigService.getConfig(
+        "Living Arrangement",
+        "job_posting"
+      );
 
-  const items = [
-    {
-      label: "",
-    },
-    {
-      label: "",
-    },
-    {
-      label: "",
-    },
-    {
-      label: "",
-    },
-  ];
+      if (livingArrangementResponse.status === 200) {
+        setLivingArrangementOptions(
+          livingArrangementResponse.data.config_value.split(",")
+        );
+      } else {
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: "Something went wrong",
+          life: 3000,
+        });
+      }
+    };
+
+    fetchJobConfig();
+  }, []);
 
   const onSubmit = async (values) => {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
     try {
-      console.log(values);
-
-      // Convert jobStartDate to MySQL date format
-      values.jobStartDate = new Date(values.jobStartDate)
-        .toISOString()
-        .slice(0, 10);
-      // Convert jobEndDate to MySQL date format
-      values.jobEndDate = new Date(values.jobEndDate)
-        .toISOString()
-        .slice(0, 10);
-
-      // Convert jobStartTime to ISO 8601 time string
-      values.jobStartTime = new Date(values.jobStartTime)
-        .toISOString()
-        .slice(11, 19);
-      // Convert jobEndTime to ISO 8601 time string
-      values.jobEndTime = new Date(values.jobEndTime)
-        .toISOString()
-        .slice(11, 19);
-
-      // access livingArrangement optName property
-      values.livingArrangement = values.livingArrangement.optName;
+      // Convert date and time to MySQL format
+      values.jobStartDate = dayjs(values.jobStartDate).format("YYYY-MM-DD");
+      values.jobEndDate = dayjs(values.jobEndDate).format("YYYY-MM-DD");
+      values.jobStartTime = dayjs(values.jobStartTime).format("HH:mm:ss");
+      values.jobEndTime = dayjs(values.jobEndTime).format("HH:mm:ss");
 
       const response = await axios({
         method: "post",
@@ -107,8 +110,6 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
         withCredentials: true,
         url: `${serverUrl}/employer/post/create`,
       });
-
-      // console.log(response.data);
 
       toast.current.show({
         severity: "success",
@@ -131,18 +132,22 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
 
   const formik = useFormik({
     initialValues: {
-      // if edit mode, get the job post data from the router query
-      // else, set the initial values to empty strings
-      serviceId: edit ? postData.service_id : "",
-      jobTitle: edit ? postData.job_title : "",
-      jobType: edit ? postData.job_type : "",
-      livingArrangement: edit ? postData.living_arrangement : "",
-      // jobPayRate: edit ? postData.job_pay_rate : '',
-      jobDescription: edit ? postData.job_description : "",
-      jobStartDate: edit ? postData.job_start_date : "",
-      jobEndDate: edit ? postData.job_end_date : "",
-      jobStartTime: edit ? postData.job_start_time : "",
-      jobEndTime: edit ? postData.job_end_time : "",
+      serviceId: "",
+      jobTitle: "",
+      jobType: "",
+      livingArrangement: "",
+      jobDescription: "",
+      jobStartDate: "",
+      jobEndDate: "",
+      jobStartTime: "",
+      jobEndTime: "",
+    },
+    validate: (values) => {
+      return postJobTitleAndDescriptionValidate(
+        values,
+        jobTitleMaxLength,
+        jobDescriptionMaxLength
+      );
     },
     onSubmit: onSubmit,
   });
@@ -168,12 +173,21 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
 
   const StepComponent = jobCreateSteps[currentStep];
 
+  if (!session) {
+    return <div>loading...</div>;
+  }
+
   return (
     <div className="h-full">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
-      <div className="grid">
+      <div
+        className="grid"
+        // onClick={() => {
+        //   formik.errors
+        // }}
+      >
         <div className="col-12">
-          <div className="card">
+          <div className="card w-10 lg:w-9 mx-auto">
             <form>
               <div>
                 <Toast ref={toast} />
@@ -182,18 +196,31 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
                   model={items}
                   aria-expanded="true"
                   activeIndex={currentStep}
+                  pt={{
+                    label: {
+                      className: "hidden md:block",
+                    },
+
+                    step: {
+                      className: "mb-4 md:mb-0",
+                    },
+                  }}
                 />
                 <Divider className="mx-auto w-10 mb-5" />
+                {/* Display summary */}
 
                 <div className="mx-auto w-10">
                   <Toast ref={toast} />
                   <StepComponent
                     isFormFieldInvalid={isFormFieldInvalid}
                     getFormErrorMessage={getFormErrorMessage}
+                    currentStep={currentStep}
                     formik={formik}
                     onSubmit={onSubmit}
                     handleNextStep={handleNextStep}
                     handlePreviousStep={handlePreviousStep}
+                    // Below is used for config
+                    livingArrangementOptions={livingArrangementOptions}
                   />
                 </div>
               </div>
@@ -203,4 +230,4 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       </div>
     </div>
   );
-};
+}

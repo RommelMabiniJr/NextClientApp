@@ -29,10 +29,10 @@ const BookingViewContent = () => {
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState("");
 
-  const fetchData = async () => {
+  const fetchBookingData = async () => {
     try {
       if (bookingId) {
-        const data = await BookingService.getEmployerBookingFull(bookingId);
+        const data = await BookingService.getWorkerBookingFull(bookingId);
         setBooking(data);
 
         // console.log(data);
@@ -62,7 +62,7 @@ const BookingViewContent = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchBookingData();
   }, [bookingId]);
 
   if (!booking) {

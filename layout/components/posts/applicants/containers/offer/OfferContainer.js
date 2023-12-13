@@ -371,7 +371,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
     <div className="divide-y">
       <div className="mb-4 ">
         <Toast ref={toast} position="bottom-right" />
-        <h2 className="text-xl font-semibold mb-4 mt-0">Chosen Candidate </h2>
+        <h2 className="text-lg font-semibold mb-4 mt-0">Chosen Candidate </h2>
         {selectedCandidate ? (
           <div className="flex items-center gap-x-4">
             <div className="applicant-container flex flex-column md:flex-row md:items-center justify-between flex-1">

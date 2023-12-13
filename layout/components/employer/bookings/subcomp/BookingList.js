@@ -1,6 +1,6 @@
 import { DataView, DataViewLayoutOptions } from "primereact/dataview";
 import { Button } from "primereact/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tag } from "primereact/tag";
 import { useRouter } from "next/router";
 import BookingStatus from "./BookingStatus";
@@ -9,11 +9,17 @@ const BookingList = ({ bookings }) => {
   const router = useRouter();
   const [layout, setLayout] = useState("list");
 
+  const handleBookingClick = (bookingType, bookingId) => {
+    return bookingType === "booking"
+      ? router.push("/app/employer/bookings/view/" + bookingId)
+      : router.push("/app/employer/bookings/request/" + bookingId);
+  };
+
   const listItem = (booking) => {
     return (
       <div
         className="booking-item w-full px-2 py-4 cursor-pointer rounded-md hover:bg-gray-100"
-        onClick={() => router.push(`/app/employer/bookings/view/${booking.id}`)}
+        onClick={() => handleBookingClick(booking.type, booking.id)}
       >
         <div className="booking-item__header flex justify-between">
           <div className="booking-item__header__left ">
@@ -50,7 +56,13 @@ const BookingList = ({ bookings }) => {
 
   return (
     <div className="booking-list">
-      <DataView value={bookings} itemTemplate={listItem} layout={"list"} />
+      <DataView
+        value={bookings}
+        itemTemplate={listItem}
+        layout={"list"}
+        paginator
+        rows={10}
+      />
     </div>
   );
 };

@@ -26,6 +26,7 @@ import DocumentPreview from "@/layout/components/worker/job-listings/job-applica
 import ApplicationTimeline from "@/layout/components/worker/job-listings/job-application/ApplicationTimeline";
 import { InterviewService } from "@/layout/service/InterviewService";
 import { OfferService } from "@/layout/service/OfferService";
+import { BookingService } from "@/layout/service/BookingService";
 
 const JobApplicationView = () => {
   const { data: session } = useSession();
@@ -546,6 +547,7 @@ const JobApplicationView = () => {
             <div className="col-11 md:col-10 bg-white p-4 m-4 mt-2 mx-auto rounded-md border-2 ">
               <h5 className="ml-2 mb-5">- Application Progress</h5>
               <ApplicationTimeline
+                applicationId={applicationId}
                 offerEvents={offerEvents}
                 offerStatus={offerStatus}
                 timelineData={timelineData}

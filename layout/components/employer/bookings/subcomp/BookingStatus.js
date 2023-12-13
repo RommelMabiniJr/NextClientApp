@@ -7,9 +7,17 @@ const BookingStatus = ({ status }) => {
     if (lowerCaseStatus === "confirmed") {
       return "success";
     } else if (lowerCaseStatus === "in progress") {
-      return "warning";
+      return "info";
     } else if (lowerCaseStatus === "completed") {
       return "primary";
+    } else if (lowerCaseStatus === "pending") {
+      return "warning";
+    } else if (
+      lowerCaseStatus === "cancelled" ||
+      lowerCaseStatus === "expired" ||
+      lowerCaseStatus === "declined"
+    ) {
+      return "danger";
     }
   };
 

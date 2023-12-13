@@ -6,7 +6,7 @@ import { Button } from "primereact/button";
 import { signIn, signOut } from "next-auth/react";
 import { useFormik } from "formik";
 import { classNames } from "primereact/utils";
-import login_validate from "@/lib/validate";
+import login_validate from "@/lib/validators/validate";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/router";

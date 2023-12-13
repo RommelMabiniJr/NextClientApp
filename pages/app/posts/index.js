@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Posts from "@/layout/components/posts/show/Posts";
 
-export default function EmployerPosts() {
+export default function EditJobPostPage() {
   const { data: session, status, loading } = useSession();
   const router = useRouter();
 
@@ -16,13 +16,17 @@ export default function EmployerPosts() {
     signOut();
   };
 
+  if (!session) {
+    return (
+      <div className="h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen">
-      {session ? (
-        <DisplayPosts session={session} handleSignOut={handleSignOut} />
-      ) : (
-        <div>loading...</div>
-      )}
+      <DisplayPosts session={session} handleSignOut={handleSignOut} />
     </div>
   );
 }
@@ -104,7 +108,6 @@ const DisplayPosts = ({ session, handleSignOut }) => {
       <div className="grid">
         <div className="col-12">
           <div className="card">
-            {/* <h1 className='text-center'>Posts</h1> */}
             <TabView className="text-center">
               <TabPanel header="Active Jobs">
                 {posts.length > 0 ? (

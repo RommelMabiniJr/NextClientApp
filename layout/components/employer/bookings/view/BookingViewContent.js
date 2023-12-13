@@ -499,10 +499,7 @@ const BookingViewContent = () => {
                     <i className="pi pi-check-circle text-lg"></i>
                   </span>
                   <div className="my-1.5">
-                    <p className="m-0">
-                      {/* Free wifi with occasional snacks */}
-                      {benefit}
-                    </p>
+                    <p className="m-0">{benefit}</p>
                   </div>
                 </div>
               ))}
@@ -526,26 +523,25 @@ const BookingViewContent = () => {
             </div>
             <div className="flex flex-column justify-center items-center">
               <h3 className="font-bold text-center mb-2">
-                {/* Maria Cristina */}
                 {booking.worker.first_name + " " + booking.worker.last_name}
               </h3>
               <p className="text-center mb-2">
                 <span className="mr-2">
                   <i className="pi pi-envelope"></i>
                 </span>
-                {/* maria.cristina@gmail */}
+
                 {booking.worker.email}
               </p>
               <p className="text-center">
                 <span className="mr-2">
                   <i className="pi pi-phone"></i>
                 </span>
-                {/* 09123456789 */}
+
                 {booking.worker.phone}
               </p>
               <div className="flex flex-column justify-center items-center py-2 mb-2">
                 <p className="font-bold text-center mb-1">Booking Status:</p>
-                {/* <Tag value={booking.booking_info.booking_progress}></Tag> */}
+
                 <BookingStatus status={booking.booking_info.booking_progress} />
               </div>
 
@@ -555,24 +551,6 @@ const BookingViewContent = () => {
             <div className="flex flex-column justify-center items-center my-4">
               {renderButtons()}
             </div>
-            {/* <div className="flex flex-column justify-center items-center my-4">
-              <Button
-                label="Send Message"
-                className="w-full"
-                onClick={() => router.push("/app/employer/messages")}
-              />
-              <Button
-                label="Mark as Complete"
-                className="w-full mt-2"
-                // onClick={markAsComplete}
-              />
-              <Button
-                label="Cancel Booking"
-                className="w-full mt-2"
-                severity="danger"
-                onClick={() => router.push("/app/employer/bookings")}
-              />
-            </div> */}
           </div>
         </div>
       </div>

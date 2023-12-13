@@ -1,14 +1,18 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import Link from "next/link";
+import axios from "axios";
+import classNames from "classnames";
 import { Menubar } from "primereact/menubar";
 import { Menu } from "primereact/menu";
-import { InputText } from "primereact/inputtext";
-import { Image } from "primereact/image";
-import { Divider } from "primereact/divider";
+import { Badge } from "primereact/badge";
 import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
-import { getSession, useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
-import Link from "next/link";
+import { NotificationService } from "./service/NotificationService";
+import { ScrollPanel } from "primereact/scrollpanel";
+import { getRelativeTimeFromNow } from "./components/utils/dateUtils";
+import { createWorkNotificationRoute } from "./components/utils/notificationUtils";
 
 const WorkerNavbar = ({}) => {
   const { data: session, loading } = useSession({
@@ -19,14 +23,76 @@ const WorkerNavbar = ({}) => {
       router.push("/auth/login");
     },
   });
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [websocketNotifications, setWebsocketNotifications] = useState([]);
+  const notifMenu = useRef(null);
   const menu = useRef(null);
   const router = useRouter();
   const toast = useRef(null);
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/auth/login");
+    await signOut({ callbackUrl: "/auth/login" });
   };
+
+  if (!session) {
+    return <div>Loading...</div>;
+  }
+
+  useEffect(() => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    const ws = new WebSocket(socketUrl); // Replace with your server address using process.env
+
+    ws.onopen = () => {
+      console.log("Connected to WebSocket server");
+    };
+
+    ws.onmessage = (event) => {
+      // Handle the incoming notification here and update your UI as needed
+
+      // check if the message is a notification
+      const message = JSON.parse(event.data);
+      console.log(message);
+      if (message.type == "notification") {
+        // check if the notification is for the current user
+        if (message.recipient == session.user.uuid) {
+          // add the notification to the list of notifications
+          setNotifications((notifications) => [...notifications, message]);
+          console.log("Notification added");
+        }
+      }
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Fetch notifications from the server
+    const fetchNotifications = async () => {
+      try {
+        const response = await NotificationService.getWorkerNotifications(
+          session.user.uuid
+        );
+
+        // order notifications by timestamp
+        const timeSortedNotifs = response.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
+        setNotifications(timeSortedNotifs);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchNotifications();
+  }, [session]);
 
   const items = session && [
     {
@@ -59,6 +125,29 @@ const WorkerNavbar = ({}) => {
     },
   ];
 
+  // Function to mark a notification as read
+  const markNotificationAsRead = async (notificationId) => {
+    await NotificationService.setWorkerNotificationRead(notificationId);
+
+    const updatedNotifications = notifications.map((notification) => {
+      if (notification.notifcation_id === notificationId) {
+        return { ...notification, read: true };
+      }
+      return notification;
+    });
+
+    setNotifications(updatedNotifications);
+
+    // route to the notification's route
+    const navigationRoute = await createWorkNotificationRoute(
+      notifications.find(
+        (notification) => notification.notification_id === notificationId
+      )
+    );
+
+    router.push(navigationRoute);
+  };
+
   // This will check if session exists inorder to display the profile items
   const profileItems = session && [
     {
@@ -83,6 +172,102 @@ const WorkerNavbar = ({}) => {
     },
   ];
 
+  const notificationItems = [
+    {
+      template: (item, options) => {
+        return (
+          <div className="w-full p-link flex align-items-center justify-content-between px-3 py-2">
+            <label className="font-bold">Notifications</label>
+            <div className="flex flex-column align">
+              <i className="pi pi-check" link />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      separator: true,
+    },
+    {
+      template: (item, options) => {
+        return (
+          <>
+            {notifications.length === 0 ? (
+              <div className="text-center my-4">
+                You have no new notifications
+              </div>
+            ) : (
+              <ScrollPanel style={{ width: "100%", height: "350px" }}>
+                {...notifications.map((notification) => (
+                  <button
+                    key={notification.notification_id}
+                    onClick={async (e) => {
+                      options.onClick(e);
+                      await markNotificationAsRead(
+                        notification.notification_id
+                      ); // Mark notification as read when clicked
+                    }}
+                    className={classNames(
+                      options.className,
+                      "w-full p-link flex align-items-center ",
+                      { "notification-unread": !notification.read } // Add a class for unread notifications
+                    )}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`font-medium ${
+                            !notification.read ? "text-bold" : ""
+                          }`}
+                        >
+                          {notification.title}
+                        </div>
+                        {!notification.read && (
+                          <div className="indicator w-2.5 h-2.5 rounded-full bg-primary"></div>
+                        )}
+                      </div>
+
+                      {/* Limit message to a certain number of characters or two lines */}
+                      <p className="text-sm text-gray-600 line-height-2 line-clamp-2 m-0">
+                        {notification.message}
+                      </p>
+
+                      {/* Get the relative time from now */}
+                      <div
+                        className={`text-xs ${
+                          notification.read ? "text-gray-600" : "text-primary"
+                        }`}
+                      >
+                        {getRelativeTimeFromNow(notification.timestamp)}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </ScrollPanel>
+            )}
+          </>
+        );
+      },
+    },
+    { separator: true },
+    {
+      template: (item, options) => {
+        return (
+          <div className="flex justify-content-center">
+            <Button
+              label="View All Notifications"
+              onClick={() => router.push("/app/worker/notifications")}
+              className="m-2 w-10 text-sm font-light"
+              rounded
+              outlined
+              size="normal"
+            ></Button>
+          </div>
+        );
+      },
+    },
+  ];
+
   const start = (
     <Link href="/app/worker-dashboard" className="flex align-items-center">
       <img
@@ -103,12 +288,19 @@ const WorkerNavbar = ({}) => {
       {/* <Image className='w-min h-min mr-4' src='/layout/profile-default.png' width='40'/> */}
       <i
         aria-label="Message"
-        onClick={() => router.push("/app/employer/messages")}
+        onClick={() => router.push("/app/worker/messages")}
         className="mr-2 p-overlay-badge mr-4 p-link p-cursor-pointer pi pi-envelope"
         style={{ fontSize: "1.5rem" }}
       >
         {/* <Badge value="8" size="" severity="danger"></Badge> */}
       </i>
+      <Menu
+        className="w-18rem"
+        model={notificationItems}
+        popup
+        ref={notifMenu}
+        id="popup_notif"
+      />
       <i
         aria-label="Notification"
         onClick={(e) => notifMenu.current.toggle(e)}
@@ -117,7 +309,8 @@ const WorkerNavbar = ({}) => {
       >
         {/* Do not display if no notification */}
         {/* Update the badge value to show the count of unread notifications only when the menu is closed */}
-        {/* {!isMenuOpen &&
+        {!isMenuOpen &&
+          notifications.length > 0 &&
           notifications.filter((notification) => !notification.read).length >
             0 && (
             <Badge
@@ -128,7 +321,7 @@ const WorkerNavbar = ({}) => {
               size=""
               severity="danger"
             ></Badge>
-          )} */}
+          )}
       </i>
       <Menu
         className=""

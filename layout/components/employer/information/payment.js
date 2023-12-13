@@ -11,6 +11,8 @@ import { useFormik } from "formik";
 import axios from "axios";
 import EditButton from "@/layout/components/employer/information/subcomp/EditButton";
 import { Toast } from "primereact/toast";
+import { ConfigService } from "@/layout/service/ConfigService";
+import FormatHelper from "@/lib/formatHelper";
 
 export function MultiplePaymentOpt({ formik, isEditMode }) {
   const [payments, setPayments] = useState([]);
@@ -68,17 +70,12 @@ export function MultiplePaymentOpt({ formik, isEditMode }) {
   );
 }
 
-export function FrequencyOfPayDropdown({ formik, isEditMode }) {
-  const [options, setOptions] = useState([
-    { name: "Weekly" },
-    { name: "Bi-Weekly" },
-    { name: "Semi-Monthly" },
-    { name: "Monthly" },
-  ]);
+export function FrequencyOfPayDropdown({ formik, isEditMode, freqOfPay }) {
+  const [freqOptions, setFreqOptions] = useState([]);
 
   useEffect(() => {
-    PaymentService.getFrequencyOfPayments().then((data) => setOptions(data));
-  }, []);
+    setFreqOptions(freqOfPay);
+  }, [freqOfPay]);
 
   return (
     <>
@@ -87,10 +84,7 @@ export function FrequencyOfPayDropdown({ formik, isEditMode }) {
           <Dropdown
             id="paymentFrequency"
             value={formik.values.paymentFrequency}
-            options={options.map((option) => ({
-              label: option.name,
-              value: option.name,
-            }))}
+            options={freqOptions}
             onChange={formik.handleChange}
             placeholder="Select Frequency of Pay"
           />
@@ -104,7 +98,28 @@ export function FrequencyOfPayDropdown({ formik, isEditMode }) {
 
 const PaymentInformation = ({ session, employer }) => {
   const [isEditMode, setIsEditMode] = useState(false);
+  const [freqOfPay, setFreqOfPay] = useState([]);
   const toast = useRef(null);
+  const formatHelper = FormatHelper();
+
+  useEffect(() => {
+    const fetchFreqOfPayConfig = async () => {
+      const response = await ConfigService.getConfig(
+        "Frequency of Payment",
+        "employer_info"
+      );
+
+      if (response.status === 200) {
+        const freqOfPay = response.data.config_value;
+
+        const formattedFreqOfPay = formatHelper.stringToArray(freqOfPay);
+
+        setFreqOfPay(formattedFreqOfPay);
+      }
+    };
+
+    fetchFreqOfPayConfig();
+  }, []);
 
   const onSubmit = async (values) => {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -166,7 +181,11 @@ const PaymentInformation = ({ session, employer }) => {
             Frequency of pay:
           </div>
           <div className="p-field">
-            <FrequencyOfPayDropdown formik={formik} isEditMode={isEditMode} />
+            <FrequencyOfPayDropdown
+              formik={formik}
+              isEditMode={isEditMode}
+              freqOfPay={freqOfPay}
+            />
           </div>
         </div>
       </>

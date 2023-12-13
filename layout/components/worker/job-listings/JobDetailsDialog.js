@@ -82,7 +82,7 @@ const JobDetailsDialog = ({
         applyDetails
       );
 
-      console.log(applyDetails);
+      // console.log(applyDetails);
       // onApply(applyDetails);
 
       return response.data; // Return response or handle as needed
@@ -127,13 +127,13 @@ const JobDetailsDialog = ({
       userDoc.type.toLowerCase()
     );
 
-    console.log(userDocumentTypes);
+    // console.log(userDocumentTypes);
 
     const filteredDocuments = ALLDOCUMENTS.filter((doc) => {
       return userDocumentTypes.includes(doc);
     });
 
-    console.log(filteredDocuments);
+    // console.log(filteredDocuments);
     setFilteredDocSelection(filteredDocuments);
   }, [userDocuments]);
 

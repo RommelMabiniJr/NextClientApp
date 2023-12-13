@@ -9,6 +9,10 @@ import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
+import { ScrollPanel } from "primereact/scrollpanel";
+import { NotificationService } from "./service/NotificationService";
+import { getRelativeTimeFromNow } from "./components/utils/dateUtils";
+import { createEmpNotificationRoute } from "./components/utils/notificationUtils";
 
 const EmployerNavbar = ({}) => {
   const { data: session, loading } = useSession({
@@ -20,20 +24,7 @@ const EmployerNavbar = ({}) => {
     },
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    // {
-    //   id: 1,
-    //   title: "Customize your profile",
-    //   message: "Add your profile picture and cover photo to stand out.",
-    //   read: false,
-    // },
-    // {
-    //   id: 2,
-    //   title: "Job Applicant",
-    //   message: "Your Job Post: Kasambahay for 1 month has one applicant.",
-    //   read: false,
-    // },
-  ]);
+  const [notifications, setNotifications] = useState([]);
   const [websocketNotifications, setWebsocketNotifications] = useState([]);
   const notifMenu = useRef(null);
   const menu = useRef(null);
@@ -41,12 +32,7 @@ const EmployerNavbar = ({}) => {
   const toast = useRef(null);
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/auth/login");
-  };
-
-  const handleMenuToggle = (e) => {
-    setIsMenuOpen(!isMenuOpen);
+    await signOut({ callbackUrl: "/auth/login" });
   };
 
   if (!session) {
@@ -95,7 +81,13 @@ const EmployerNavbar = ({}) => {
         `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/notifications/${session.user.uuid}`
       );
       const data = await response.data;
-      setNotifications(data);
+
+      // order notifications by timestamp
+      const timeSortedNotifs = data.sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      );
+
+      setNotifications(timeSortedNotifs);
     };
 
     fetchNotifications();
@@ -133,14 +125,26 @@ const EmployerNavbar = ({}) => {
   ];
 
   // Function to mark a notification as read
-  const markNotificationAsRead = (notificationId) => {
+  const markNotificationAsRead = async (notificationId) => {
+    await NotificationService.setEmpNotificationRead(notificationId);
+
     const updatedNotifications = notifications.map((notification) => {
       if (notification.id === notificationId) {
         return { ...notification, read: true };
       }
       return notification;
     });
+
     setNotifications(updatedNotifications);
+
+    // route to the notification
+    const navigationRoute = await createEmpNotificationRoute(
+      notifications.find(
+        (notification) => notification.notification_id === notificationId
+      )
+    );
+
+    router.push(navigationRoute);
   };
 
   const profileItems = session && [
@@ -182,35 +186,72 @@ const EmployerNavbar = ({}) => {
     {
       separator: true,
     },
-    ...notifications.map((notification) => ({
-      template: (item, options) => (
-        <button
-          onClick={(e) => {
-            options.onClick(e);
-            markNotificationAsRead(notification.id); // Mark notification as read when clicked
-          }}
-          className={classNames(
-            options.className,
-            "w-full p-link flex align-items-center ",
-            { "notification-unread": !notification.read } // Add a class for unread notifications
-          )}
-        >
-          <div>
-            <div
-              className={`font-medium ${!notification.read ? "text-bold" : ""}`}
-            >
-              {notification.title}
-            </div>
-            {/* Limit message to a certain number of characters or two lines */}
-            <div className="text-sm text-gray-600">
-              {notification.message.length > 70
-                ? notification.message.substring(0, 70) + "..."
-                : notification.message}
-            </div>
-          </div>
-        </button>
-      ),
-    })),
+    {
+      template: (item, options) => {
+        return (
+          <>
+            {notifications.length === 0 ? (
+              <div className="text-center my-4">
+                You have no new notifications
+              </div>
+            ) : (
+              <ScrollPanel
+                className="max-h-100px"
+                style={{ width: "100%", height: "350px" }}
+              >
+                {...notifications.map((notification) => (
+                  <button
+                    key={notification.notification_id}
+                    onClick={async (e) => {
+                      options.onClick(e);
+                      await markNotificationAsRead(
+                        notification.notification_id
+                      ); // Mark notification as read when clicked
+                    }}
+                    className={classNames(
+                      options.className,
+                      "w-full p-link flex align-items-center ",
+                      { "notification-unread": !notification.read } // Add a class for unread notifications
+                    )}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`font-medium ${
+                            !notification.read ? "text-bold" : ""
+                          }`}
+                        >
+                          {notification.title}
+                        </div>
+                        {!notification.read && (
+                          <div className="indicator w-2.5 h-2.5 rounded-full bg-primary"></div>
+                        )}
+                      </div>
+
+                      {/* Limit message to a certain number of characters or two lines */}
+                      <div className="text-sm text-gray-600">
+                        {notification.message.length > 70
+                          ? notification.message.substring(0, 70) + "..."
+                          : notification.message}
+                      </div>
+
+                      {/* Get the relative time from now */}
+                      <div
+                        className={`text-xs ${
+                          notification.read ? "text-gray-600" : "text-primary"
+                        }`}
+                      >
+                        {getRelativeTimeFromNow(notification.timestamp)}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </ScrollPanel>
+            )}
+          </>
+        );
+      },
+    },
     { separator: true },
     {
       template: (item, options) => {
@@ -261,7 +302,7 @@ const EmployerNavbar = ({}) => {
         model={notificationItems}
         popup
         ref={notifMenu}
-        id="popup_menu"
+        id="popup_notif"
       />
       <i
         aria-label="Notification"
@@ -304,7 +345,16 @@ const EmployerNavbar = ({}) => {
   return (
     // make sticky
     <div className="sticky top-0 z-50 ">
-      <Menubar start={start} model={items} end={end} />
+      <Menubar
+        start={start}
+        model={items}
+        end={end}
+        pt={{
+          root: {
+            className: "bg-white",
+          },
+        }}
+      />
     </div>
   );
 };

@@ -11,7 +11,7 @@ const BookingProgress = ({ booking }) => {
     const elapsedDuration = currentDate.diff(startDate, "days");
     const progress = (elapsedDuration / totalDuration) * 100;
 
-    return Math.min(100, progress); // Ensure progress does not exceed 100%
+    return Math.min(100, progress.toFixed(2)); // Round off progress to two decimals
   };
 
   const displayHeader = () => {
@@ -19,6 +19,7 @@ const BookingProgress = ({ booking }) => {
     const endDate = dayjs(booking.jobposting.job_end_date);
     const currentDate = dayjs();
     const duration = endDate.diff(startDate, "day");
+    const daysUntilStart = startDate.diff(currentDate, "day");
     const daysElapsed = currentDate.diff(startDate, "day");
     const daysRemaining = duration - daysElapsed;
 
@@ -31,18 +32,44 @@ const BookingProgress = ({ booking }) => {
     const weeksRemainingString = weeksRemaining === 1 ? "week" : "weeks";
     const remainingDaysString = remainingDays === 1 ? "day" : "days";
 
+    let progressMessage = "";
+
+    switch (booking.booking_info.booking_progress) {
+      case "Pending":
+        progressMessage = "Has not been accepted by worker";
+        break;
+
+      case "Confirmed":
+        progressMessage = "Will start soon in " + daysUntilStart + " days";
+        break;
+
+      case "In Progress":
+        progressMessage = `${daysElapsed}/${duration} ${daysElapsedString} (${monthsRemaining}{" "}
+            ${monthsRemainingString}, ${weeksRemaining} ${weeksRemainingString},{" "}
+        ${remainingDays} ${remainingDaysString} remaining)`;
+        break;
+
+      case "Completed":
+        progressMessage = "Booking completed";
+        break;
+
+      case "Cancelled":
+        progressMessage = "Booking cancelled";
+        break;
+
+      case "Declined":
+        progressMessage = "Worker declined booking request";
+        break;
+
+      default:
+        progressMessage = "Unknown booking progress";
+        break;
+    }
+
     return (
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-bold text-base m-0">Booking Progress</h3>
-        {calculateProgress() < 100 ? (
-          <p className="m-0">
-            {daysElapsed}/{duration} {daysElapsedString} ({monthsRemaining}{" "}
-            {monthsRemainingString}, {weeksRemaining} {weeksRemainingString},{" "}
-            {remainingDays} {remainingDaysString} remaining)
-          </p>
-        ) : (
-          <p className="m-0">Booking completed!</p>
-        )}
+        <p className="m-0">{progressMessage}</p>
       </div>
     );
   };

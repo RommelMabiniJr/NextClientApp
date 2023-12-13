@@ -10,7 +10,7 @@ import { Rating } from "primereact/rating";
 import { Avatar } from "primereact/avatar";
 import { LocationService } from "@/layout/service/LocationService";
 import ServicesTemplate from "@/layout/components/ServicesTemplate";
-import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/ShowWorkerDetailsBtn";
+import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/worker-details/ShowWorkerDetailsBtn";
 import ApplicationTabs from "@/layout/components/posts/applicants/ApplicationTabs";
 
 const Applicants = () => {

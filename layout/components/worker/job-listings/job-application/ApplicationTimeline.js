@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Timeline } from "primereact/timeline";
 import { COLORS } from "../../../utils/timelineUtils";
 import dayjs from "dayjs";
@@ -9,11 +10,14 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { RadioButton } from "primereact/radiobutton";
 import { ApplicationStageServices } from "@/layout/service/ApplicationStageService";
 import OfferTimeline from "./subcomp/OfferTimeline";
+import { useRouter } from "next/router";
+import { BookingService } from "@/layout/service/BookingService";
 
 // Use the UTC plugin, as your timestamp is in UTC
 dayjs.extend(utc);
 
 const ApplicationTimeline = ({
+  applicationId,
   offerData,
   offerStatus,
   offerEvents,
@@ -28,6 +32,23 @@ const ApplicationTimeline = ({
   const [selectedReason, setSelectedReason] = useState("");
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receiveUpdates, setReceiveUpdates] = useState("yes");
+  const [bookingId, setBookingId] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    // return if no applicationId
+    if (!applicationId) return;
+
+    const getBookingId = async () => {
+      const bookingId = await BookingService.getBookingIdByApplicationId(
+        applicationId
+      );
+
+      setBookingId(bookingId);
+    };
+
+    getBookingId();
+  }, [applicationId, timelineData]);
 
   const declineReasonsCategories = [
     {
@@ -332,7 +353,14 @@ const ApplicationTimeline = ({
       case "Job Offer Accepted":
         return (
           <div className="my-2">
-            <Button size="small" label="View Booking" className="p-button-sm" />
+            <Button
+              size="small"
+              label="View Booking"
+              className="p-button-sm"
+              onClick={() =>
+                window.open(`/app/worker/bookings/view/${bookingId}`, "_blank")
+              }
+            />
           </div>
         );
       // Add more cases as needed for different event descriptions

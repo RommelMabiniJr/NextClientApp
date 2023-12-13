@@ -8,9 +8,13 @@ import { Chip } from "primereact/chip";
 import { InputNumber } from "primereact/inputnumber";
 import { Divider } from "primereact/divider";
 import { Chips } from "primereact/chips";
+import { ConfigService } from "@/layout/service/ConfigService";
+import { AutoComplete } from "primereact/autocomplete";
 
 const ExperienceInformation = ({ session, worker }) => {
   const [isEditMode, setIsEditMode] = useState(false);
+  const [skillsOptions, setSkillsOptions] = useState([]);
+  const [rateRange, setRateRange] = useState([0, 0]);
   const toast = useRef(null);
 
   const formik = useFormik({
@@ -53,6 +57,34 @@ const ExperienceInformation = ({ session, worker }) => {
     },
   });
 
+  useEffect(() => {
+    const fetchSkillsAndRateConfig = async () => {
+      const response = await ConfigService.getConfig(
+        "Skills",
+        "kasambahay_info"
+      );
+
+      if (response.status === 200) {
+        const skills = response.data.config_value;
+        const formattedSkills = skills.split(",");
+        setSkillsOptions(formattedSkills);
+      }
+
+      const response2 = await ConfigService.getConfig(
+        "Rates",
+        "kasambahay_info"
+      );
+
+      if (response2.status === 200) {
+        const rateRange = response2.data.config_value;
+        const formattedRateRange = rateRange.split(",");
+        setRateRange(formattedRateRange);
+      }
+    };
+
+    fetchSkillsAndRateConfig();
+  }, []);
+
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode);
   };
@@ -67,6 +99,7 @@ const ExperienceInformation = ({ session, worker }) => {
           value={formik.values.hourlyRate}
           onValueChange={formik.handleChange}
           showButtons
+          min={rateRange[0]}
           mode="currency"
           currency="PHP"
         />
@@ -74,14 +107,39 @@ const ExperienceInformation = ({ session, worker }) => {
     );
   };
 
-  function MultipleSkillsOpt({ formik, isEditMode }) {
+  function MultipleSkillsOpt({ formik, isEditMode, skillsOpt }) {
+    const [skillsOptions, setSkillsOptions] = useState(skillsOpt);
+    const [filteredOptions, setFilteredOptions] = useState(null);
+
+    const search = (event) => {
+      // Timeout to emulate a network connection
+      setTimeout(() => {
+        let _filteredSkillsOptions;
+
+        if (!event.query.trim().length) {
+          _filteredSkillsOptions = [...skillsOptions];
+        } else {
+          _filteredSkillsOptions = skillsOptions.filter((skill) => {
+            return skill.toLowerCase().startsWith(event.query.toLowerCase());
+          });
+        }
+
+        setFilteredOptions(_filteredSkillsOptions);
+      }, 250);
+    };
+
     return (
       <>
         {console.log(formik.values.skills)}
         {isEditMode ? (
-          <Chips
+          <AutoComplete
             id="skills"
+            multiple
+            dropdown
+            virtualScrollerOptions={{ itemSize: 38 }}
             value={formik.values.skills}
+            suggestions={filteredOptions}
+            completeMethod={search}
             onChange={formik.handleChange}
           />
         ) : (
@@ -127,19 +185,25 @@ const ExperienceInformation = ({ session, worker }) => {
         <Divider layout="vertical" />
         <div className="col-5 grid gap-3">
           <div className="col-12">
-            <div className="text-500 font-medium">Hourly Rate: </div>
+            <div className="text-500 font-medium">Pay Rate: </div>
             <div className="col">
               {isEditMode ? (
                 renderHourlyRateField()
               ) : (
-                <div className="col text-900">₱ {formik.values.hourlyRate}</div>
+                <div className="col text-900">
+                  ₱ {formik.values.hourlyRate.toLocaleString()}
+                </div>
               )}
             </div>
           </div>
           <div className="col-12">
             <div className="text-500 font-medium">Additional Skills: </div>
             <div className="col">
-              <MultipleSkillsOpt formik={formik} isEditMode={isEditMode} />
+              <MultipleSkillsOpt
+                formik={formik}
+                isEditMode={isEditMode}
+                skillsOpt={skillsOptions}
+              />
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRef } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
@@ -10,6 +10,10 @@ import { Dropdown } from "primereact/dropdown";
 import regionVIIIJson from "../../../public/data/region-viii.json";
 import ReCAPTCHA from "react-google-recaptcha";
 import axios from "axios";
+import { Dialog } from "primereact/dialog";
+import EmailVerificationDialog from "./EmailVerification";
+import { OTPService } from "@/layout/service/OTPService";
+import { useFormik } from "formik";
 
 const PersonalInformationStep = ({
   handleNextStep,
@@ -17,7 +21,15 @@ const PersonalInformationStep = ({
   ...props
 }) => {
   const [checked, setChecked] = useState(false);
-  const { isFormFieldInvalid, getFormErrorMessage } = props;
+  const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
+
+  // initialize focus on first input field
+  const firstNameInput = useRef(null);
+
+  // focus on first input field on initial render
+  useEffect(() => {
+    firstNameInput.current.focus();
+  }, []);
 
   return (
     <div>
@@ -25,7 +37,8 @@ const PersonalInformationStep = ({
         First Name
       </label>
       <InputText
-        {...props.formik.getFieldProps("firstName")}
+        {...formik.getFieldProps("firstName")}
+        ref={firstNameInput}
         id="firstName"
         type="text"
         placeholder="Enter your first name"
@@ -39,7 +52,7 @@ const PersonalInformationStep = ({
         Last Name
       </label>
       <InputText
-        {...props.formik.getFieldProps("secondName")}
+        {...formik.getFieldProps("secondName")}
         id="lastName"
         type="text"
         placeholder="Enter your last name"
@@ -51,11 +64,21 @@ const PersonalInformationStep = ({
 
       <div className="flex flex-wrap justify-content-end gap-2 mt-4">
         <Button
+          type="button"
           label="Next"
           className="align-content-center"
           icon="pi pi-arrow-right"
           iconPos="right"
-          onClick={handleNextStep}
+          onClick={() => {
+            formik.setTouched({
+              firstName: true,
+              secondName: true,
+            });
+
+            if (!formik.errors.firstName && !formik.errors.secondName) {
+              handleNextStep();
+            }
+          }}
         />
       </div>
     </div>
@@ -67,24 +90,106 @@ const ContactDetailsStep = ({
   handlePreviousStep,
   ...props
 }) => {
-  const { isFormFieldInvalid, getFormErrorMessage } = props;
+  const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
+  const [isVerified, setIsVerified] = useState(false);
+  const [verifyDialogVisible, setVerifyDialogVisible] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [countdown, setCountdown] = useState(120); // 2 minutes
+  const toastSuccess = useRef(null);
+
+  const handleGetOTP = async () => {
+    const response = await OTPService.sendOTP(formik.values.email);
+    console.log(response.data);
+    if (response.status === 200) {
+      setVerificationCode(response.data.otp);
+      setVerifyDialogVisible(true);
+    } else {
+      toastSuccess.current.show({
+        severity: "error",
+        summary: "Error",
+        detail:
+          "An error occurred while sending the verification code. Please try again.",
+      });
+    }
+  };
+
+  const onSubmit = async (values) => {
+    console.log(values.verificationCode, verificationCode);
+    if (values.verificationCode == verificationCode) {
+      setIsVerified(true);
+      console.log("Verification successful!");
+      setVerifyDialogVisible(false);
+      toastSuccess.current.show({
+        severity: "success",
+        summary: "Verification Successful",
+        detail: "Thank you for proving that you are a human.",
+        life: 3000,
+      });
+    } else if (
+      values.verificationCode.length < 6 &&
+      values.verificationCode !== verificationCode
+    ) {
+      // set formik error
+      formik.setFieldError("verificationCode", "Invalid verification code");
+    } else {
+      toastSuccess.current.show({
+        severity: "error",
+        summary: "Error",
+        detail:
+          "An error occurred while verifying your email. Please try again.",
+      });
+    }
+  };
+
+  const verificationFormik = useFormik({
+    initialValues: {
+      verificationCode: "",
+    },
+
+    validate: (errors) => {
+      let validationErrors = {};
+
+      if (!errors.verificationCode) {
+        validationErrors.verificationCode = "Required";
+      } else if (
+        errors.verificationCode.length < 6 &&
+        errors.verificationCode !== verificationCode
+      ) {
+        validationErrors.verificationCode = "Invalid verification code";
+      }
+
+      return validationErrors;
+    },
+
+    onSubmit,
+  });
+
+  const handleResendOTP = () => {
+    setVerifyDialogVisible(true);
+    setResendDisabled(true);
+    setCountdown(10); // Reset countdown when verifying email
+  };
+
+  useEffect(() => {
+    let timer;
+
+    if (resendDisabled && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
+    } else if (countdown === 0) {
+      setResendDisabled(false);
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [resendDisabled, countdown]);
 
   return (
     <div>
-      <label htmlFor="email" className="block text-900 font-medium mb-2">
-        Email
-      </label>
-      <InputText
-        {...props.formik.getFieldProps("email")}
-        id="email"
-        type="email"
-        placeholder="Enter your email address"
-        className={classNames("w-full", {
-          "p-invalid": isFormFieldInvalid("email"),
-        })}
-      />
-      {getFormErrorMessage("email")}
-
+      <Toast ref={toastSuccess} position="top-right" />
       <label htmlFor="phoneNumber" className="block text-900 font-medium mb-2">
         Phone Number
       </label>
@@ -100,6 +205,57 @@ const ContactDetailsStep = ({
       />
       {getFormErrorMessage("phone")}
 
+      <label htmlFor="email" className="block text-900 font-medium mb-2">
+        Email
+      </label>
+      <div className="flex gap-2 justify-between items-start">
+        <div className="h-full flex-1 my-auto">
+          <InputText
+            {...props.formik.getFieldProps("email")}
+            id="email"
+            type="email"
+            placeholder="Enter your email address"
+            className={classNames("w-full", {
+              "p-invalid": isFormFieldInvalid("email"),
+            })}
+          />
+          {getFormErrorMessage("email")}
+        </div>
+        <EmailVerificationDialog
+          visible={verifyDialogVisible}
+          verificationCode={verificationCode}
+          onHide={() => setVerifyDialogVisible(false)}
+          onResend={handleResendOTP}
+          onVerify={onSubmit}
+          isResendDisabled={resendDisabled}
+          countdown={countdown}
+          formik={props.formik}
+        />
+        <Button
+          type="button"
+          label={isVerified ? "Verified" : "Verify"}
+          disabled={isVerified}
+          className=""
+          size="small"
+          severity={isVerified ? "success" : "secondary"}
+          pt={{
+            root: {
+              className: "h-3rem",
+            },
+          }}
+          onClick={() => {
+            formik.setTouched({
+              email: true,
+            });
+
+            // make sure is valid and not empty
+            if (formik.values.email) {
+              handleGetOTP();
+            }
+          }}
+        />
+      </div>
+
       <div className="flex flex-wrap justify-content-between gap-2 mt-4">
         <Button
           label="Back"
@@ -109,11 +265,21 @@ const ContactDetailsStep = ({
           onClick={handlePreviousStep}
         />
         <Button
+          type="button"
           label="Next"
           className=""
           icon="pi pi-arrow-right"
           iconPos="right"
-          onClick={handleNextStep}
+          onClick={() => {
+            formik.setTouched({
+              email: true,
+              phone: true,
+            });
+
+            if (!formik.errors.email && !formik.errors.phone) {
+              handleNextStep();
+            }
+          }}
         />
       </div>
     </div>
@@ -181,7 +347,7 @@ const LocationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
       {getFormErrorMessage("barangay")}
 
       <label htmlFor="street" className="block text-900 font-medium mb-2">
-        Street
+        Street (Optional)
       </label>
       <InputText
         {...props.formik.getFieldProps("street")}
@@ -203,11 +369,21 @@ const LocationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           onClick={handlePreviousStep}
         />
         <Button
+          type="button"
           label="Next"
           className=""
           icon="pi pi-arrow-right"
           iconPos="right"
-          onClick={handleNextStep}
+          onClick={() => {
+            formik.setTouched({
+              city: true,
+              barangay: true,
+            });
+
+            if (!formik.errors.city && !formik.errors.barangay) {
+              handleNextStep();
+            }
+          }}
         />
       </div>
     </div>
@@ -220,7 +396,7 @@ const AccountSecurityStep = ({
   ...props
 }) => {
   const [checked, setChecked] = useState(false);
-  const { isFormFieldInvalid, getFormErrorMessage } = props;
+  const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
   const [isVerified, setIsVerified] = useState(false);
 
   const toastSuccess = useRef(null);
@@ -354,10 +530,25 @@ const AccountSecurityStep = ({
         />
         <Button
           label="Confirm"
-          className=""
+          type="button"
           icon="pi pi-arrow-right"
           iconPos="right"
-          onClick={props.formik.handleSubmit}
+          onClick={() => {
+            formik.setTouched({
+              password: true,
+              confirmPassword: true,
+              user_type: true,
+            });
+
+            if (
+              !formik.errors.password &&
+              !formik.errors.confirmPassword &&
+              !formik.errors.user_type &&
+              isVerified
+            ) {
+              handleNextStep();
+            }
+          }}
         />
       </div>
     </div>
@@ -389,8 +580,8 @@ const ConfirmationStep = ({ handleNextStep, handlePreviousStep, ...props }) => (
 
 //
 const RegistrationSteps = [
-  PersonalInformationStep,
   ContactDetailsStep,
+  PersonalInformationStep,
   LocationStep,
   AccountSecurityStep,
 ];

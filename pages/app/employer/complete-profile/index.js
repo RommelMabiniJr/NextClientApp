@@ -1,18 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { Steps } from "primereact/steps";
 import { Divider } from "primereact/divider";
 import { Toast } from "primereact/toast";
 import { useFormik } from "formik";
 import axios from "axios";
-import { completeProfileValidate } from "@/lib/validate";
+import { completeProfileValidate } from "@/lib/validators/validate";
 import Link from "next/link";
 import setupSteps from "@/layout/components/employer/complete-profile/setupSteps";
 import { useSession, getSession } from "next-auth/react";
 import { useRef } from "react";
+import { ConfigService } from "@/layout/service/ConfigService";
 
 const CompleteProfile = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [paymentFrequencyOptions, setPaymentFrequencyOptions] = useState([]);
   const { data: session, loading, update } = useSession();
   const toast = useRef(null);
   const router = useRouter();
@@ -34,6 +36,23 @@ const CompleteProfile = () => {
     validate: completeProfileValidate,
     onSubmit,
   });
+
+  useEffect(() => {
+    const fetchEmployerConfig = async () => {
+      const response = await ConfigService.getConfig(
+        "Frequency of Payment",
+        "employer_info"
+      );
+
+      if (response.status === 200) {
+        const paymentFrequency = response.data.config_value;
+        const formattedPaymentFrequency = paymentFrequency.split(",");
+        setPaymentFrequencyOptions(formattedPaymentFrequency);
+      }
+    };
+
+    fetchEmployerConfig();
+  }, []);
 
   if (!session && !loading) {
     return <div>Loading...</div>;
@@ -147,8 +166,9 @@ const CompleteProfile = () => {
             <img
               src="/layout/logo.png"
               alt="hyper"
-              height={50}
-              className="mb-3"
+              height={150}
+              width={150}
+              className="mb-3 mx-auto"
             />
           </Link>
           <div className="text-900 text-3xl font-medium mb-3">
@@ -178,6 +198,8 @@ const CompleteProfile = () => {
                 onSubmit={onSubmit}
                 handleNextStep={handleNextStep}
                 handlePreviousStep={handlePreviousStep}
+                // BELOW IS USED FOR CONFIGURATION
+                paymentFrequencyOptions={paymentFrequencyOptions}
               />
             </div>
           </div>

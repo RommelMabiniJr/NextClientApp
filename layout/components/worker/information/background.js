@@ -9,9 +9,12 @@ import { CertificateService } from "@/layout/service/CertificateService";
 import { Dropdown } from "primereact/dropdown";
 import { EducationService } from "@/layout/service/EducationService";
 import { LanguageService } from "@/layout/service/LanguageService";
+import { ConfigService } from "@/layout/service/ConfigService";
 
 const BackgroundInformation = ({ session, worker }) => {
   const [isEditMode, setIsEditMode] = useState(false);
+  const [languagesOptions, setLanguagesOptions] = useState([]);
+  const [certificatesOptions, setCertificatesOptions] = useState([]);
   const toast = useRef(null);
 
   const formik = useFormik({
@@ -52,6 +55,34 @@ const BackgroundInformation = ({ session, worker }) => {
     },
   });
 
+  useEffect(() => {
+    const fetchLanguageAndCertConfig = async () => {
+      const response = await ConfigService.getConfig(
+        "Languages",
+        "kasambahay_info"
+      );
+
+      if (response.status === 200) {
+        const languages = response.data.config_value;
+        const formattedLanguages = languages.split(",");
+        setLanguagesOptions(formattedLanguages);
+      }
+
+      const response2 = await ConfigService.getConfig(
+        "Certifications",
+        "kasambahay_info"
+      );
+
+      if (response2.status === 200) {
+        const certificates = response2.data.config_value;
+        const formattedCertificates = certificates.split(",");
+        setCertificatesOptions(formattedCertificates);
+      }
+    };
+
+    fetchLanguageAndCertConfig();
+  }, []);
+
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode);
   };
@@ -77,8 +108,14 @@ const BackgroundInformation = ({ session, worker }) => {
     );
   };
 
-  function MultipleCertificationOpt({ formik, isEditMode }) {
-    const [certificates, setCertificates] = useState([]);
+  function MultipleCertificationOpt({
+    formik,
+    isEditMode,
+    certificatesOptions,
+  }) {
+    const [certificates, setCertificates] = useState(
+      certificatesOptions.map((cert) => ({ name: cert }))
+    );
     const [filteredCertificates, setFilteredCertificates] = useState(null);
 
     const search = (event) => {
@@ -100,11 +137,11 @@ const BackgroundInformation = ({ session, worker }) => {
       }, 250);
     };
 
-    useEffect(() => {
-      CertificateService.getCertificates().then((data) =>
-        setCertificates(data)
-      );
-    }, []);
+    // useEffect(() => {
+    //   CertificateService.getCertificates().then((data) =>
+    //     setCertificates(data)
+    //   );
+    // }, []);
 
     return (
       <>
@@ -137,8 +174,10 @@ const BackgroundInformation = ({ session, worker }) => {
     );
   }
 
-  function MultipleLanguagesOpt({ formik, isEditMode }) {
-    const [languages, setLanguages] = useState([]);
+  function MultipleLanguagesOpt({ formik, isEditMode, languagesOptions }) {
+    const [languages, setLanguages] = useState(
+      languagesOptions.map((lang) => ({ name: lang }))
+    );
     const [filteredLanguages, setFilteredLanguages] = useState(null);
 
     const search = (event) => {
@@ -160,9 +199,9 @@ const BackgroundInformation = ({ session, worker }) => {
       }, 250);
     };
 
-    useEffect(() => {
-      LanguageService.getLanguages().then((data) => setLanguages(data));
-    }, []);
+    // useEffect(() => {
+    //   LanguageService.getLanguages().then((data) => setLanguages(data));
+    // }, []);
 
     return (
       <>
@@ -212,7 +251,11 @@ const BackgroundInformation = ({ session, worker }) => {
             Language/Dailect:{" "}
           </div>
           <div className="col">
-            <MultipleLanguagesOpt formik={formik} isEditMode={isEditMode} />
+            <MultipleLanguagesOpt
+              formik={formik}
+              isEditMode={isEditMode}
+              languagesOptions={languagesOptions}
+            />
           </div>
         </div>
         <div className="col-12 grid align-contents-center">
@@ -220,7 +263,11 @@ const BackgroundInformation = ({ session, worker }) => {
             Certifications:{" "}
           </div>
           <div className="col">
-            <MultipleCertificationOpt formik={formik} isEditMode={isEditMode} />
+            <MultipleCertificationOpt
+              formik={formik}
+              isEditMode={isEditMode}
+              certificatesOptions={certificatesOptions}
+            />
           </div>
         </div>
       </div>

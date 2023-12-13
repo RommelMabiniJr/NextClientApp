@@ -14,7 +14,7 @@ import { MultiSelect } from "primereact/multiselect";
 import { MultiStateCheckbox } from "primereact/multistatecheckbox";
 import axios from "axios";
 import EmployerNavbar from "@/layout/EmployerNavbar";
-import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/ShowWorkerDetailsBtn";
+import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/worker-details/ShowWorkerDetailsBtn";
 import { LocationService } from "@/layout/service/LocationService";
 import { getTotalAverageRating } from "@/layout/components/utils/ratingreviewutils";
 
@@ -125,6 +125,10 @@ export default function WorkerSearchPage() {
   // }, [sessionStatus, session, router]);
 
   useEffect(() => {
+    if (!session) {
+      return;
+    }
+
     const fetchWorkers = async () => {
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
       try {
@@ -316,14 +320,16 @@ export default function WorkerSearchPage() {
 
   const ServicesTemplate = (worker) => {
     return (
-      <div className="col flex flex-wrap">
+      <div className="col flex flex-wrap gap-2">
         {worker.services &&
           worker.services.map((service) => (
-            <Tag
-              key={service.service_id}
-              className="mr-2"
-              value={service.service_name}
-            />
+            <div key={service.service_id}>
+              <Tag
+                key={service.service_id}
+                className=""
+                value={service.service_name}
+              />
+            </div>
           ))}
       </div>
     );
@@ -332,47 +338,49 @@ export default function WorkerSearchPage() {
   const itemTemplate = (worker) => {
     return (
       <div className="p-col-12 p-md-3 px-3 pb-4 col lg:col-6">
-        <div className="card grid col">
+        <div className="card grid col h-full">
           <div className="col-12 flex">
-            <div className="pr-3">
-              {/* <img src="/layout/profile-default.png" alt={worker.first_name} width={'80px'} /> */}
-              <Avatar
-                image={worker.profile_url || "/layout/profile-default.png"}
-                alt="profile"
-                shape="circle"
-                className="h-7rem w-7rem shadow-2 cursor-pointer"
-              />
-            </div>
-            <div className="w-full">
-              <h4 className="w-full mb-2 ">
-                {worker.first_name + " " + worker.last_name}
-              </h4>
-              <div className="flex items-center gap-2 mb-2">
-                <Rating
-                  className=""
-                  value={getTotalAverageRating(worker)}
-                  readOnly
-                  stars={5}
-                  cancel={false}
-                  pt={{
-                    onIcon: {
-                      className: "text-orange-400",
-                    },
-                  }}
+            <div className="flex">
+              <div className="pr-3">
+                {/* <img src="/layout/profile-default.png" alt={worker.first_name} width={'80px'} /> */}
+                <Avatar
+                  image={worker.profile_url || "/layout/profile-default.png"}
+                  alt="profile"
+                  shape="circle"
+                  className="h-7rem w-7rem shadow-2 cursor-pointer"
                 />
-                <span className="text-sm">({worker.reviews.length})</span>
               </div>
-              <div className="number-of-bookings ">
-                <span className="">
-                  <i className="pi pi-users mr-1"></i>
-                  {worker.booking_count}{" "}
-                  {worker.booking_count > 1 ? "bookings" : "booking"}
-                </span>
+              <div className="w-full mr-2">
+                <h4 className="w-full mb-2 ">
+                  {worker.first_name + " " + worker.last_name}
+                </h4>
+                <div className="flex items-center gap-2 mb-2">
+                  <Rating
+                    className=""
+                    value={getTotalAverageRating(worker)}
+                    readOnly
+                    stars={5}
+                    cancel={false}
+                    pt={{
+                      onIcon: {
+                        className: "text-orange-400",
+                      },
+                    }}
+                  />
+                  <span className="text-sm">({worker.reviews.length})</span>
+                </div>
+                <div className="number-of-bookings ">
+                  <span className="">
+                    <i className="pi pi-users mr-1"></i>
+                    {worker.booking_count}{" "}
+                    {worker.booking_count > 1 ? "bookings" : "booking"}
+                  </span>
+                </div>
+                <div className="rate text-lg font-semibold">
+                  ₱{worker.hourly_rate}/hr
+                </div>
+                {/* <span className="p-tag p-tag-success">{worker.category}</span> */}
               </div>
-              <div className="rate text-lg font-semibold">
-                ₱{worker.hourly_rate}/hr
-              </div>
-              {/* <span className="p-tag p-tag-success">{worker.category}</span> */}
             </div>
             <div className="flex flex-column gap-2 w-8">
               <Button label="Hire" className="p-button-sm p-button-primary " />

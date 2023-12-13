@@ -270,9 +270,11 @@ export default function ApplicationTabs({
       return;
     }
 
+    // TODO: make this into one request
     // reset any progress made in the current stage in the database
     const resetResult = await ApplicationStageServices.resetStage(postId);
 
+    // set the current stage to the previous stage
     const result = await ApplicationStageServices.setCurrentStage(
       postId,
       stages[currentStageIndex - 1]
@@ -460,7 +462,7 @@ export default function ApplicationTabs({
           headerTemplate={tabHeaderTemplate}
           disabled={determinePanelDisabled("hired")}
         >
-          <HiredContainer applicant={applicants[0]} offer={offer} />
+          <HiredContainer postId={postId} />
         </TabPanel>
       </TabView>
     </div>

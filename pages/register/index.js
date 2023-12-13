@@ -19,7 +19,7 @@ import { Toast } from "primereact/toast";
 import { useRouter } from "next/router";
 import axios from "axios";
 import RegistrationSteps from "../../layout/components/register/RegistrationSteps";
-import { registerValidate } from "@/lib/validate";
+import { registerValidate } from "@/lib/validators/validate";
 import Link from "next/link";
 
 const initialState = {
@@ -164,18 +164,29 @@ const RegistrationPage = () => {
         withCredentials: true,
       });
       console.log(response);
-      toast.current.show({
-        severity: "success",
-        summary: "Success",
-        detail: "User registered successfully!",
-      });
-      router.push("/auth/login");
+
+      if (response.status === 200) {
+        toast.current.show({
+          severity: "success",
+          summary: "Success",
+          detail: "User registered successfully!",
+        });
+
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 2000);
+      } else {
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: "An error occurred while registering user. Please try again.",
+        });
+      }
     } catch (error) {
-      console.error(error);
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: "An error occurred while registering user!",
+        detail: "An error occurred while registering user. Please try again.",
       });
     }
   }
@@ -190,54 +201,83 @@ const RegistrationPage = () => {
 
   const StepComponent = RegistrationSteps[currentStep];
 
+  const userTemplate = (option) => {
+    // display user color, if worker bg is pink, employer bg is blue
+
+    return (
+      <div
+      // className={`${
+      //   option.value === "household employer" ? "bg-blue-500" : "bg-pink-500"
+      // }`}
+      >
+        {option.label}
+      </div>
+    );
+  };
+
   return (
-    <div>
-      <div className="flex align-items-center justify-content-center">
-        <Toast ref={toast} />
-        <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
-          <div className="text-center mb-5">
+    <div className="flex flex-col md:flex-row h-full w-full">
+      {/* Display Gradient */}
+      <div
+        className="bg-fixed relative bg-cover flex-1 flex items-center justify-center "
+        style={{ backgroundImage: "url('/layout/hero-1.png')" }}
+      >
+        <div className="absolute h-full w-full bg-gradient-to-r from-pink-500 to-blue-500 opacity-50"></div>
+        <div className="text-center mb-5 flex-1 py-4 z-1">
+          <div className="">
             <Link href="/">
               <img
                 src="/layout/logo.png"
                 alt="hyper"
-                height={50}
-                className="mb-3"
+                height={200}
+                width={200}
+                className="mb-3 mx-auto"
               />
             </Link>
-            <div className="text-900 text-3xl font-medium mb-3">
-              Join KasambahayKo
-            </div>
-            <span className="text-600 font-medium line-height-3">
-              Already have an account?
-            </span>
-            <Link
-              href="/auth/login"
-              className="font-medium no-underline ml-2 text-blue-500 cursor-pointer"
-            >
-              Sign In
-            </Link>
           </div>
-
-          <form>
+          <div className="text-200 text-5xl font-semibold">
+            Join KasambahayKo
+          </div>
+          <span className="text-200 font-normal line-height-3">
+            Already have an account?
+          </span>
+          <Link
+            href="/auth/login"
+            className="font-medium no-underline hover:underline ml-2 text-blue-100 cursor-pointer"
+          >
+            Sign In
+          </Link>
+          <div className="mt-4">
+            <SelectButton
+              value={formik.values.user_type}
+              name="user_type"
+              id="userType"
+              options={options}
+              // itemTemplate={userTemplate}
+              onChange={(e) => {
+                formik.setFieldValue("user_type", e.value);
+              }}
+              className={classNames(
+                "user-type-select m-auto w-9 flex justify-content-center",
+                { "p-invalid": isFormFieldInvalid("user_type") }
+              )}
+              pt={{
+                button: "bg-transparent",
+              }}
+            />
+            <div className="w-8 mx-auto">
+              {getFormErrorMessage("user_type")}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex align-items-center justify-content-end flex-1">
+        <Toast ref={toast} />
+        <div className="surface-card p-4 shadow-2 border-round h-screen w-full flex align-items-center">
+          <form className="flex-1">
             <div>
-              <div>
-                <SelectButton
-                  value={formik.values.user_type}
-                  name="user_type"
-                  id="userType"
-                  options={options}
-                  onChange={(e) => {
-                    formik.setFieldValue("user_type", e.value);
-                  }}
-                  className={classNames(
-                    "user-type-select m-auto w-8 flex justify-content-center",
-                    { "p-invalid": isFormFieldInvalid("user_type") }
-                  )}
-                />
-                {getFormErrorMessage("user_type")}
-              </div>
               <Steps
-                className="mx-auto w-10"
+                className="mx-auto mt-4 w-10"
                 model={items}
                 aria-expanded="true"
                 activeIndex={currentStep}

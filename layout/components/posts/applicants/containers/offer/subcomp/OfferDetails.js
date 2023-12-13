@@ -2,9 +2,12 @@ import { formatSalary } from "@/layout/components/utils/moneyFormatUtils";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import OfferTimeline from "./OfferTimeline";
 import { InputText } from "primereact/inputtext";
+import BenefitSection from "./sections/BenefitSection";
+import FormatHelper from "@/lib/formatHelper";
+import { ConfigService } from "@/layout/service/ConfigService";
 
 const OfferDetails = ({
   offerDetails,
@@ -20,6 +23,65 @@ const OfferDetails = ({
   session,
 }) => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [benefitsOptions, setBenefitsOptions] = useState([]);
+  const [frequencyOptions, setFrequencyOptions] = useState([]); // ["Daily", "Weekly", "Monthly", "Annually"
+  const [salaryRange, setSalaryRange] = useState([]); // [10000, 20000]
+  const formatHelper = FormatHelper();
+
+  useEffect(() => {
+    // get the benefits from the config service
+    const fetchBenefitsOptions = async () => {
+      const CONFIG_NAME = "Benefits";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const benefits = formatHelper.stringToArray(response.data.config_value);
+
+        setBenefitsOptions(benefits);
+      }
+    };
+
+    const fetchSalaryOptions = async () => {
+      const CONFIG_NAME = "Salary";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const salaryRange = formatHelper.stringToArray(
+          response.data.config_value
+        );
+        setSalaryRange(salaryRange);
+      }
+    };
+
+    const fetchFrequencyOptions = async () => {
+      const CONFIG_NAME = "Frequency of Payment";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const frequencyOptions = formatHelper.stringToArray(
+          response.data.config_value
+        );
+
+        // format the frequency options to be used in the dropdown
+        const formattedFrequencyOptions = frequencyOptions.map((option) => ({
+          name: option,
+          value: option,
+        }));
+
+        setFrequencyOptions(formattedFrequencyOptions);
+      }
+    };
+
+    fetchBenefitsOptions();
+    fetchSalaryOptions();
+    fetchFrequencyOptions();
+  }, []);
 
   const deadlineOptions = [
     { name: "1 day", value: "1" },
@@ -276,6 +338,7 @@ const OfferDetails = ({
                 <label className="block text-sm font-medium text-gray-700">
                   Proposed Salary {"(PHP)"}
                 </label>
+
                 <InputNumber
                   inputId="currency-ph"
                   value={tempOfferDetails.salary}
@@ -285,6 +348,9 @@ const OfferDetails = ({
                   locale="en-US"
                   className="mt-2 rounded-md w-full"
                   placeholder="e.g. 15,000"
+                  // convert the salary range to number
+                  min={parseInt(salaryRange[0])}
+                  // max={parseInt(salaryRange[1])} // TODO: uncomment this when the salary range is resolved
                   // disabled={!isEditMode}
                 />
               </div>
@@ -296,63 +362,18 @@ const OfferDetails = ({
               <Dropdown
                 value={tempOfferDetails.payFrequency}
                 onChange={(e) => handlePayFrequencyChange(e)}
-                options={payFrequencyOptions}
+                options={frequencyOptions}
                 optionLabel="name"
                 placeholder="Select a Deadline"
                 className="w-full mt-2"
                 // disabled={!isEditMode}
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Benefits
-              </label>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">
-                  Separate benefits by pressing Add Button
-                </p>
-              </div>
-              <div className="mb-3">
-                <ul className="pl-5">
-                  {tempOfferDetails.benefits &&
-                    tempOfferDetails.benefits.map((benefit, i) => (
-                      <li
-                        key={i}
-                        className="text-base text-gray-700 mb-1 m-2"
-                        style={{ listStyleType: "disc" }}
-                        // disabled={!isEditMode}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="mr-2">{benefit}</span>
-                          <Button
-                            text
-                            type="button"
-                            size="small"
-                            // disabled={!isEditMode}
-                            className="pi pi-trash text-red-800 cursor-pointer"
-                            onClick={() => handleBenefitRemove(benefit)}
-                          />
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-              <div className="flex">
-                <InputText
-                  id="benefitInput"
-                  className="mt-1 border border-gray-300 rounded-md w-full"
-                  // disabled={!isEditMode}
-                />
-                <Button
-                  type="button"
-                  // label="Add"
-                  icon="pi pi-plus"
-                  className="ml-2 w-4rem"
-                  onClick={handleBenefitAdd}
-                  // disabled={!isEditMode}
-                />
-              </div>
-            </div>
+            <BenefitSection
+              tempOfferDetails={tempOfferDetails}
+              setTempOfferDetails={setTempOfferDetails}
+              benefitsOptions={benefitsOptions}
+            />
             <div className="flex justify-center md:justify-end">
               {hasExistingOffer ? (
                 <div className="flex w-full">

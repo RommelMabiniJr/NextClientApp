@@ -11,7 +11,7 @@ const BookingProgress = ({ booking }) => {
     const elapsedDuration = currentDate.diff(startDate, "days");
     const progress = (elapsedDuration / totalDuration) * 100;
 
-    return Math.min(100, progress); // Ensure progress does not exceed 100%
+    return Math.min(100, progress.toFixed(2)); // Round off progress to two decimals
   };
 
   const displayHeader = () => {
@@ -50,7 +50,15 @@ const BookingProgress = ({ booking }) => {
   return (
     <div>
       {displayHeader()}
-      <ProgressBar style={{ height: "15px" }} value={calculateProgress()} />
+      <ProgressBar
+        style={{ height: "18px" }}
+        value={calculateProgress()}
+        pt={{
+          value: {
+            className: "text-sm",
+          },
+        }}
+      />
     </div>
   );
 };

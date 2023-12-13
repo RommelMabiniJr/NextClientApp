@@ -6,6 +6,7 @@ import { UUIDService } from "@/layout/service/UUIDService";
 
 const BookingsContent = ({ bookings, loading, error, session }) => {
   const [simpleBookings, setSimpleBookings] = useState(null);
+  const [simpleBookingRequests, setSimpleBookingRequests] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedWorker, setSelectedWorker] = useState(null);
 
@@ -39,13 +40,16 @@ const BookingsContent = ({ bookings, loading, error, session }) => {
 
   useEffect(() => {
     // get bookings simple
-    const fetchBookings = async () => {
+    const fetchAllBookings = async () => {
       const { userId } = await UUIDService.getUserId(session.user.uuid);
-      const bookings = await BookingService.getEmployerBookingsSimple(userId);
-      console.log(userId);
-      setSimpleBookings(bookings);
+      const allBookings = await BookingService.getEmployerAllBookingsSimple(
+        userId
+      );
+      // console.log(userId);
+      setSimpleBookings(allBookings);
     };
-    fetchBookings();
+
+    fetchAllBookings();
   }, []);
   const TextLimit = ({ text, limit }) => {
     const [showMore, setShowMore] = useState(false);
