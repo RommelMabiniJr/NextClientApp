@@ -1,5 +1,5 @@
 import Navbar from "../../layout/components/Navbar";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import {
   createSlice,
@@ -105,6 +105,9 @@ const RegistrationPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
 
+  // initialize user type to based on url params for example
+  // http://localhost:3000/register?userType=household
+
   const router = useRouter();
   const toast = useRef(null);
 
@@ -128,11 +131,27 @@ const RegistrationPage = () => {
     { label: "Employer", value: "household employer" },
   ];
 
+  useEffect(() => {
+    // Get the user type from the URL query parameters
+    const userTypeParam = new URLSearchParams(window.location.search).get(
+      "userType"
+    );
+
+    // Set the user type in formik values if it's a valid option
+    if (
+      userTypeParam &&
+      options.some((option) => option.value === userTypeParam)
+    ) {
+      formik.setFieldValue("user_type", userTypeParam);
+    }
+  }, []); // Run this effect only once when the component mounts
+
   const formik = useFormik({
     initialValues: {
       firstName: "",
       secondName: "",
       email: "",
+      isEmailVerified: false, // Will only be used for validation
       phone: "",
       password: "",
       confirmPassword: "",

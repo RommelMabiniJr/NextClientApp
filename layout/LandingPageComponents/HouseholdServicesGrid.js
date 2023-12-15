@@ -12,7 +12,7 @@ const cardsData = [
       "Find a dependable family and home services in one location with a single tap.",
     buttonLabel: "Apply as Kasambahay",
     buttonAction: () => {
-      window.location.href = "/register";
+      window.location.href = "/register?userType=domestic%20worker";
     },
     bgColor: "bg-yellow-100",
   },
@@ -24,7 +24,7 @@ const cardsData = [
       "Search for a dependable Kasambahay to help you with your household tasks with one tap.",
     buttonLabel: "Find your Kasambahay",
     buttonAction: () => {
-      window.location.href = "/register";
+      window.location.href = "/register?userType=household%20employer";
     },
     bgColor: "bg-cyan-100",
   },

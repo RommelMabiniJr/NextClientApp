@@ -91,20 +91,26 @@ const ContactDetailsStep = ({
   ...props
 }) => {
   const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(
+    props.formik.values.isEmailVerified
+  );
   const [verifyDialogVisible, setVerifyDialogVisible] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [resendDisabled, setResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(120); // 2 minutes
+  const [verifyBtnLoading, setVerifyBtnLoading] = useState(false);
   const toastSuccess = useRef(null);
 
   const handleGetOTP = async () => {
+    setVerifyBtnLoading(true);
     const response = await OTPService.sendOTP(formik.values.email);
     console.log(response.data);
     if (response.status === 200) {
       setVerificationCode(response.data.otp);
       setVerifyDialogVisible(true);
+      setVerifyBtnLoading(false);
     } else {
+      setVerifyBtnLoading(false);
       toastSuccess.current.show({
         severity: "error",
         summary: "Error",
@@ -117,27 +123,24 @@ const ContactDetailsStep = ({
   const onSubmit = async (values) => {
     console.log(values.verificationCode, verificationCode);
     if (values.verificationCode == verificationCode) {
+      // add 1 second delay before toast
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsVerified(true);
-      console.log("Verification successful!");
       setVerifyDialogVisible(false);
+      formik.setFieldValue("isEmailVerified", true);
       toastSuccess.current.show({
         severity: "success",
         summary: "Verification Successful",
         detail: "Thank you for proving that you are a human.",
         life: 3000,
       });
-    } else if (
-      values.verificationCode.length < 6 &&
-      values.verificationCode !== verificationCode
-    ) {
-      // set formik error
-      formik.setFieldError("verificationCode", "Invalid verification code");
     } else {
+      // add 1 second delay before toast
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toastSuccess.current.show({
         severity: "error",
-        summary: "Error",
-        detail:
-          "An error occurred while verifying your email. Please try again.",
+        summary: "Verification Failed",
+        detail: "Wrong verification code.",
       });
     }
   };
@@ -152,11 +155,9 @@ const ContactDetailsStep = ({
 
       if (!errors.verificationCode) {
         validationErrors.verificationCode = "Required";
-      } else if (
-        errors.verificationCode.length < 6 &&
-        errors.verificationCode !== verificationCode
-      ) {
-        validationErrors.verificationCode = "Invalid verification code";
+      } else if (errors.verificationCode.length < 6) {
+        validationErrors.verificationCode =
+          "Verification code must be 6 digits";
       }
 
       return validationErrors;
@@ -165,10 +166,10 @@ const ContactDetailsStep = ({
     onSubmit,
   });
 
-  const handleResendOTP = () => {
-    setVerifyDialogVisible(true);
+  const handleResendOTP = async () => {
+    await handleGetOTP();
     setResendDisabled(true);
-    setCountdown(10); // Reset countdown when verifying email
+    setCountdown(120);
   };
 
   useEffect(() => {
@@ -229,7 +230,7 @@ const ContactDetailsStep = ({
           onVerify={onSubmit}
           isResendDisabled={resendDisabled}
           countdown={countdown}
-          formik={props.formik}
+          formik={verificationFormik}
         />
         <Button
           type="button"
@@ -238,6 +239,7 @@ const ContactDetailsStep = ({
           className=""
           size="small"
           severity={isVerified ? "success" : "secondary"}
+          loading={verifyBtnLoading}
           pt={{
             root: {
               className: "h-3rem",
@@ -499,7 +501,7 @@ const AccountSecurityStep = ({
       />
       {getFormErrorMessage("confirmPassword")}
 
-      <div className="flex align-items-center justify-content-between mb-6">
+      <div className="flex align-items-center justify-content-between mb-4">
         <div className="flex align-items-center">
           <Checkbox
             id="termsAndConditions"
@@ -580,8 +582,8 @@ const ConfirmationStep = ({ handleNextStep, handlePreviousStep, ...props }) => (
 
 //
 const RegistrationSteps = [
-  ContactDetailsStep,
   PersonalInformationStep,
+  ContactDetailsStep,
   LocationStep,
   AccountSecurityStep,
 ];

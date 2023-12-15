@@ -17,6 +17,7 @@ const EmailVerificationDialog = ({
   formik,
 }) => {
   const [verificationCode, setVerificationCode] = useState("");
+  const [btnLoading, setBtnLoading] = useState(false);
   const toastSuccess = useRef(null);
 
   const isFormFieldInvalid = (name) =>
@@ -30,21 +31,21 @@ const EmailVerificationDialog = ({
     );
   };
 
-  useEffect(() => {
-    let timer;
+  // useEffect(() => {
+  //   let timer;
 
-    if (isResendDisabled && countdown > 0) {
-      timer = setInterval(() => {
-        onResend();
-      }, 1000);
-    } else if (countdown === 0) {
-      // Handle countdown completion
-    }
+  //   if (isResendDisabled && countdown > 0) {
+  //     timer = setInterval(() => {
+  //       onResend();
+  //     }, 1000);
+  //   } else if (countdown === 0) {
+  //     // Handle countdown completion
+  //   }
 
-    return () => {
-      clearInterval(timer);
-    };
-  }, [isResendDisabled, countdown, onResend]);
+  //   return () => {
+  //     clearInterval(timer);
+  //   };
+  // }, [isResendDisabled, countdown, onResend]);
 
   return (
     <>
@@ -74,7 +75,7 @@ const EmailVerificationDialog = ({
             ) : (
               <a
                 href="#"
-                onClick={onVerify}
+                onClick={onResend}
                 className="text-blue-500 font-medium"
               >
                 Resend
@@ -86,6 +87,7 @@ const EmailVerificationDialog = ({
             label="Verify"
             className="align-content-center"
             icon="pi pi-arrow-right"
+            loading={btnLoading}
             iconPos="right"
             onClick={() => {
               formik.setTouched({
@@ -95,15 +97,12 @@ const EmailVerificationDialog = ({
               console.log(formik.values.verificationCode);
 
               if (!formik.errors.verificationCode) {
-                // toastSuccess.current.show({
-                //   severity: "success",
-                //   summary: "Verification Successful",
-                //   detail:
-                //     "Thank you for proving that you are a human. Please continue with your registration process.",
-                //   life: 3000,
-                // });
+                setBtnLoading(true);
                 onVerify(formik.values);
-                // onHide();
+                setBtnLoading(false);
+              } else {
+                setBtnLoading(false);
+                formik.setFieldError("verificationCode", "Invalid code");
               }
             }}
           />

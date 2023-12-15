@@ -5,7 +5,7 @@ export function IntroductionSection() {
   return (
     <div
       id="introductionSection"
-      className="flex flex-col justify-center m-8 lg:flex-row lg:justify-between"
+      className="flex flex-col justify-center mt-2 lg:flex-row lg:justify-between"
     >
       <div className="grid card grid-cols-12 bg-teal-100">
         <div className="col-span-12 md:col-span-6 lg:w-1/3 p-6 text-center md:text-left flex flex-col justify-center">

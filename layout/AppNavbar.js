@@ -1,20 +1,10 @@
 import React, { useContext, useRef, useState } from "react";
 import { Link as ScrollLink, animateScroll as scroll } from "react-scroll";
-
-import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
-import {
-  configureStore,
-  createSlice,
-  getDefaultMiddleware,
-} from "@reduxjs/toolkit";
-import thunk from "redux-thunk";
-import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import FooterLinks from "./LandingPageComponents/AppFooter";
 import { Testimonials } from "./LandingPageComponents/Testimonials";
-import { FAQs } from "./LandingPageComponents/FAQ";
+// import { FAQs } from "./LandingPageComponents/FAQ";
 import {
   Services,
   ServicesOffered,
