@@ -40,38 +40,38 @@ const WorkerNavbar = ({}) => {
     return <div>Loading...</div>;
   }
 
-  useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-    const ws = new WebSocket(socketUrl); // Replace with your server address using process.env
+  // useEffect(() => {
+  //   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+  //   const ws = new WebSocket(socketUrl); // Replace with your server address using process.env
 
-    ws.onopen = () => {
-      console.log("Connected to WebSocket server");
-    };
+  //   ws.onopen = () => {
+  //     console.log("Connected to WebSocket server");
+  //   };
 
-    ws.onmessage = (event) => {
-      // Handle the incoming notification here and update your UI as needed
+  //   ws.onmessage = (event) => {
+  //     // Handle the incoming notification here and update your UI as needed
 
-      // check if the message is a notification
-      const message = JSON.parse(event.data);
-      console.log(message);
-      if (message.type == "notification") {
-        // check if the notification is for the current user
-        if (message.recipient == session.user.uuid) {
-          // add the notification to the list of notifications
-          setNotifications((notifications) => [...notifications, message]);
-          console.log("Notification added");
-        }
-      }
-    };
+  //     // check if the message is a notification
+  //     const message = JSON.parse(event.data);
+  //     console.log(message);
+  //     if (message.type == "notification") {
+  //       // check if the notification is for the current user
+  //       if (message.recipient == session.user.uuid) {
+  //         // add the notification to the list of notifications
+  //         setNotifications((notifications) => [...notifications, message]);
+  //         console.log("Notification added");
+  //       }
+  //     }
+  //   };
 
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
+  //   ws.onclose = () => {
+  //     console.log("WebSocket connection closed");
+  //   };
 
-    return () => {
-      ws.close();
-    };
-  }, []);
+  //   return () => {
+  //     ws.close();
+  //   };
+  // }, []);
 
   useEffect(() => {
     // Fetch notifications from the server

@@ -31,8 +31,7 @@ export default function InterviewContainer({
   const [bestCandidate, setBestCandidate] = useState();
   const [completedApplicants, setCompletedApplicants] = useState([]); // TODO: filter applicants based on interview date and time
   const [scheduledApplicants, setScheduledApplicants] = useState([]); // TODO: filter applicants based on interview date and time
-  const [unScheduledApplicants, setUnScheduledApplicants] =
-    useState(applicants); // TODO: filter applicants based on interview date and time
+  const [unScheduledApplicants, setUnScheduledApplicants] = useState([]); // TODO: filter applicants based on interview date and time
   const [nonInterviewedApplicants, setNonInterviewedApplicants] = useState([]); // TODO: filter applicants based on interview date and time
   const [interviewedApplicants, setInterviewedApplicants] = useState([]); // TODO: filter applicants based on interview date and time
   const [visibleApplicants, setVisibleApplicants] = useState(
@@ -319,14 +318,18 @@ export default function InterviewContainer({
   }
 
   const fetchScheduledApplicants = async () => {
+    if (!postId && !applicants && applicants.length === 0) {
+      return;
+    }
+
     // Fetch the latest scheduled applicants from the database/API
-    const scheduledApplicants = await InterviewService.getScheduledInterviews(
+    const schedApplicants = await InterviewService.getScheduledInterviews(
       postId
     ); // This only returns interview date details
 
     // assign applicants information to scheduled applicants
     // assign interview date and time to applicants
-    scheduledApplicants.forEach((scheduledApplicant, index) => {
+    schedApplicants.forEach((scheduledApplicant, index) => {
       const applicant = applicants.find(
         (applicant) =>
           applicant.application_id === scheduledApplicant.application_id
@@ -338,12 +341,12 @@ export default function InterviewContainer({
         applicant.interview = interviewData;
 
         // Update the properties of the found scheduled applicant
-        scheduledApplicants[index] = applicant;
+        schedApplicants[index] = applicant;
       }
     });
 
     // set scheduled applicants
-    setScheduledApplicants([...scheduledApplicants]);
+    setScheduledApplicants([...schedApplicants]);
 
     // Fetch the latest screening results from the database/API
     const screenedResults = await ScreeningService.getScreeningResults(postId);
@@ -357,12 +360,13 @@ export default function InterviewContainer({
     // Get the applicants that passed the screening stage but are not yet scheduled for interview
     const unscheduledPassedScreeningApplicants = passedApplicants.filter(
       (passedApplicant) =>
-        !scheduledApplicants.some(
+        !schedApplicants.some(
           (scheduledApplicant) =>
-            scheduledApplicant.information.email ===
-            passedApplicant.worker.email
+            scheduledApplicant.information.email == passedApplicant.worker.email
         )
     );
+
+    console.log(screenedResults);
 
     // get the information of the unscheduled applicants from the applicants list using the unscheduled passed screening applicants
     const finalUnscheduledApplicants = unscheduledPassedScreeningApplicants.map(
@@ -380,9 +384,7 @@ export default function InterviewContainer({
 
   useEffect(() => {
     // Fetch scheduled applicants when the component mounts
-    if (postId && applicants && applicants.length > 0) {
-      fetchScheduledApplicants();
-    }
+    fetchScheduledApplicants();
   }, [postId, applicants]);
 
   useEffect(() => {
@@ -569,19 +571,19 @@ export default function InterviewContainer({
       <div className="flex items-center">
         <img
           className="h-10 flex-none rounded-full bg-gray-50 mr-4"
-          src={rowData.information.profile_url}
+          src={rowData?.information?.profile_url}
           alt=""
         />
         <div className="min-w-0 flex-auto flex flex-column">
           <span className="flex">
             <p className="m-0 mr-2 text-sm font-semibold leading-6 text-gray-900">
-              {rowData.information.first_name +
+              {rowData?.information?.first_name +
                 " " +
-                rowData.information.last_name}
+                rowData?.information?.last_name}
             </p>
           </span>
           <span className="truncate text-xs leading-5 text-gray-500 align-middle">
-            {rowData.information.email}
+            {rowData?.information?.email}
           </span>
         </div>
       </div>

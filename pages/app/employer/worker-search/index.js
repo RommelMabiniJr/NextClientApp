@@ -321,7 +321,7 @@ export default function WorkerSearchPage() {
   const ServicesTemplate = (worker) => {
     return (
       <div className="col flex flex-wrap gap-2">
-        {worker.services &&
+        {Array.isArray(worker.services) &&
           worker.services.map((service) => (
             <div key={service.service_id}>
               <Tag

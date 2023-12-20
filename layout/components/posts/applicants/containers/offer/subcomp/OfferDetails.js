@@ -285,7 +285,7 @@ const OfferDetails = ({
               </label>
               <div className="mb-3">
                 <ul className="">
-                  {tempOfferDetails.benefits ? (
+                  {Array.isArray(tempOfferDetails.benefits) ? (
                     tempOfferDetails.benefits.map((benefit, i) => (
                       <li
                         key={i}

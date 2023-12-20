@@ -399,7 +399,9 @@ const BookingViewContent = () => {
           <div className="flex flex-column">
             <div className="flex justify-center">
               <img
-                src={booking.employer.profile_url}
+                src={
+                  process.env.NEXT_PUBLIC_ASSET_URL + booking.worker.profile_url
+                }
                 alt="profile picture"
                 className="h-24 w-24 rounded-full"
               />

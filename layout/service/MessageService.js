@@ -1,10 +1,10 @@
 import axios from "axios";
 
-export const UserService = {
-  async getWorkerInfoSimple(userId) {
+export const MessageService = {
+  async getHiredApplicant(jobpostId) {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/worker/${userId}/simple`
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/post/${jobpostId}/hired-applicant`
       );
       return response.data;
     } catch (error) {
@@ -12,10 +12,10 @@ export const UserService = {
     }
   },
 
-  async getUserInfoSimple(userUUID) {
+  async getMessages(senderUUID, receiverUUID) {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/user/${userUUID}/simple`
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/messages/${senderUUID}/${receiverUUID}`
       );
       return response.data;
     } catch (error) {

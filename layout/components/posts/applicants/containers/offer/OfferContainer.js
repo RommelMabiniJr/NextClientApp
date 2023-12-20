@@ -277,7 +277,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
       const interviewDetails =
         await ApplicationStageServices.getPassedInterview(postId);
 
-      console.log("Interview Details:", interviewDetails);
+      // console.log("Interview Details:", interviewDetails);
 
       // check if there is a passed candidate
       if (!interviewDetails) {
@@ -335,7 +335,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
       benefits: response_offerDetails.benefits,
     };
 
-    console.log("Offer Details:", response_offerDetails);
+    // console.log("Offer Details:", response_offerDetails);
 
     setOfferDetails(structuredOfferDetails);
     setTempOfferDetails(structuredOfferDetails);

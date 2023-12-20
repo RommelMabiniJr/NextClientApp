@@ -190,9 +190,7 @@ const ExperienceInformation = ({ session, worker }) => {
               {isEditMode ? (
                 renderHourlyRateField()
               ) : (
-                <div className="col text-900">
-                  ₱ {formik.values.hourlyRate.toLocaleString()}
-                </div>
+                <div className="col text-900">₱ {formik.values.hourlyRate}</div>
               )}
             </div>
           </div>

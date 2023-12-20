@@ -222,6 +222,10 @@ const BookingViewContent = () => {
     const scheduledStartDate = dayjs(booking.jobposting.job_start_date);
     const timeUntilStartDate = scheduledStartDate.diff(currentDate, "days");
 
+    if (!booking.booking_info.booking_progress) {
+      return null;
+    }
+
     if (currentDate.isBefore(scheduledStartDate)) {
       // Display a message indicating the scheduled start date
       return (
@@ -378,7 +382,8 @@ const BookingViewContent = () => {
                 <p className="m-0 font-medium">
                   {/* Full-Time, Elder Care */}
                   {capitalizeFirstLetter(booking.jobposting.job_type)},{" "}
-                  {booking.jobposting.service.service_name}
+                  {booking.jobposting.service &&
+                    booking.jobposting.service.service_name}
                 </p>
               </div>
             </div>
@@ -493,16 +498,17 @@ const BookingViewContent = () => {
           <div className="my-4">
             <p className="font-bold mb-2">Offered Benefits</p>
             <div className="pl-4 gap-8">
-              {booking.offer.benefits.map((benefit, index) => (
-                <div className="flex" key={index}>
-                  <span className="my-2 mr-2">
-                    <i className="pi pi-check-circle text-lg"></i>
-                  </span>
-                  <div className="my-1.5">
-                    <p className="m-0">{benefit}</p>
+              {booking.offer.benefits &&
+                booking.offer.benefits.map((benefit, index) => (
+                  <div className="flex" key={index}>
+                    <span className="my-2 mr-2">
+                      <i className="pi pi-check-circle text-lg"></i>
+                    </span>
+                    <div className="my-1.5">
+                      <p className="m-0">{benefit}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>
@@ -516,7 +522,9 @@ const BookingViewContent = () => {
           <div className="flex flex-column">
             <div className="flex justify-center">
               <img
-                src={booking.worker.profile_url}
+                src={
+                  process.env.NEXT_PUBLIC_ASSET_URL + booking.worker.profile_url
+                }
                 alt="profile picture"
                 className="h-24 w-24 rounded-full"
               />

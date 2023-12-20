@@ -49,7 +49,6 @@ const ShowApplicantDialog = ({
           displayAs={displayAs}
         />
       </div>
-
       <DialogFormat
         visible={visible}
         setVisible={setVisible}
