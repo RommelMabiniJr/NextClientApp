@@ -24,9 +24,9 @@ export const JobPostService = {
   async getJobPostFull(jobpostId) {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/post/${jobpostId}`
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/post/full/${jobpostId}`
       );
-      return response.data;
+      return response;
     } catch (error) {
       console.error(error);
     }

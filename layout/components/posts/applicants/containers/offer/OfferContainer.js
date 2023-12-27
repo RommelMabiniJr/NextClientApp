@@ -10,6 +10,12 @@ import { InterviewService } from "@/layout/service/InterviewService";
 import { OfferService } from "@/layout/service/OfferService";
 import JobOverview from "./subcomp/JobOverview";
 import OfferDetails from "./subcomp/OfferDetails";
+import { JobsService } from "@/layout/service/JobsService";
+import { JobPostService } from "@/layout/service/JobPostService";
+import CandidSelect from "./subcomp/CandidSelect";
+import { Panel } from "primereact/panel";
+import { Ripple } from "primereact/ripple";
+import OfferTimeline from "./subcomp/OfferTimeline";
 
 const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
   // console.log("session", session);
@@ -26,6 +32,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
     payFrequency: "",
   }); // temporary offer details for editing
 
+  const [postDetails, setPostDetails] = useState({}); // Details of the job post [title, description, etc.
   const [hasExistingOffer, setHasExistingOffer] = useState(false); // Check if there is an existing offer for the selected candidate
   const [offerEvents, setOfferEvents] = useState([]);
   const [candidatePool, setCandidatePool] = useState(interviewResults); // Pool is from the completed interviews
@@ -72,41 +79,14 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
     { name: "Annually", value: "Annually" },
   ];
 
-  const onBestCandidateSelect = async (applicant) => {
-    let result = ApplicationStageServices.setPassedInterview(
-      postId,
-      applicant.application_id
-    );
-
-    if (result) {
-      await fetchOfferDetails(applicant);
-      setSelectedCandidate(applicant);
-      setSelectionVisible(false);
-
-      toast.current.show({
-        severity: "success",
-        summary: "Success",
-        detail: "Best candidate has been selected.",
-        life: 3000,
-      });
-
-      // reload the page
-      window.location.reload();
-    } else {
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Something went wrong. Please try again.",
-        life: 3000,
-      });
-    }
+  const onEditJobDetails = () => {
+    // do nothing for now
   };
-
-  const handleSendOffer = async () => {
+  const handleSendOffer = async (applicant) => {
     setLoading(true);
     const result = await ApplicationStageServices.sendOffer(
       postId,
-      selectedCandidate.application_id,
+      applicant.application_id,
       tempOfferDetails
     );
 
@@ -124,7 +104,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
       // Add the event to the timeline
       const eventResponse =
         await ApplicationStageServices.addOfferTimelineEvent(
-          selectedCandidate.application_id,
+          applicant.application_id,
           timelineEvent
         );
 
@@ -145,6 +125,37 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
     } else {
       // Show notification for failed offer submission
       showNotification("error", "Something went wrong. Please try again.");
+    }
+  };
+
+  const onBestCandidateSelect = async (applicant) => {
+    let result = ApplicationStageServices.setPassedInterview(
+      postId,
+      applicant.application_id
+    );
+
+    if (result) {
+      await fetchOfferDetails(applicant);
+      await handleSendOffer(applicant);
+
+      setSelectedCandidate(applicant);
+      setSelectionVisible(false);
+      toast.current.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Best candidate has been selected.",
+        life: 3000,
+      });
+
+      // reload the page
+      // window.location.reload();
+    } else {
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Something went wrong. Please try again.",
+        life: 3000,
+      });
     }
   };
 
@@ -193,7 +204,6 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
   };
 
   const handleSelectCandidate = () => {
-    // setSelectedCandidate(applicant);
     setSelectionVisible(true);
   };
 
@@ -307,8 +317,16 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
       fetchOfferDetails(passedCandidate);
     };
 
+    const fetchPostDetails = async () => {
+      const response = await JobPostService.getJobPostFull(postId);
+      if (response.status === 200) {
+        setPostDetails(response.data);
+      }
+    };
+
     fetchScheduledInterviews();
     fetchPassedCandidate();
+    fetchPostDetails();
   }, [applicants, postId]);
 
   const fetchOfferDetails = async (offeredCandid) => {
@@ -367,13 +385,95 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
     setOfferEvents(structuredOfferTimelineEvents);
   };
 
+  const toggleTemplate = (options) => {
+    const toggleIcon = options.collapsed
+      ? "pi pi-chevron-down"
+      : "pi pi-chevron-up";
+    const className = `${options.className} px-1 justify-start items-center bg-white border-none`;
+    const titleClassName = `${options.titleClassName} ml-2 text-primary`;
+    const style = { fontSize: "1.25rem" };
+
+    return (
+      <div className={className}>
+        <h2 className="text-lg font-semibold m-0">Interviewed </h2>
+        <button
+          className={options.togglerClassName}
+          onClick={options.onTogglerClick}
+        >
+          <span className={toggleIcon}></span>
+          {/* <Ripple /> */}
+        </button>
+      </div>
+    );
+  };
+
+  const renderOfferBadge = (offerStatus) => {
+    let badgeClass = "bg-gray-50";
+    let badgeText = "Pending"; // Default status text
+
+    switch (offerStatus) {
+      case "accepted":
+        badgeClass = "bg-green-50 text-green-700 ring-green-600/20";
+        badgeText = "Accepted";
+        break;
+      case "declined":
+        badgeClass = "bg-red-50 text-red-700 ring-red-600/10";
+        badgeText = "Rejected";
+        break;
+      case "updated":
+        badgeClass = "bg-blue-50 text-blue-700 ring-blue-600/10";
+        badgeText = "Updated";
+        break;
+      case "no response":
+        badgeClass = "bg-gray-50 text-gray-600 ring-gray-600/10";
+        badgeText = "Expired";
+        break;
+      case "pending":
+        badgeClass = "bg-yellow-50 text-yellow-800 ring-yellow-500/10";
+        badgeText = "Pending";
+        break;
+
+      // Add more cases as needed
+
+      // Default case for pending or other statuses
+      default:
+        badgeClass = "bg-gray-50 text-gray-600 ring-gray-500/10";
+        badgeText = "No Offer";
+    }
+
+    return (
+      <span
+        className={`ml-2 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${badgeClass} ring-1 ring-inset ring-gray-500/10`}
+      >
+        {badgeText}
+      </span>
+    );
+  };
+
   return (
     <div className="divide-y">
-      <div className="mb-4 ">
+      <div className="mb-4">
         <Toast ref={toast} position="bottom-right" />
-        <h2 className="text-lg font-semibold mb-4 mt-0">Chosen Candidate </h2>
+        <div className="flex items-center justify-between gap-2 mb-4 w-full">
+          <h2 className="text-lg font-semibold m-0">
+            Chosen Candidate: {renderOfferBadge(offerStatus)}
+          </h2>
+
+          <span
+            className="cursor-pointer rounded-md hover:bg-gray-200 px-2"
+            onClick={() => setSidebarVisible(true)}
+          >
+            <i className="pi pi-history"></i>
+          </span>
+          <OfferTimeline
+            offerEvents={offerEvents}
+            session={session}
+            sidebarVisible={sidebarVisible}
+            setSidebarVisible={setSidebarVisible}
+          />
+        </div>
         {selectedCandidate ? (
-          <div className="flex items-center gap-x-4">
+          <div className="rounded-lg flex items-center py-3 px-3 border-2 border-primary-300 ">
             <div className="applicant-container flex flex-column md:flex-row md:items-center justify-between flex-1">
               <div className="applicant-info flex items-center ">
                 <img
@@ -396,7 +496,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
                   onClick={handleSelectCandidate}
                   type="button"
                   size="small"
-                  severity="warning"
+                  severity="primary"
                   label="Change Candidate"
                   className="py-2 mr-2"
                   // outlined
@@ -454,8 +554,57 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
         </Dialog>
       </div>
       <div className="flex flex-column md:flex-row gap-x-10 ">
-        <JobOverview job={session.post} />
-        <OfferDetails
+        <JobOverview
+          session={session}
+          job={postDetails}
+          onEditJobDetails={onEditJobDetails}
+        />
+        <div className="w-full md:w-4">
+          <Panel
+            header="Interviewed"
+            toggleable
+            className="border-none"
+            headerTemplate={toggleTemplate}
+            pt={{
+              content: { className: "bg-white border-none px-4" },
+            }}
+          >
+            <div className="divide-y">
+              {/* <h2 className="text-lg font-semibold mb-4 mt-0">Interviewed </h2> */}
+              {candidatePool
+                .filter(
+                  (applicant) => applicant.interview.status === "completed"
+                )
+                .map((applicant) => {
+                  return (
+                    <div
+                      key={applicant.application_id}
+                      className="flex items-center gap-x-4 py-3"
+                    >
+                      <img
+                        className="h-12 flex-none rounded-full bg-gray-50"
+                        src={applicant.information.profile_url}
+                        alt=""
+                      />
+                      <div className="min-w-0 flex-auto">
+                        <span className="flex flex-column">
+                          <p className="m-0 mr-2 text-base font-semibold leading-6 text-gray-900">
+                            {applicant.information.first_name +
+                              " " +
+                              applicant.information.last_name}
+                          </p>
+                          <span className="truncate text-xs leading-5 text-gray-500 align-middle">
+                            {applicant.information.email}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </Panel>
+        </div>
+        {/* <OfferDetails
           offerDetails={offerDetails}
           tempOfferDetails={tempOfferDetails}
           offerStatus={offerStatus}
@@ -467,7 +616,7 @@ const OfferContainer = ({ postId, applicants, interviewResults, session }) => {
           hasExistingOffer={hasExistingOffer}
           offerEvents={offerEvents}
           session={session}
-        />
+        /> */}
       </div>
     </div>
   );

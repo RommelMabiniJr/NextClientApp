@@ -486,11 +486,138 @@ const JobDescriptionStep = ({
   );
 };
 
+// Setting up of salary, payment frequency, and benefits  for the job
+const OfferStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
+  const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
+  const { benefitsOptions, salaryRange, frequencyOptions } = props; // used for config
+
+  return (
+    <div>
+      <div>
+        <h2 className="text-center mb-4">How much will you pay?</h2>
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Salary {"(PHP)"}
+              </label>
+              <div>
+                <InputNumber
+                  inputId="currency-ph"
+                  value={formik.values.salary}
+                  onValueChange={(e) => {
+                    formik.setFieldValue("salary", e.value);
+                  }}
+                  mode="currency"
+                  currency="PHP"
+                  locale="en-US"
+                  className={classNames("mt-2 rounded-md w-full", {
+                    "p-invalid": isFormFieldInvalid("salary"),
+                  })}
+                  placeholder="e.g. 15,000"
+                  // convert the salary range to number
+                  min={parseInt(salaryRange[0])}
+                  // max={parseInt(salaryRange[1])} // TODO: uncomment this when the salary range is resolved
+                />
+              </div>
+              {getFormErrorMessage("salary")}
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Payment Frequency
+              </label>
+              <Dropdown
+                value={formik.values.payFrequency}
+                onChange={(e) => formik.setFieldValue("payFrequency", e.value)}
+                options={frequencyOptions}
+                optionLabel="name"
+                placeholder="Select a Deadline"
+                className={classNames("w-full mt-2", {
+                  "p-invalid": isFormFieldInvalid("payFrequency"),
+                })}
+                // disabled={!isEditMode}
+              />
+              {getFormErrorMessage("payFrequency")}
+            </div>
+          </div>
+          <div className="flex gap-3 mt-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Benefits {"(Optional)"}
+              </label>
+              <div className="flex-1 pt-2 pl-2  ">
+                <div className="grid ">
+                  {benefitsOptions.map((benefit) => {
+                    return (
+                      <div key={benefit} className="col-12 md:col-6 flex">
+                        <Checkbox
+                          inputId={benefit}
+                          name="benefit"
+                          value={benefit}
+                          onChange={(e) => {
+                            let _selectedBenefits =
+                              [...formik.values.benefits] || [];
+
+                            if (e.checked) _selectedBenefits.push(e.value);
+                            else
+                              _selectedBenefits = _selectedBenefits.filter(
+                                (category) => category !== e.value
+                              );
+
+                            formik.setFieldValue("benefits", _selectedBenefits);
+                          }}
+                          checked={formik.values.benefits?.some(
+                            (item) => item === benefit
+                          )}
+                        />
+                        <label htmlFor={benefit} className="ml-2">
+                          {benefit}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-wrap justify-content-between gap-2 mt-4">
+        <Button
+          label="Back"
+          className=""
+          icon="pi pi-arrow-left"
+          iconPos="left"
+          onClick={handlePreviousStep}
+        />
+        <Button
+          type="button"
+          label="Continue"
+          className=""
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          onClick={() => {
+            formik.setTouched({
+              salary: true,
+              payFrequency: true,
+            });
+
+            if (!formik.errors.salary && !formik.errors.payFrequency) {
+              handleNextStep();
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 //
 const jobCreateSteps = [
   ServiceSelectStep,
   JobTypeStep,
   JobDatesStep,
+  OfferStep,
   JobDescriptionStep,
 ];
 

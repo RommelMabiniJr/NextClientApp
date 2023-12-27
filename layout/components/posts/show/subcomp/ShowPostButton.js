@@ -177,6 +177,24 @@ export default function ShowPostButton({ post }) {
             </div>
           </div>
           <div className="col-12 mb-2 px-0">
+            <strong>Salary: </strong>
+            {Number(post.salary).toLocaleString("fil-PH", {
+              style: "currency",
+              currency: "PHP",
+            })}
+            {post.pay_frequency ? " " + post.pay_frequency : ""}
+          </div>
+          <div className="col-12 mb-2 px-0">
+            <strong>Benefits :</strong>
+            <ul>
+              {post.benefits?.map((benefit, index) => (
+                <li key={index} className="list-disc ml-3">
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="col-12 mb-2 px-0">
             <strong>Living Arrangement:</strong> {post.living_arrangement}
           </div>
         </div>

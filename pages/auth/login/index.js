@@ -1,5 +1,5 @@
 import Navbar from "../../../layout/components/Navbar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Checkbox } from "primereact/checkbox";
 import { Button } from "primereact/button";
@@ -10,10 +10,12 @@ import login_validate from "@/lib/validators/validate";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { Toast } from "primereact/toast";
 
 const LoginPage = () => {
   const [checked, setChecked] = useState(false);
   const router = useRouter();
+  const toast = useRef(null);
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -34,9 +36,15 @@ const LoginPage = () => {
       callbackUrl: "/app/user-router",
     });
 
-    console.log(result);
-
     if (result.ok) router.push("/app/user-router");
+    else {
+      toast.current.show({
+        severity: "error",
+        summary: "Login Failed",
+        detail: "Invalid email or password",
+        life: 3000,
+      });
+    }
   }
 
   async function mockuplogin() {
@@ -81,6 +89,7 @@ const LoginPage = () => {
 
   return (
     <div>
+      <Toast ref={toast} />
       <Navbar
         link1="About Us"
         link1To="/about"

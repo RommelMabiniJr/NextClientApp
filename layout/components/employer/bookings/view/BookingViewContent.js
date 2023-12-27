@@ -472,7 +472,7 @@ const BookingViewContent = () => {
                   <p className="m-0 ">
                     <span className="font-medium">
                       {/* Php 10,000.00 */}
-                      {formatSalary(booking.offer.salary)}
+                      {formatSalary(booking.jobposting.salary)}
                     </span>
                   </p>
                 </div>
@@ -488,7 +488,7 @@ const BookingViewContent = () => {
                     {/* Paid: Annually */}
 
                     <span className="font-medium">
-                      {booking.offer.pay_frequency}
+                      {booking.jobposting.pay_frequency}
                     </span>
                   </p>
                 </div>
@@ -498,8 +498,8 @@ const BookingViewContent = () => {
           <div className="my-4">
             <p className="font-bold mb-2">Offered Benefits</p>
             <div className="pl-4 gap-8">
-              {booking.offer.benefits &&
-                booking.offer.benefits.map((benefit, index) => (
+              {booking.jobposting.benefits &&
+                booking.jobposting.benefits.map((benefit, index) => (
                   <div className="flex" key={index}>
                     <span className="my-2 mr-2">
                       <i className="pi pi-check-circle text-lg"></i>

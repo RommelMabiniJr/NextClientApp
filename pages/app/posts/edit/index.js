@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import DateConverter from "@/lib/dateConverter";
 import { ConfigService } from "@/layout/service/ConfigService";
 import { postJobTitleAndDescriptionValidate } from "@/lib/validators/postValidator";
+import FormatHelper from "@/lib/formatHelper";
 
 export default function EmployerPosts() {
   const { data: session } = useSession();
@@ -41,9 +42,14 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
   const [jobTitleMaxLength, setJobTitleMaxLength] = useState(10);
   const [jobDescriptionMaxLength, setJobDescriptionMaxLength] = useState(10);
   const [livingArrangementOptions, setLivingArrangementOptions] = useState([]);
+  const [benefitsOptions, setBenefitsOptions] = useState([]);
+  const [frequencyOptions, setFrequencyOptions] = useState([]); // ["Daily", "Weekly", "Monthly", "Annually"
+  const [salaryRange, setSalaryRange] = useState([]); // [10000, 20000]
+
   const router = useRouter();
   const toast = useRef(null);
   const { edit, post } = router.query;
+  const formatHelper = FormatHelper();
   let postData = {};
 
   // if edit mode, get the assign values to postData
@@ -71,7 +77,10 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       label: "Job Type",
     },
     {
-      label: "Job Schedule",
+      label: "Schedule",
+    },
+    {
+      label: "Offer",
     },
     {
       label: "Additional Details",
@@ -141,6 +150,10 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       jobEndDate: edit ? postData.job_end_date : "",
       jobStartTime: edit ? postData.job_start_time : "",
       jobEndTime: edit ? postData.job_end_time : "",
+      // Offer Details
+      salary: edit ? postData.salary : "",
+      payFrequency: edit ? postData.pay_frequency : "",
+      benefits: edit ? postData.benefits : [],
     },
     validate: (values) => {
       return postJobTitleAndDescriptionValidate(
@@ -216,6 +229,58 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       }
     };
 
+    const fetchBenefitsOptions = async () => {
+      const CONFIG_NAME = "Benefits";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const benefits = formatHelper.stringToArray(response.data.config_value);
+
+        setBenefitsOptions(benefits);
+      }
+    };
+
+    const fetchSalaryOptions = async () => {
+      const CONFIG_NAME = "Salary";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const salaryRange = formatHelper.stringToArray(
+          response.data.config_value
+        );
+        setSalaryRange(salaryRange);
+      }
+    };
+
+    const fetchFrequencyOptions = async () => {
+      const CONFIG_NAME = "Frequency of Payment";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const frequencyOptions = formatHelper.stringToArray(
+          response.data.config_value
+        );
+
+        // format the frequency options to be used in the dropdown
+        const formattedFrequencyOptions = frequencyOptions.map((option) => ({
+          name: option,
+          value: option,
+        }));
+
+        setFrequencyOptions(formattedFrequencyOptions);
+      }
+    };
+
+    fetchBenefitsOptions();
+    fetchSalaryOptions();
+    fetchFrequencyOptions();
+
     fetchJobConfig();
   }, []);
 
@@ -257,6 +322,9 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
                     handlePreviousStep={handlePreviousStep}
                     // Below is used for config
                     livingArrangementOptions={livingArrangementOptions}
+                    benefitsOptions={benefitsOptions}
+                    frequencyOptions={frequencyOptions}
+                    salaryRange={salaryRange}
                   />
                 </div>
               </div>

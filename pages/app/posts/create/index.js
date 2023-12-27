@@ -11,6 +11,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { postJobTitleAndDescriptionValidate } from "@/lib/validators/postValidator";
 import { ConfigService } from "@/layout/service/ConfigService";
+import FormatHelper from "@/lib/formatHelper";
 
 export default function CreateJobPostPage() {
   const { data: session } = useSession();
@@ -20,6 +21,12 @@ export default function CreateJobPostPage() {
   const [jobTitleMaxLength, setJobTitleMaxLength] = useState(10);
   const [jobDescriptionMaxLength, setJobDescriptionMaxLength] = useState(10);
   const [livingArrangementOptions, setLivingArrangementOptions] = useState([]);
+  const [benefitsOptions, setBenefitsOptions] = useState([]);
+  const [frequencyOptions, setFrequencyOptions] = useState([]); // ["Daily", "Weekly", "Monthly", "Annually"
+  const [salaryRange, setSalaryRange] = useState([]); // [10000, 20000]
+
+  const formatHelper = FormatHelper();
+
   const items = [
     {
       label: "Type of Service",
@@ -28,7 +35,10 @@ export default function CreateJobPostPage() {
       label: "Job Type",
     },
     {
-      label: "Job Schedule",
+      label: "Schedule",
+    },
+    {
+      label: "Offer",
     },
     {
       label: "Additional Details",
@@ -92,6 +102,58 @@ export default function CreateJobPostPage() {
       }
     };
 
+    const fetchBenefitsOptions = async () => {
+      const CONFIG_NAME = "Benefits";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const benefits = formatHelper.stringToArray(response.data.config_value);
+
+        setBenefitsOptions(benefits);
+      }
+    };
+
+    const fetchSalaryOptions = async () => {
+      const CONFIG_NAME = "Salary";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const salaryRange = formatHelper.stringToArray(
+          response.data.config_value
+        );
+        setSalaryRange(salaryRange);
+      }
+    };
+
+    const fetchFrequencyOptions = async () => {
+      const CONFIG_NAME = "Frequency of Payment";
+      const CONFIG_TYPE = "offer";
+
+      const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
+
+      if (response.status === 200) {
+        const frequencyOptions = formatHelper.stringToArray(
+          response.data.config_value
+        );
+
+        // format the frequency options to be used in the dropdown
+        const formattedFrequencyOptions = frequencyOptions.map((option) => ({
+          name: option,
+          value: option,
+        }));
+
+        setFrequencyOptions(formattedFrequencyOptions);
+      }
+    };
+
+    fetchBenefitsOptions();
+    fetchSalaryOptions();
+    fetchFrequencyOptions();
+
     fetchJobConfig();
   }, []);
 
@@ -141,6 +203,11 @@ export default function CreateJobPostPage() {
       jobEndDate: "",
       jobStartTime: "",
       jobEndTime: "",
+
+      // Offer Details
+      salary: "",
+      payFrequency: "",
+      benefits: [],
     },
     validate: (values) => {
       return postJobTitleAndDescriptionValidate(
@@ -221,6 +288,9 @@ export default function CreateJobPostPage() {
                     handlePreviousStep={handlePreviousStep}
                     // Below is used for config
                     livingArrangementOptions={livingArrangementOptions}
+                    benefitsOptions={benefitsOptions}
+                    frequencyOptions={frequencyOptions}
+                    salaryRange={salaryRange}
                   />
                 </div>
               </div>

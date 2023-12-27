@@ -548,6 +548,7 @@ const JobApplicationView = () => {
               <h5 className="ml-2 mb-5">- Application Progress</h5>
               <ApplicationTimeline
                 applicationId={applicationId}
+                applicationDetails={applicationDetails}
                 offerEvents={offerEvents}
                 offerStatus={offerStatus}
                 timelineData={timelineData}

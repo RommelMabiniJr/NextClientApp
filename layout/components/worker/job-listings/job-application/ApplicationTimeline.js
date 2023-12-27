@@ -18,6 +18,7 @@ dayjs.extend(utc);
 
 const ApplicationTimeline = ({
   applicationId,
+  applicationDetails,
   offerData,
   offerStatus,
   offerEvents,
@@ -202,7 +203,7 @@ const ApplicationTimeline = ({
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "PHP",
-                      }).format(offerData.salary)}
+                      }).format(applicationDetails.post.salary)}
                     </dd>
                   </div>
                   <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -210,7 +211,7 @@ const ApplicationTimeline = ({
                       Payment Frequency:
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {offerData.pay_frequency}
+                      {applicationDetails.post.pay_frequency}
                     </dd>
                   </div>
                   <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -219,11 +220,13 @@ const ApplicationTimeline = ({
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       <ul className="list-disc list-inside mb-4">
-                        {offerData.benefits.map((benefit, index) => (
-                          <li key={index} className="text-gray-600 ml-3">
-                            {benefit}
-                          </li>
-                        ))}
+                        {applicationDetails.post.benefits.map(
+                          (benefit, index) => (
+                            <li key={index} className="text-gray-600 ml-3">
+                              {benefit}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </dd>
                   </div>

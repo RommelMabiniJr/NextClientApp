@@ -11,6 +11,7 @@ export const JobsService = {
   async getServiceNameById(id) {
     const services = await this.getServices();
     const service = services.find((s) => s.service_id === id);
+    if (!service) return "";
     return service.service_name;
   },
 };

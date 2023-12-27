@@ -57,12 +57,13 @@ export default function InterviewContainer({
   const toastRef = useRef(null);
 
   const applicantMenuItems = [
-    // {
-    //   label: "Edit",
-    //   icon: "pi pi-pencil",
-    //   command: () => {},
-    // },
-
+    {
+      label: "Mark Complete",
+      icon: "pi pi-check",
+      command: () => {
+        onCompleteInterview();
+      },
+    },
     {
       label: "Cancel",
       icon: "pi pi-times",
@@ -73,13 +74,6 @@ export default function InterviewContainer({
     {
       label: "View Profile",
       icon: "pi pi-user",
-    },
-    {
-      label: "Mark as complete",
-      icon: "pi pi-check",
-      command: () => {
-        onCompleteInterview();
-      },
     },
   ];
 
@@ -366,7 +360,7 @@ export default function InterviewContainer({
         )
     );
 
-    console.log(screenedResults);
+    // console.log(screenedResults);
 
     // get the information of the unscheduled applicants from the applicants list using the unscheduled passed screening applicants
     const finalUnscheduledApplicants = unscheduledPassedScreeningApplicants.map(
@@ -526,15 +520,26 @@ export default function InterviewContainer({
       return <span style={{ textDecoration: "line-through" }}>{date.day}</span>;
     }
 
+    console.log(scheduledApplicants);
+
     // check if date has interview by matching day and month and year
-    const hasInterview = scheduledApplicants.some(
+    // const hasInterview = scheduledApplicants.some(
+    //   (applicant) =>
+    //     dayjs(applicant.interview.date).format("D") == date.day &&
+    //     dayjs(applicant.interview.date).format("M") == date.month + 1 &&
+    //     dayjs(applicant.interview.date).format("YYYY") == date.year
+    // );
+
+    // get the interview details of the applicant
+    const applicant = scheduledApplicants.find(
       (applicant) =>
         dayjs(applicant.interview.date).format("D") == date.day &&
         dayjs(applicant.interview.date).format("M") == date.month + 1 &&
         dayjs(applicant.interview.date).format("YYYY") == date.year
     );
 
-    if (hasInterview) {
+    // check if applicant has interview and interview is not yet completed
+    if (applicant && applicant.interview.status !== "completed") {
       return (
         <div className="flex flex-column items-center border-none">
           <span className="text-base">{date.day}</span>
@@ -638,8 +643,11 @@ export default function InterviewContainer({
 
     const isInterviewPassed = interviewDateTime.isBefore(dayjs());
 
-    // Apply a CSS class conditionally based on whether the interview has passed
-    const dateClassName = isInterviewPassed ? "text-red-300" : "text-gray-500";
+    // Apply a CSS class conditionally based on whether the interview has passed and has been marked as passed
+    const dateClassName =
+      isInterviewPassed && applicant.interview.status !== "completed"
+        ? "text-red-300"
+        : "text-gray-500";
 
     // console.log(isInterviewPassed);
 
@@ -830,112 +838,10 @@ export default function InterviewContainer({
           <div
             className={`flex flex-column divide-y-2 ${styles.calendarWrapper}`}
           >
-            <div className="pb-2">
-              <div className="flex justify-between">
-                <span className="text-base w-full font-semibold leading-6 text-gray-900">
-                  Best Candidate:
-                </span>
-                <span
-                  className="cursor-pointer ml-2 text-lg items-center"
-                  onClick={onResetBestCandidate}
-                >
-                  <i className="pi pi-replay "></i>
-                </span>
-              </div>
-              {bestCandidate ? (
-                <div className="flex items-center gap-x-4 py-4">
-                  <img
-                    className="h-12 flex-none rounded-full bg-gray-50"
-                    src={bestCandidate.information.profile_url}
-                    alt=""
-                  />
-                  <div className="min-w-0 flex-auto">
-                    <span className="flex flex-column">
-                      <p className="m-0 mr-2 text-base font-semibold leading-6 text-gray-900 truncate">
-                        {bestCandidate.information.first_name +
-                          " " +
-                          bestCandidate.information.last_name}
-                      </p>
-                      <span className="truncate text-xs leading-5 text-gray-500 align-middle">
-                        {bestCandidate.information.email}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end text-right">
-                    {/* Change Button */}
-                    <span
-                      onClick={handleBestCandidateChange}
-                      className="rounded-md text-sm px-4 py-1.5 bg-gray-100 hover:bg-gray-200 font-semibold leading-6 text-gray-800 cursor-pointer"
-                    >
-                      Change
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  onClick={handleBestCandidateChange}
-                  className="mt-2 mb-1 flex align-center gap-4 text-left w-full rounded-md text-lg px-4 py-3 bg-gray-100 hover:bg-gray-200 font-semibold leading-6 text-gray-800 cursor-pointer"
-                >
-                  <div className="my-auto">
-                    <span className="pi pi-plus rounded-full bg-gray-600 p-3"></span>
-                  </div>
-                  <div>
-                    <span className="m-0 font-medium">Select a Candidate</span>
-                    <p className="m-0 text-sm font-light leading-6 text-gray-500">
-                      No best candidate selected.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <Dialog
-                header="Select Candidate from Completed Interviews"
-                visible={bestCandidateVisible}
-                onHide={() => setBestCandidateVisible(false)}
-                className="w-1/2"
-              >
-                {scheduledApplicants
-                  .filter(
-                    (applicant) => applicant.interview.status === "completed"
-                  )
-                  .map((applicant) => {
-                    return (
-                      <div
-                        className="flex items-center gap-x-4 py-4"
-                        // onClick={() => setBestCandidate(applicant)}
-                      >
-                        <img
-                          className="h-12 flex-none rounded-full bg-gray-50"
-                          src={applicant.information.profile_url}
-                          alt=""
-                        />
-                        <div className="min-w-0 flex-auto">
-                          <span className="flex flex-column">
-                            <p className="m-0 mr-2 text-base font-semibold leading-6 text-gray-900">
-                              {applicant.information.first_name +
-                                " " +
-                                applicant.information.last_name}
-                            </p>
-                            <span className="truncate text-xs leading-5 text-gray-500 align-middle">
-                              {applicant.information.email}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end text-right">
-                          {/* Change Button */}
-                          <span
-                            onClick={() => onBestCandidateSelect(applicant)}
-                            className="rounded-md text-sm px-4 py-1.5 bg-gray-100 hover:bg-gray-200 font-semibold leading-6 text-gray-800 cursor-pointer"
-                          >
-                            Change
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </Dialog>
-            </div>
             <div className="flex flex-column">
+              <span className="text-base w-full font-semibold leading-6 text-gray-900">
+                Schedule Overview:
+              </span>
               <Calendar
                 // value={interviewDate}
                 // onChange={handleDateChange}

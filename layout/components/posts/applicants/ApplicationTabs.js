@@ -44,21 +44,7 @@ export default function ApplicationTabs({
 
   const { offerResult, setOfferResult } = useState(null);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
-  const [offer, setOffer] = useState({
-    salary: 10000.0,
-    payFrequency: "monthly",
-    benefits: [
-      "Health Insurance",
-      "Dental Insurance",
-      "Vision Insurance",
-      "Free Lunch",
-      "Free Snacks",
-      "Free Coffee",
-      "Free Beer",
-      "Free Parking",
-      "Free Gym Membership",
-    ],
-  });
+  const [offer, setOffer] = useState({});
 
   const stages = ["application", "screening", "interview", "offer", "hired"];
 
@@ -357,31 +343,6 @@ export default function ApplicationTabs({
               Manage the application process of your job post.
             </div>
           </div>
-
-          {/* <div className="flex gap-5">
-            <div className="flex flex-column ">
-              <div className="text-900 mr-2 font-medium text-lg">
-                Progress:{" "}
-              </div>
-              <div
-                className={`text-600 font-semibold ${
-                  isScreening ? "text-green-500" : "text-gray-500"
-                }`}
-              >
-                {isScreening ? "On Going Evaluation" : "Not Started"}
-              </div>
-            </div>
-            <div className="flex flex-column ">
-              <div className="text-900 mr-2 font-medium text-lg">Stage: </div>
-              <div
-                className={`text-600 font-semibold ${
-                  isScreening ? "text-green-500" : "text-gray-500"
-                }`}
-              >
-                {isScreening ? "On Going Evaluation" : "Not Started"}
-              </div>
-            </div>
-          </div> */}
         </div>
         <div>
           <ConfirmDialog
