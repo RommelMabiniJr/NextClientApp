@@ -570,7 +570,10 @@ export default function WorkerSearchPage({ userUUID }) {
               item.event_description == "Interview Scheduled"
             ) {
               return (
-                <div className="bg-blue-200 p-2 pl-3 border-round flex items-center mr-2 w-full text-sm">
+                <div
+                  key={index}
+                  className="bg-blue-200 p-2 pl-3 border-round flex items-center mr-2 w-full text-sm"
+                >
                   <i
                     className={`pi pi-clock text-blue-800 ${item.icon}`}
                     style={{ fontSize: "1.3rem" }}
@@ -585,7 +588,10 @@ export default function WorkerSearchPage({ userUUID }) {
               );
             } else {
               return (
-                <div className="bg-green-200 p-2 pl-3 border-round flex items-center mr-2 w-full text-sm">
+                <div
+                  key={index}
+                  className="bg-green-200 p-2 pl-3 border-round flex items-center mr-2 w-full text-sm"
+                >
                   <i
                     className={`pi pi-clock text-green-800 ${item.icon}`}
                     style={{ fontSize: "1.3rem" }}
