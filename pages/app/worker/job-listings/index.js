@@ -19,6 +19,7 @@ import DateConverter from "@/lib/dateConverter";
 import { TabView, TabPanel } from "primereact/tabview";
 import { getSession } from "next-auth/react";
 import ScrollbarWrapper from "@/layout/components/ScrollbarWrapper";
+import { mapTimelineData } from "@/layout/components/utils/timelineUtils";
 // import ScrollRestorationDisabler from "@/layout/components/ScrollRestorationDisabler";
 
 export async function getServerSideProps(context) {
@@ -62,7 +63,7 @@ export default function WorkerSearchPage({ userUUID }) {
 
   // Will be used to restore scroll position and selected tab when navigating back to this page
   const [selectedTabIndex, setSelectedTabIndex] = useState(() => {
-    if (tabIndex !== undefined) {
+    if (tabIndex) {
       return parseInt(tabIndex);
     } else {
       return 0;
@@ -563,15 +564,42 @@ export default function WorkerSearchPage({ userUUID }) {
         className="p-col-12 p-md-3 px-3 pb-4 w-full"
       >
         <div className="card grid col">
-          <div className="bg-yellow-200 p-2 pl-3 border-round flex mr-2 w-full">
-            <i
-              className="pi pi-clock text-yellow-800"
-              style={{ fontSize: "1.5rem" }}
-            ></i>
-            <span className="text-yellow-800 font-medium ml-3">
-              Your application is awaiting evaluation by the employer.
-            </span>
-          </div>
+          {mapTimelineData([employer.timeline_event]).map((item, index) => {
+            if (
+              item.event_description == "Job Offer" ||
+              item.event_description == "Interview Scheduled"
+            ) {
+              return (
+                <div className="bg-blue-200 p-2 pl-3 border-round flex items-center mr-2 w-full text-sm">
+                  <i
+                    className={`pi pi-clock text-blue-800 ${item.icon}`}
+                    style={{ fontSize: "1.3rem" }}
+                  ></i>
+                  <p className="text-blue-800 font-medium m-0 ml-2 mr-3 line-clamp-1 ">
+                    <span className="font-semibold mr-2 text-base">
+                      {item.event_description}:
+                    </span>
+                    {item.content}
+                  </p>
+                </div>
+              );
+            } else {
+              return (
+                <div className="bg-green-200 p-2 pl-3 border-round flex items-center mr-2 w-full text-sm">
+                  <i
+                    className={`pi pi-clock text-green-800 ${item.icon}`}
+                    style={{ fontSize: "1.3rem" }}
+                  ></i>
+                  <p className="text-green-800 font-medium m-0 ml-2 mr-3 line-clamp-1 ">
+                    <span className="font-semibold mr-2 font text-base">
+                      {item.event_description}:
+                    </span>
+                    {item.content}
+                  </p>
+                </div>
+              );
+            }
+          })}
           <div className="col-12 flex flex-column lg:flex-row">
             <div className="w-full mb-4">
               <div className="flex flex-row">
@@ -592,11 +620,16 @@ export default function WorkerSearchPage({ userUUID }) {
                     </div>
                     <div className="col flex flex-wrap py-1">
                       <span className="text-600 font-medium ">Job Type: </span>
-                      <Tag
-                        className="ml-2"
-                        icon="pi pi-clock"
-                        value={employer.post.job_type}
-                      />
+                      <div>
+                        <Tag
+                          className="ml-2"
+                          icon="pi pi-clock"
+                          // Capitalize first letter of job type
+                          value={employer.post.job_type.replace(/^\w/, (c) =>
+                            c.toUpperCase()
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="grid w-full">

@@ -18,7 +18,7 @@ const BookingView = () => {
   return (
     <div className="bg-white">
       <EmployerNavbar session={session} />
-      <BookingViewContent />
+      <BookingViewContent session={session} />
       <Footer />
     </div>
   );

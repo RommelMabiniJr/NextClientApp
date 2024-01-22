@@ -25,7 +25,7 @@ const HouseholdInformationStep = ({
 
   return (
     <div>
-      <div className="flex">
+      <div className="flex gap-5">
         <div className="household-num-selection">
           <label
             htmlFor="householdSize"
@@ -43,14 +43,16 @@ const HouseholdInformationStep = ({
             })}
           /> */}
 
-          <div className="pr-4">
+          <div className="w-full">
             <InputNumber
+              showButtons
               id="householdSize"
               value={formik.values.householdSize}
               onValueChange={(e) => {
                 formik.setFieldValue("householdSize", e.value);
               }}
               placeholder="Enter your household size"
+              min={1}
               className={classNames("w-full", {
                 "p-invalid": isFormFieldInvalid("householdSize"),
               })}
@@ -58,7 +60,6 @@ const HouseholdInformationStep = ({
           </div>
           {getFormErrorMessage("householdSize")}
         </div>
-
         <div className="pet-selection">
           <label htmlFor="hasPets" className="block text-900 font-medium mb-2">
             Employer Pets
@@ -117,11 +118,13 @@ const HouseholdInformationStep = ({
       >
         Specific Needs
       </label>
-      <InputText
+
+      <InputTextarea
+        style={{ width: "100%", height: "200px" }}
         {...props.formik.getFieldProps("specificNeeds")}
         id="specificNeeds"
         type="text"
-        placeholder="Enter any specific needs in mind"
+        placeholder="Describe specific care needs that you may frequently need..."
         className={classNames("w-full", {
           "p-invalid": isFormFieldInvalid("specificNeeds"),
         })}
@@ -143,45 +146,37 @@ const HouseholdInformationStep = ({
   );
 };
 
-const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
+const PreferenceStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
   const {
     isFormFieldInvalid,
     getFormErrorMessage,
     paymentFrequencyOptions,
     formik,
   } = props;
-  const [payments, setPayments] = useState([]);
-  const [selectedPayment, setSelectedPayment] = useState([]);
-  const [filteredPayments, setFilteredPayments] = useState(null);
-  const [options, setOptions] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [badgeOptions, setBadgeOptions] = useState([
+    "Flexible Schedule Advocate",
+    "Family-Oriented Workplace",
+    "Skill Development Advocate",
+    "Safety First",
+    "Open Communication",
+  ]);
+  const [filteredBadges, setFilteredBadges] = useState(null);
 
-  const search = (event) => {
+  const searchBadge = (event) => {
     // Timeout to emulate a network connection
     setTimeout(() => {
-      let _filteredPayOptions;
+      let _filteredBadgeOptions;
 
       if (!event.query.trim().length) {
-        _filteredPayOptions = [...payments];
+        _filteredBadgeOptions = [...badgeOptions];
       } else {
-        _filteredPayOptions = payments.filter((payment) => {
-          return payment.name
-            .toLowerCase()
-            .startsWith(event.query.toLowerCase());
+        _filteredBadgeOptions = badgeOptions.filter((badge) => {
+          return badge.toLowerCase().startsWith(event.query.toLowerCase());
         });
       }
 
-      setFilteredPayments(_filteredPayOptions);
+      setFilteredBadges(_filteredBadgeOptions);
     }, 250);
-  };
-
-  useEffect(() => {
-    PaymentService.getPaymentMethods().then((data) => setPayments(data));
-    // PaymentService.getFrequencyOfPayments().then((data) => setOptions(data));
-  }, []);
-
-  const handleSelectedPaymentChange = (e) => {
-    formik.setFieldValue("paymentMethods", e.value);
   };
 
   const handleSelectedFrequencyChange = (e) => {
@@ -190,26 +185,25 @@ const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
 
   return (
     <div>
-      <label
-        htmlFor="paymentMethods"
-        className="block text-900 font-medium mb-2"
-      >
-        Payment Methods
+      <label htmlFor="badges" className="block text-900 font-medium mb-2">
+        Describe Your Household
       </label>
       <div className="p-fluid">
         <AutoComplete
-          placeholder="Select preferred mode of payment"
-          value={formik.values.paymentMethods}
-          field="name"
+          id="badges"
+          placeholder="Select Badges"
+          value={formik.values.badges}
           multiple
           dropdown
           virtualScrollerOptions={{ itemSize: 38 }}
-          suggestions={filteredPayments}
-          completeMethod={search}
-          onChange={handleSelectedPaymentChange}
+          suggestions={filteredBadges}
+          completeMethod={searchBadge}
+          onChange={(e) => {
+            formik.setFieldValue("badges", e.value);
+          }}
         />
       </div>
-      {getFormErrorMessage("paymentMethods")}
+      {getFormErrorMessage("badges")}
 
       <label
         htmlFor="paymentFrequency"
@@ -246,11 +240,8 @@ const PaymentStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           icon="pi pi-arrow-right"
           iconPos="right"
           onClick={handleNextStep}
-          //   Check if both paymentMethods and paymentFrequency is not empty, disable the next button
-          disabled={
-            !formik.values.paymentMethods.length ||
-            !formik.values.paymentFrequency
-          }
+          //   Check if paymentFrequency is not empty, disable the next button
+          disabled={!formik.values.paymentFrequency}
         />
       </div>
     </div>
@@ -270,7 +261,7 @@ const AdditionalStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
         {...props.formik.getFieldProps("bio")}
         id="bio"
         type="text"
-        placeholder="Create a bio"
+        placeholder="Add a bio"
         className={classNames("w-full", {
           "p-invalid": isFormFieldInvalid("bio"),
         })}
@@ -286,11 +277,11 @@ const AdditionalStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           onClick={handlePreviousStep}
         />
         <Button
-          label="Skip"
+          label="Confirm"
           className=""
           icon="pi pi-arrow-right"
           iconPos="right"
-          onClick={handleNextStep}
+          onClick={props.formik.handleSubmit}
         />
       </div>
     </div>
@@ -419,9 +410,9 @@ const VerificationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
 //
 const setupSteps = [
   HouseholdInformationStep,
-  PaymentStep,
+  PreferenceStep,
   AdditionalStep,
-  VerificationStep,
+  // VerificationStep,
 ];
 
 export default setupSteps;

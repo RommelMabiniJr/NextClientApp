@@ -556,7 +556,7 @@ const OfferStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
                           value={benefit}
                           onChange={(e) => {
                             let _selectedBenefits =
-                              [...formik.values.benefits] || [];
+                              [...formik.values?.benefits] || [];
 
                             if (e.checked) _selectedBenefits.push(e.value);
                             else

@@ -169,24 +169,24 @@ const JobDetailsDialog = ({
                 {getDistance(job.city_municipality, distances)} Kilometers
               </label>
               <div className="flex mt-2 w-full flex-wrap justify-content-center">
-                <Tag
-                  severity="primary"
-                  className="block mb-1"
-                  icon="pi pi-check-square"
-                  value="Eco-conscious"
-                />
-                <Tag
-                  severity="success"
-                  className="block mb-1"
-                  icon="pi pi-check-square"
-                  value="LGBTQ-friendly"
-                />
-                <Tag
-                  severity="warning"
-                  className="block mb-1"
-                  icon="pi pi-check-square"
-                  value="Family-oriented"
-                />
+                {/* generate with random severity based on badge name */}
+                {job.badges.map((badge, index) => {
+                  const badgeColors = ["primary", "success", "warning", "info"];
+
+                  return (
+                    <Tag
+                      key={badge}
+                      // sequence the badge colors based on index
+                      severity={
+                        badgeColors[index % badgeColors.length] || "primary"
+                      }
+                      className="block mb-1"
+                      icon="pi pi-check-square"
+                      value={badge}
+                      style={{ backgroundColor: badge.badge_color }}
+                    />
+                  );
+                })}
               </div>
             </center>
           </div>
@@ -225,13 +225,13 @@ const JobDetailsDialog = ({
                 <span className="mr-2">End:</span> {endDateReadable} |{" "}
                 {endTimeReadable}
               </label>
-              <label className="pt-4 font-medium text-lg">
+              {/* <label className="pt-4 font-medium text-lg">
                 <i className="pi pi-id-card" /> Application Requirements
               </label>
               <label className="w-full">Covid Vaccine Certificate</label>
               <label className="w-full">Social Security System (SSS)</label>
               <label className="w-full">Government-Issued ID</label>
-              <label className="w-full">PhilHealth Membership</label>
+              <label className="w-full">PhilHealth Membership</label> */}
             </div>
           </div>
         </div>

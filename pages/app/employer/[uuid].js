@@ -71,7 +71,7 @@ export default function EmployerProfile() {
             <AccordionTab header="Household Information">
               <HouseholdInformation session={session} employer={employer} />
             </AccordionTab>
-            <AccordionTab header="Payment Information">
+            <AccordionTab header="Preference Information">
               <PaymentInformation session={session} employer={employer} />
             </AccordionTab>
           </Accordion>

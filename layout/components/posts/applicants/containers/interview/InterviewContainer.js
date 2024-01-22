@@ -19,10 +19,12 @@ import { Toast } from "primereact/toast";
 import { ApplicationStageServices } from "@/layout/service/ApplicationStageService";
 import { ScreeningService } from "@/layout/service/ScreeningService";
 import { InterviewService } from "@/layout/service/InterviewService";
+import { SelectButton } from "primereact/selectbutton";
 
 export default function InterviewContainer({
   applicants,
   postId,
+  session,
   distances,
   setInterviewResults,
   setHasInterview,
@@ -50,6 +52,7 @@ export default function InterviewContainer({
   const [currentView, setCurrentView] = useState("scheduled"); // Default to "scheduled"
 
   const [showAll, setShowAll] = useState(false);
+  const [interviewType, setInterviewType] = useState("Google Meet");
 
   const dateConverter = DateConverter();
   const op = useRef(null);
@@ -77,6 +80,11 @@ export default function InterviewContainer({
     },
   ];
 
+  const interviewCallOptions = [
+    { icon: "pi pi-google", value: "Google Meet" },
+    { icon: "pi pi-video", value: "KasambahayKo" },
+  ];
+
   const handleBestCandidateChange = () => {
     setBestCandidateVisible(true);
   };
@@ -94,6 +102,41 @@ export default function InterviewContainer({
     // TODO: handle form submission
   };
 
+  function randomID(len) {
+    let result = "";
+    if (result) return result;
+    var chars =
+        "12345qwertyuiopasdfgh67890jklmnbvcxzMNBVCZXASDQWERTYHGFUIOLKJP",
+      maxPos = chars.length,
+      i;
+    len = len || 5;
+    for (i = 0; i < len; i++) {
+      result += chars.charAt(Math.floor(Math.random() * maxPos));
+    }
+    return result;
+  }
+
+  const handleInterviewTypeChange = () => {
+    console.log(candidateForInterview);
+
+    // toggle interview type
+    setInterviewType((prevType) =>
+      prevType === "Google Meet" ? "KasambahayKo" : "Google Meet"
+    );
+
+    // reset interview link
+    setInterviewLink("");
+
+    // if kasambahayko, set interview link to kasambahayko link
+    if (interviewType === "Google Meet") {
+      const ranId = randomID(6);
+
+      // generate a unique link for the interview
+      const link = `${process.env.NEXT_PUBLIC_KASAMBAHAYKO_URL}/app/interview/${ranId}`;
+
+      setInterviewLink(link);
+    }
+  };
   const handleMenuRef = (event, candidate) => {
     // console.log("Canceling interview for: ", index);
     setCandidateForCancel(candidate);
@@ -520,7 +563,7 @@ export default function InterviewContainer({
       return <span style={{ textDecoration: "line-through" }}>{date.day}</span>;
     }
 
-    console.log(scheduledApplicants);
+    // console.log(scheduledApplicants);
 
     // check if date has interview by matching day and month and year
     // const hasInterview = scheduledApplicants.some(
@@ -675,7 +718,7 @@ export default function InterviewContainer({
   return (
     <div>
       <Toast ref={toastRef} position="bottom-right" />
-      <div className="bg-primary-100 flex items-center justify-between p-2 pl-3 rounded-md mb-3">
+      {/* <div className="bg-primary-100 flex items-center justify-between p-2 pl-3 rounded-md mb-3">
         <p className=" text-lg font-bold m-0">
           <i className="pi pi-check-square mr-3 text-green-700"></i>
           ALL INTERVIEWS COMPLETED!
@@ -689,7 +732,7 @@ export default function InterviewContainer({
           // disabled
           // onClick={handleMoveToNextTab}
         />
-      </div>
+      </div> */}
       <div className="flex flex-column md:flex-row gap-x-5">
         <div className="flex-grow divide-y-2">
           <div className="pb-2">
@@ -902,23 +945,38 @@ export default function InterviewContainer({
               </div>
               <div className="flex flex-column gap-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-semibold leading-6 text-gray-900">
-                    Interview Link
-                  </label>
-                  <a
-                    target="_blank"
-                    href="https://meet.google.com/"
-                    rel="noopener noreferrer"
+                  <div className="flex align-items-center gap-2">
+                    <img
+                      src={
+                        interviewType === "Google Meet"
+                          ? "/layout/google_meet_icon_short.png"
+                          : "/layout/kasambahayko_logo.png"
+                      }
+                      alt="Sakai Logo"
+                      height={interviewType === "Google Meet" ? "20" : "20"}
+                      width={interviewType === "Google Meet" ? "20" : "20"}
+                      className="user-avatar mr-0 lg:mr-2"
+                    />
+                    <label className="text-sm font-semibold leading-6 text-gray-900">
+                      Interview type
+                    </label>
+                  </div>
+
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => handleInterviewTypeChange()}
                   >
-                    <i className="pi pi-video" />
-                  </a>
+                    <i className="pi pi-arrow-right-arrow-left" />
+                  </span>
                 </div>
                 <span className="p-input-icon-left">
                   <i className="pi pi-link" />
-                  {/* TODO: CUSTOMIZE THE CALENDAR TO SHOW THE SCHEDULED INTERVIEW*/}
                   <InputText
+                    value={interviewLink}
                     placeholder=""
                     onChange={(e) => setInterviewLink(e.target.value)}
+                    // disabled if interview type is kasambahayko because link is auto generated
+                    disabled={interviewType === "KasambahayKo"}
                   />
                 </span>
               </div>
@@ -972,22 +1030,38 @@ export default function InterviewContainer({
               </div>
               <div className="flex flex-column gap-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-semibold leading-6 text-gray-900">
-                    Interview Link
-                  </label>
-                  <a
-                    target="_blank"
-                    href="https://meet.google.com/"
-                    rel="noopener noreferrer"
+                  <div className="flex align-items-center gap-2">
+                    <img
+                      src={
+                        interviewType === "Google Meet"
+                          ? "/layout/google_meet_icon_short.png"
+                          : "/layout/kasambahayko_logo.png"
+                      }
+                      alt="Sakai Logo"
+                      height={interviewType === "Google Meet" ? "20" : "20"}
+                      width={interviewType === "Google Meet" ? "20" : "20"}
+                      className="user-avatar mr-0 lg:mr-2"
+                    />
+                    <label className="text-sm font-semibold leading-6 text-gray-900">
+                      Interview type
+                    </label>
+                  </div>
+
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => handleInterviewTypeChange()}
                   >
-                    <i className="pi pi-video" />
-                  </a>
+                    <i className="pi pi-arrow-right-arrow-left" />
+                  </span>
                 </div>
                 <span className="p-input-icon-left">
                   <i className="pi pi-link" />
                   <InputText
+                    value={interviewLink}
                     placeholder=""
                     onChange={(e) => setInterviewLink(e.target.value)}
+                    // disabled if interview type is kasambahayko because link is auto generated
+                    disabled={interviewType === "KasambahayKo"}
                   />
                 </span>
               </div>

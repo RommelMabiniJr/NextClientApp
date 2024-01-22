@@ -402,6 +402,7 @@ export default function ApplicationTabs({
             applicants={applicants}
             distances={distances}
             postId={postId}
+            session={session}
             setInterviewResults={setInterviewResults}
             setHasInterview={setHasInterview}
           />

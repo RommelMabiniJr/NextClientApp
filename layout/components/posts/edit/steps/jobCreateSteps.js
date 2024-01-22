@@ -486,7 +486,6 @@ const JobDescriptionStep = ({
   );
 };
 
-//
 // Setting up of salary, payment frequency, and benefits  for the job
 const OfferStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
   const { isFormFieldInvalid, getFormErrorMessage, formik } = props;

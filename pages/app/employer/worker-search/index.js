@@ -377,13 +377,21 @@ export default function WorkerSearchPage() {
                   </span>
                 </div>
                 <div className="rate text-lg font-semibold">
-                  ₱{worker.hourly_rate}/hr
+                  ₱{worker.hourly_rate}/day
                 </div>
                 {/* <span className="p-tag p-tag-success">{worker.category}</span> */}
               </div>
             </div>
             <div className="flex flex-column gap-2 w-8">
-              <Button label="Hire" className="p-button-sm p-button-primary " />
+              <Button
+                label="Hire"
+                className="p-button-sm p-button-primary "
+                onClick={() =>
+                  router.push(
+                    `/app/employer/worker-search/${worker.worker_id}/booking-request`
+                  )
+                }
+              />
               <ShowWorkerDetailsBtn worker={worker} distances={distances} />
             </div>
           </div>
@@ -403,8 +411,8 @@ export default function WorkerSearchPage() {
               <Tag
                 className="mr-2"
                 icon="pi pi-verified"
-                severity={worker.is_verified == "true" ? "success" : "warning"}
-                value={worker.is_verified == "true" ? "Verified" : "Unverified"}
+                severity={worker.verified ? "success" : "warning"}
+                value={worker.verified ? "Verified" : "Unverified"}
               ></Tag>
             </div>
           </div>

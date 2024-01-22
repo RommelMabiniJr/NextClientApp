@@ -125,7 +125,7 @@ const HouseholdInformation = ({ session, employer }) => {
 
   const renderSpecificNeedsField = () => {
     return (
-      <div className="p-field">
+      <div className="p-field flex-1">
         <InputTextarea
           autoResize
           className="w-full"
@@ -140,7 +140,7 @@ const HouseholdInformation = ({ session, employer }) => {
   return (
     <div className="p-d-flex p-jc-between">
       <Toast ref={toast} />
-      <div className="flex flex-row justify-content-between">
+      <div className="flex gap-4 flex-row justify-content-between">
         <div className="panel-fields p-mb-2 col">
           <div className="p-mb-2 grid">
             <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">

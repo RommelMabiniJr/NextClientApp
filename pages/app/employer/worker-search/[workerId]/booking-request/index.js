@@ -4,7 +4,7 @@ import BookRequest from "@/layout/components/employer/worker-search/booking-requ
 import PostCreateSteps from "@/layout/components/employer/worker-search/booking-request/PostCreateSteps";
 import { ConfigService } from "@/layout/service/ConfigService";
 import { UserService } from "@/layout/service/UserService";
-import { postJobTitleAndDescriptionValidate } from "@/lib/validators/postValidator";
+import { directHireValidate } from "@/lib/validators/directHireValidator";
 import { useFormik } from "formik";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -28,6 +28,7 @@ const BookRequestPage = () => {
   };
 
   const handleConfirmJobDetails = async (values) => {
+    console.log(values);
     setJobDetails(values);
     setIsPostEditMode(false);
   };
@@ -54,11 +55,7 @@ const BookRequestPage = () => {
       jobEndTime: "",
     },
     validate: (values) =>
-      postJobTitleAndDescriptionValidate(
-        values,
-        jobTitleMaxLength,
-        jobDescriptionMaxLength
-      ),
+      directHireValidate(values, jobTitleMaxLength, jobDescriptionMaxLength),
     onSubmit: handleConfirmJobDetails,
   });
 

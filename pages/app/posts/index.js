@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Posts from "@/layout/components/posts/show/Posts";
+import PostHistory from "@/layout/components/posts/show/PostsHistory";
+import ManageApplications from "@/layout/components/posts/show/ManageApplications";
 
 export default function EditJobPostPage() {
   const { data: session, status, loading } = useSession();
@@ -57,17 +59,6 @@ const EmptyJobHistory = () => {
   );
 };
 
-const PostPanel = ({ posts }) => {
-  return (
-    <div className="col-12">
-      <div className="card">
-        {/* <h5>My Posts</h5> */}
-        <Posts posts={posts}></Posts>
-      </div>
-    </div>
-  );
-};
-
 const RenderCreateJobPostButton = () => {
   return (
     <div className="mx-auto">
@@ -80,26 +71,42 @@ const RenderCreateJobPostButton = () => {
 
 const DisplayPosts = ({ session, handleSignOut }) => {
   const [posts, setPosts] = useState([]);
+  const [postHistory, setPostHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // get available user posts
   useEffect(() => {
     const fetchPosts = async () => {
-      setIsLoading(true);
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
       try {
         const response = await axios.get(
           `${serverUrl}/employer/post/get-posts?uuid=${session.user.uuid}`
         );
         setPosts(response.data);
-        console.log(response.data);
+        // console.log(response.data);
       } catch (error) {
         console.error(error);
       }
-      setIsLoading(false);
     };
 
+    const fetchPostsHistory = async () => {
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+      try {
+        const response = await axios.get(
+          `${serverUrl}/employer/posts/get-history?uuid=${session.user.uuid}`
+        );
+
+        setPostHistory(response.data);
+        // console.log(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    setIsLoading(true);
     fetchPosts();
+    fetchPostsHistory();
+    setIsLoading(false);
   }, []);
 
   return (
@@ -109,9 +116,9 @@ const DisplayPosts = ({ session, handleSignOut }) => {
         <div className="col-12">
           <div className="card">
             <TabView className="text-center">
-              <TabPanel header="Active Jobs">
+              <TabPanel header="Jobpostings">
                 {posts.length > 0 ? (
-                  <PostPanel posts={posts} />
+                  <Posts posts={posts} setPosts={setPosts} />
                 ) : (
                   <div className="h-24rem p-6">
                     <EmptyJobPosts />
@@ -119,11 +126,28 @@ const DisplayPosts = ({ session, handleSignOut }) => {
                   </div>
                 )}
               </TabPanel>
-              <TabPanel header="Job History">
-                <div className="h-24rem p-6">
-                  <EmptyJobHistory />
-                  <RenderCreateJobPostButton />
-                </div>
+              <TabPanel header="Applications">
+                {posts.length > 0 ? (
+                  <ManageApplications posts={posts} setPosts={setPosts} />
+                ) : (
+                  <div className="h-24rem p-6">
+                    <EmptyJobPosts />
+                    <RenderCreateJobPostButton />
+                  </div>
+                )}
+              </TabPanel>
+              <TabPanel header="History">
+                {postHistory.length > 0 ? (
+                  <PostHistory
+                    postHistory={postHistory}
+                    setPostHistory={setPostHistory}
+                  />
+                ) : (
+                  <div className="h-24rem p-6">
+                    <EmptyJobHistory />
+                    <RenderCreateJobPostButton />
+                  </div>
+                )}
               </TabPanel>
             </TabView>
           </div>

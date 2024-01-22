@@ -167,12 +167,6 @@ const OfferDetails = ({
     <div className="w-full md:w-6 lg:w-5 pt-5">
       <div className="mb-2.5 flex items-center justify-between">
         <h3 className="text-lg font-medium mb-2">Offer Overview</h3>
-        {/* <span
-          className="cursor-pointer rounded-md hover:bg-gray-200 py-2 px-3"
-          onClick={() => setSidebarVisible(true)}
-        >
-          <i className="pi pi-history"></i>
-        </span> */}
       </div>
       <div className="Offer-Section mt-2">
         <form>

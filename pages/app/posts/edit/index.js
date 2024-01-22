@@ -120,11 +120,13 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
         detail: "Job Post Updated!",
         life: 3000,
         command: () => {
-          router.push("/app/posts");
+          // router.push("/app/posts");
+          router.back();
         },
       });
 
-      router.push("/app/posts");
+      router.back();
+      // router.push("/app/posts");
     } catch (error) {
       console.error(error);
       toast.current.show({
@@ -153,7 +155,7 @@ const DisplayPostCreation = ({ session, handleSignOut }) => {
       // Offer Details
       salary: edit ? postData.salary : "",
       payFrequency: edit ? postData.pay_frequency : "",
-      benefits: edit ? postData.benefits : [],
+      benefits: edit ? postData.benefits || [] : [], // makes sure that benefits will be an array
     },
     validate: (values) => {
       return postJobTitleAndDescriptionValidate(

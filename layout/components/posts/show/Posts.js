@@ -9,8 +9,90 @@ import Link from "next/link";
 import DateConverter from "@/lib/dateConverter";
 import ShowPostButton from "./subcomp/ShowPostButton";
 import styles from "@/styles/Posts.module.css";
+import { useEffect, useState } from "react";
+import { SelectButton } from "primereact/selectbutton";
+import { Dropdown } from "primereact/dropdown";
 
 const Posts = ({ posts }) => {
+  const [filteredPosts, setFilteredPosts] = useState([]); // posts is an array of objects, each object is a job post
+  const [postStatus, setPostStatus] = useState("active");
+  const [sortOption, setSortOption] = useState("Recent");
+  const sortingOptions = ["Recent", "Oldest"];
+
+  const handleSortOptionChange = (e) => {
+    setSortOption(e.value);
+
+    const sortedPosts = [...filteredPosts];
+
+    if (e.value == "Recent") {
+      sortedPosts.sort((a, b) => {
+        return new Date(b.job_posting_date) - new Date(a.job_posting_date);
+      });
+    }
+
+    if (e.value == "Oldest") {
+      sortedPosts.sort((a, b) => {
+        return new Date(a.job_posting_date) - new Date(b.job_posting_date);
+      });
+    }
+
+    setFilteredPosts([...sortedPosts]);
+  };
+
+  const statusItems = [
+    { label: "All Posts", value: "all" },
+    { label: "Active", value: "active" },
+    { label: "Closed", value: "closed" },
+  ];
+
+  const handlePostStatusChange = (e) => {
+    setPostStatus(e.value);
+
+    let finalPosts;
+
+    if (e.value === "all") {
+      finalPosts = [{ isNew: true }, ...posts];
+      setFilteredPosts(finalPosts);
+    } else {
+      // filter based on post.job-start_date
+      // Active if post.job-start_date is in the future
+      // Closed if post.job-start_date is in the past
+
+      const filtered = posts.filter((post) => {
+        if (e.value === "active") {
+          return new Date(post.job_start_date) > new Date();
+        } else {
+          return new Date(post.job_start_date) < new Date();
+        }
+      });
+
+      finalPosts = [{ isNew: true }, ...filtered];
+
+      setFilteredPosts(finalPosts);
+    }
+  };
+
+  useEffect(() => {
+    const activePosts = posts.filter((post) => {
+      return new Date(post.job_start_date) > new Date();
+    });
+
+    // DEFAULT SORTING
+    // sort by most recent
+    activePosts.sort((a, b) => {
+      return new Date(b.job_posting_date) - new Date(a.job_posting_date);
+    });
+
+    setFilteredPosts([{ isNew: true }, ...activePosts]);
+  }, [posts]);
+
+  useEffect(() => {
+    // activate sorting when postStatus changes
+    if (filteredPosts.length > 0) {
+      handleSortOptionChange({ value: sortOption });
+    }
+  }, [postStatus]);
+
   const postTemplate = (post) => {
     // convert date string passed from server to date object
     const dateConverter = DateConverter();
@@ -38,7 +120,7 @@ const Posts = ({ posts }) => {
     }
 
     return (
-      <div className="col-12 md:col-6 lg:col-4 p-3">
+      <div className="col-12 md:col-6 lg:col-4 p-3 border-0">
         <Card
           className="h-full"
           pt={{
@@ -92,17 +174,39 @@ const Posts = ({ posts }) => {
     );
   };
 
-  // add a new job post object to the beginning of the posts array
-  const updatedPosts = [{ isNew: true }, ...posts];
-
   return (
-    <div>
-      <h1>My Posts</h1>
-      <DataView
-        value={updatedPosts}
-        className="grid"
-        itemTemplate={postTemplate}
-      />
+    <div className="col-12">
+      <div className="">
+        <div className="">
+          <div className="flex justify-between items-center">
+            <h1 className="text-left mt-3 mb-5 font-semibold">Jobposts</h1>
+
+            <div className="flex gap-6">
+              <div className="flex gap-2 items-center justify-center">
+                <h4 className="m-0 mr-4 ">Sort By: </h4>
+                <Dropdown
+                  id="Sortby"
+                  options={sortingOptions}
+                  value={sortOption}
+                  onChange={(e) => handleSortOptionChange(e)}
+                  //   placeholder="Select an Arrangement"
+                />
+              </div>
+              <SelectButton
+                value={postStatus}
+                options={statusItems}
+                onChange={(e) => handlePostStatusChange(e)}
+                optionLabel="label"
+              />
+            </div>
+          </div>
+          <DataView
+            value={filteredPosts}
+            className="grid"
+            itemTemplate={postTemplate}
+          />
+        </div>
+      </div>
     </div>
   );
 };

@@ -13,7 +13,7 @@ import DeletePopup from "@/layout/components/posts/show/subcomp/DeletePopup";
 import { JobPostService } from "@/layout/service/JobPostService";
 import axios from "axios";
 
-export default function ShowPostButton({ post }) {
+export default function ShowPostButton({ post, isModifiable = true }) {
   const [visible, setVisible] = useState(false);
   const [displayDelConfirm, setDisplayDelConfirm] = useState(false); // for delete confirm
   const [applicants, setApplicants] = useState([]);
@@ -67,6 +67,7 @@ export default function ShowPostButton({ post }) {
               pathname: `/app/posts/applicants/${post.job_id}`,
             })
           }
+          disabled={!isModifiable}
         />
       </div>
     </div>
@@ -105,6 +106,7 @@ export default function ShowPostButton({ post }) {
                 size="small"
                 icon="pi pi-pencil"
                 tooltip="Edit Job Post"
+                disabled={!isModifiable}
                 onClick={() =>
                   Router.push({
                     pathname: "/app/posts/edit",
@@ -118,6 +120,7 @@ export default function ShowPostButton({ post }) {
                 size="small"
                 severity="danger"
                 icon="pi pi-trash"
+                disabled={!isModifiable}
                 onClick={() => setDisplayDelConfirm(true)}
                 className="p-button-danger p-button-outlined"
                 tooltip="Delete Job Post"
@@ -153,7 +156,7 @@ export default function ShowPostButton({ post }) {
           <div className="grid">
             <div className="col-6 mb-2">
               <strong>Start Date:</strong>{" "}
-              {console.log("DISPLAY:" + post.job_title, post.job_start_date)}
+              {/* {console.log("DISPLAY:" + post.job_title, post.job_start_date)} */}
               {new Date(post.job_start_date).toDateString()}
             </div>
             <div className="col-6 mb-2">

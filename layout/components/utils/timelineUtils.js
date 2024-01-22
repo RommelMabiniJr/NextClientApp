@@ -68,7 +68,7 @@ export const getStatusInfo = (status) => {
         icon: "pi pi-check-circle",
         color: COLORS.GREEN,
         content:
-          "Congratulations! You have passed the screening stage. Well done!",
+          "Congratulations! Your application has been reviewed, and you have successfully passed the screening process.",
       };
     case EVENT_DESCRIPTIONS.APPLICATION_UNDER_REVIEW:
       return {
@@ -82,7 +82,7 @@ export const getStatusInfo = (status) => {
         icon: "pi pi-check-circle",
         color: COLORS.GREEN,
         content:
-          "Your application was submitted to the employer. Thank you for applying!",
+          "Your application has been successfully submitted to the employer and is now under review.",
       };
     default:
       return { icon: "", color: "" };

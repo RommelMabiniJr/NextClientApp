@@ -39,41 +39,6 @@ const EmployerNavbar = ({}) => {
     return <div>Loading...</div>;
   }
 
-  // useEffect(() => {
-  //   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-  //   const ws = new WebSocket(socketUrl); // Replace with your server address using process.env
-
-  //   ws.onopen = () => {
-  //     console.log("Connected to WebSocket server");
-  //   };
-
-  //   ws.onmessage = (event) => {
-  //     console.log(`Received message: ${event.data}`);
-  //     // Handle the incoming notification here and update your UI as needed
-
-  //     // check if the message is a notification
-  //     const message = JSON.parse(event.data);
-  //     console.log(message);
-  //     if (message.type == "notification") {
-  //       // check if the notification is for the current user
-  //       if (message.recipient == session.user.uuid) {
-  //         // add the notification to the list of notifications
-  //         setNotifications((notifications) => [...notifications, message]);
-  //         console.log("Notification added");
-  //       }
-  //     }
-  //   };
-
-  //   ws.onclose = () => {
-  //     console.log("WebSocket connection closed");
-  //   };
-
-  //   return () => {
-  //     // Cleanup WebSocket connection when component unmounts
-  //     ws.close();
-  //   };
-  // }, []);
-
   useEffect(() => {
     // Get notifications from the server using user_id from session
     const fetchNotifications = async () => {
@@ -153,13 +118,7 @@ const EmployerNavbar = ({}) => {
       icon: "pi pi-fw pi-user",
       url: `/app/employer/${session.user.uuid}`,
     },
-    {
-      label: "Wallet Balance",
-      icon: "pi pi-fw pi-wallet",
-      command: () => {
-        // handle logout logic here
-      },
-    },
+
     {
       label: "Logout",
       icon: "pi pi-fw pi-power-off",
@@ -288,15 +247,13 @@ const EmployerNavbar = ({}) => {
 
   const end = session && (
     <div className="flex flex-row align-items-center border-circle p-d-flex p-flex-row p-ai-center">
-      {/* <Image className='w-min h-min mr-4' src='/layout/profile-default.png' width='40'/> */}
-      <i
+      {/* <i
         aria-label="Message"
         onClick={() => router.push("/app/employer/messages")}
         className="mr-2 p-overlay-badge mr-4 p-link p-cursor-pointer pi pi-envelope"
         style={{ fontSize: "1.5rem" }}
       >
-        {/* <Badge value="8" size="" severity="danger"></Badge> */}
-      </i>
+      </i> */}
       <Menu
         className="w-18rem"
         model={notificationItems}

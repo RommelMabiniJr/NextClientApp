@@ -15,54 +15,51 @@ import { ConfigService } from "@/layout/service/ConfigService";
 import FormatHelper from "@/lib/formatHelper";
 
 export function MultiplePaymentOpt({ formik, isEditMode }) {
-  const [payments, setPayments] = useState([]);
-  const [filteredPayments, setFilteredPayments] = useState(null);
+  const [badgeOptions, setBadgeOptions] = useState([
+    "Flexible Schedule Advocate",
+    "Family-Oriented Workplace",
+    "Skill Development Advocate",
+    "Safety First",
+    "Open Communication",
+  ]);
+  const [filteredBadges, setFilteredBadges] = useState(null);
 
-  const search = (event) => {
+  const searchBadge = (event) => {
     // Timeout to emulate a network connection
     setTimeout(() => {
-      let _filteredPayOptions;
+      let _filteredBadgeOptions;
 
       if (!event.query.trim().length) {
-        _filteredPayOptions = [...payments];
+        _filteredBadgeOptions = [...badgeOptions];
       } else {
-        _filteredPayOptions = payments.filter((payment) => {
-          return payment.name
-            .toLowerCase()
-            .startsWith(event.query.toLowerCase());
+        _filteredBadgeOptions = badgeOptions.filter((badge) => {
+          return badge.toLowerCase().startsWith(event.query.toLowerCase());
         });
       }
 
-      setFilteredPayments(_filteredPayOptions);
+      setFilteredBadges(_filteredBadgeOptions);
     }, 250);
   };
-
-  useEffect(() => {
-    PaymentService.getPaymentMethods().then((data) => setPayments(data));
-    // console.log(payments);
-  }, []);
 
   return (
     <>
       {/* {console.log(payments)} */}
       {isEditMode ? (
         <AutoComplete
-          id="paymentMethods"
-          field="name"
+          id="badges"
           multiple
           dropdown
           virtualScrollerOptions={{ itemSize: 38 }}
-          value={formik.values.paymentMethods}
-          suggestions={filteredPayments}
-          completeMethod={search}
+          value={formik.values.badges}
+          suggestions={filteredBadges}
+          completeMethod={searchBadge}
           onChange={formik.handleChange}
         />
       ) : (
         <div className="p-mt-2">
-          {console.log(formik.values.paymentMethods)}
-          {formik.values.paymentMethods &&
-            formik.values.paymentMethods.map((payment, index) => (
-              <Chip key={index} label={payment.name} className="mr-1 mb-1" />
+          {formik.values.badges &&
+            formik.values.badges.map((badge, index) => (
+              <Chip key={index} label={badge} className="mr-1 mb-1" />
             ))}
         </div>
       )}
@@ -131,12 +128,12 @@ const PaymentInformation = ({ session, employer }) => {
         url: `${serverUrl}/employer/update-info/payment`,
       });
 
-      console.log(response.data);
+      // console.log(response.data);
 
       toast.current.show({
         severity: "success",
         summary: "Success",
-        detail: "Employer Payment information Updated!",
+        detail: "Employer Preference information Updated!",
         life: 3000,
       });
 
@@ -154,7 +151,7 @@ const PaymentInformation = ({ session, employer }) => {
 
   const formik = useFormik({
     initialValues: {
-      paymentMethods: employer.paymentMethods,
+      badges: employer.badges,
       paymentFrequency: employer.paymentFrequency,
     },
     onSubmit: onSubmit,
@@ -169,7 +166,7 @@ const PaymentInformation = ({ session, employer }) => {
       <>
         <div className="p-mb-2 grid">
           <div className="col-fixed text-500 w-4 md:w-2 font-medium mr-4">
-            Preferred Payment:
+            Badges:
           </div>
           <div className="p-field">
             <MultiplePaymentOpt formik={formik} isEditMode={isEditMode} />

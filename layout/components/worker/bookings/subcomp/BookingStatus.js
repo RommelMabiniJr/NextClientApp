@@ -3,7 +3,7 @@ import { Tag } from "primereact/tag";
 const BookingStatus = ({ status }) => {
   const getSeverity = (status) => {
     const lowerCaseStatus = status.toLowerCase();
-    console.log(lowerCaseStatus);
+    // console.log(lowerCaseStatus);
     if (lowerCaseStatus === "confirmed") {
       return "success";
     } else if (lowerCaseStatus === "in progress") {

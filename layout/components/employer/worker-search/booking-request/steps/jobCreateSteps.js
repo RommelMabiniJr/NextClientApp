@@ -466,7 +466,7 @@ const JobDescriptionStep = ({
         />
         <Button
           type="button"
-          label="Post The Job"
+          label="Confirm Details"
           className=""
           icon="pi pi-check"
           iconPos="right"

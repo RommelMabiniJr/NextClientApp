@@ -5,6 +5,7 @@ import {
 } from "@/layout/components/utils/dateUtils";
 import { formatSalary } from "@/layout/components/utils/moneyFormatUtils";
 import { JobsService } from "@/layout/service/JobsService";
+import Router from "next/router";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { useState } from "react";
@@ -41,7 +42,15 @@ const JobOverview = ({ session, job, onEditJobDetails }) => {
           className="hover:bg-gray-200 rounded cursor-pointer"
           onClick={() => onEditJobDetails()}
         >
-          <i className="pi pi-pencil p-2.5"></i>
+          <i
+            className="pi pi-pencil p-2.5"
+            onClick={() =>
+              Router.push({
+                pathname: "/app/posts/edit",
+                query: { edit: true, post: JSON.stringify(job) },
+              })
+            }
+          ></i>
         </span>
       </div>
       <div className="mb-4">

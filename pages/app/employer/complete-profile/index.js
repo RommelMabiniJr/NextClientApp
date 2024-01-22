@@ -28,7 +28,7 @@ const CompleteProfile = () => {
         otherPets: false,
       },
       specificNeeds: "",
-      paymentMethods: [],
+      badges: [],
       paymentFrequency: "",
       bio: "",
     },
@@ -63,14 +63,11 @@ const CompleteProfile = () => {
       label: "Household",
     },
     {
-      label: "Payment",
+      label: "Preferences",
     },
     {
       // Will be used to ask to create bio
       label: "Additional",
-    },
-    {
-      label: "Verification",
     },
   ];
 
@@ -126,10 +123,6 @@ const CompleteProfile = () => {
         },
       });
 
-      // Access the updated session data
-      // const updatedSession = await getSession();
-
-      console.log(session);
       router.push("/app/employer-dashboard?completedProfile=true");
     } catch (error) {
       console.error(error);
@@ -144,12 +137,6 @@ const CompleteProfile = () => {
 
   const handleNextStep = () => {
     setCurrentStep(currentStep + 1);
-
-    console.log(formik.values);
-    console.log(
-      !formik.values.paymentMethods,
-      formik.values.paymentFrequency.length
-    );
   };
 
   const handlePreviousStep = () => {

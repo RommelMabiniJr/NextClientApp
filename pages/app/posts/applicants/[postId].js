@@ -12,6 +12,7 @@ import { LocationService } from "@/layout/service/LocationService";
 import ServicesTemplate from "@/layout/components/ServicesTemplate";
 import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/worker-details/ShowWorkerDetailsBtn";
 import ApplicationTabs from "@/layout/components/posts/applicants/ApplicationTabs";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 
 const Applicants = () => {
   const router = useRouter();
@@ -259,16 +260,21 @@ const Applicants = () => {
   return (
     <div className="bg-white">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
-      <div className="border-round m-4 p-4">
-        {applicants.length > 0 && distances.length > 0 && (
+      <div className="border-round m-4 p-4 mb-8">
+        {applicants.length > 0 && distances.length > 0 ? (
           <ApplicationTabs
             applicants={applicants}
             distances={distances}
             postId={router.query.postId}
             session={session}
           />
+        ) : (
+          <div className="text-center my-4">
+            You have no new applicants for this job post
+          </div>
         )}
       </div>
+      <FooterLinks />
     </div>
   );
 };

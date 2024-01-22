@@ -18,7 +18,7 @@ const BookingView = () => {
     <div className="bg-white">
       <WorkerNavbar session={session} />
       {/* TODO: Add a BookingViewContent component */}
-      <BookingViewContent />
+      <BookingViewContent session={session} />
       <Footer />
     </div>
   );

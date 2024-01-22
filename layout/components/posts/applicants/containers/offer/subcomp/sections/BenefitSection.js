@@ -7,7 +7,7 @@ const BenefitSection = ({
   setTempOfferDetails,
   benefitsOptions,
 }) => {
-  const [categories, setCategories] = useState(() => benefitsOptions);
+  const [categories, setCategories] = useState([]);
 
   // REF:
   // [
@@ -28,6 +28,10 @@ const BenefitSection = ({
     );
     return initialBenefits;
   });
+
+  useEffect(() => {
+    setCategories(benefitsOptions);
+  }, [benefitsOptions]);
 
   const onBenefitChange = (e) => {
     let _selectedBenefits = [...selectedBenefits];

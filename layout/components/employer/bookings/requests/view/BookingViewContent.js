@@ -18,8 +18,9 @@ import RatingAndReviewModal from "@/layout/components/employer/bookings/subcomp/
 import { RatingAndReviewService } from "@/layout/service/RatingAndReviewService";
 import ReviewComments from "@/layout/components/employer/bookings/subcomp/ReviewComments";
 import { displayTimeAsRange } from "@/layout/components/utils/dateUtils";
+import DHBookingButtons from "../../subcomp/DHBookingButtons";
 
-const BookingViewContent = () => {
+const BookingViewContent = ({ session }) => {
   const router = useRouter();
   const toast = useRef(null);
   const { bookingId } = router.query;
@@ -33,7 +34,7 @@ const BookingViewContent = () => {
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState("");
 
-  const fetchData = async () => {
+  const fetchBookingData = async () => {
     try {
       if (bookingId) {
         const data = await BookingService.getEmployerBookingRequestFull(
@@ -68,7 +69,7 @@ const BookingViewContent = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchBookingData();
   }, [bookingId]);
 
   if (!booking) {
@@ -106,7 +107,7 @@ const BookingViewContent = () => {
       setShowReviewModal(false);
 
       // refetch data
-      fetchData();
+      fetchBookingData();
     } else {
       toast.current.show({
         severity: "error",
@@ -140,7 +141,7 @@ const BookingViewContent = () => {
       setShowReviewModal(false);
 
       // refetch data
-      fetchData();
+      fetchBookingData();
     } else {
       toast.current.show({
         severity: "error",
@@ -175,51 +176,90 @@ const BookingViewContent = () => {
       });
     }
   };
+  const onDeleteBooking = async () => {
+    const success = await BookingService.deleteRegBookingByEmployer(bookingId);
 
-  const markBookingStart = async () => {
-    const result = await BookingService.markBookingStart(bookingId);
-
-    console.log(result);
-
-    if (result) {
-      // refetch data
-      fetchData();
+    if (success) {
       toast.current.show({
         severity: "success",
-        summary: "Booking Started",
-        detail: "The booking has been started.",
+        summary: "Booking Deleted",
+        detail: "The booking has been deleted.",
+        life: 3000,
+      });
+
+      setTimeout(() => {
+        // refresh page
+        router.reload();
+      }, 3000);
+
+      router.push("/app/employer/bookings");
+    } else {
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "There was an error deleting the booking.",
         life: 3000,
       });
     }
   };
 
-  const markBookingComplete = async () => {
-    const result = await BookingService.markBookingComplete(bookingId);
-
-    console.log(result);
-
-    if (result) {
-      // refetch data
-      fetchData();
-      toast.current.show({
-        severity: "success",
-        summary: "Booking Completed",
-        detail: "The booking has been completed.",
-        life: 3000,
-      });
-    }
-  };
-
-  const confirmCompleteBooking = () => {
+  const handleDeleteBooking = async () => {
     confirmDialog({
-      message: "Are you sure you want finish this booking?",
-      header: "Confirm Booking Completion",
+      message: "Are you sure you want to proceed?",
+      header: "Confirm Booking Deletion",
       icon: "pi pi-exclamation-triangle",
-      // position: "right",
-      accept: () => markBookingComplete(),
+      defaultFocus: "accept",
+      acceptClassName: "p-button-danger",
+      rejectClassName: "p-button-secondary p-button-text",
+      accept: () => onDeleteBooking(),
       reject: () => {},
     });
   };
+
+  // const markBookingStart = async () => {
+  //   const result = await BookingService.markBookingStart(bookingId);
+
+  //   console.log(result);
+
+  //   if (result) {
+  //     // refetch data
+  //     fetchBookingData();
+  //     toast.current.show({
+  //       severity: "success",
+  //       summary: "Booking Started",
+  //       detail: "The booking has been started.",
+  //       life: 3000,
+  //     });
+  //   }
+  // };
+
+  // const markBookingComplete = async () => {
+  //   const result = await BookingService.markBookingComplete(bookingId);
+
+  //   console.log(result);
+
+  //   if (result) {
+  //     // refetch data
+  //     fetchBookingData();
+  //     toast.current.show({
+  //       severity: "success",
+  //       summary: "Booking Completed",
+  //       detail: "The booking has been completed.",
+  //       life: 3000,
+  //     });
+  //   }
+  // };
+
+  // const confirmCompleteBooking = () => {
+  //   confirmDialog({
+  //     message: "Are you sure you want finish this booking?",
+  //     header: "Confirm Booking Completion",
+  //     icon: "pi pi-exclamation-triangle",
+  //     // position: "right",
+  //     accept: () => markBookingComplete(),
+  //     reject: () => {},
+  //   });
+  // };
 
   const renderAdditionalInfo = () => {
     const currentDate = dayjs();
@@ -263,9 +303,6 @@ const BookingViewContent = () => {
             label="Delete Booking"
             severity="danger"
             className="w-full mt-2"
-            // disabled
-            // outlined
-            // size="small"
           />
         </>
       );
@@ -399,6 +436,8 @@ const BookingViewContent = () => {
             {/* Nanny Needed For My Children In Waltham. */}
             {booking.jobposting.job_title}
           </h3>
+          <p className="text-xl m-0">|</p>
+          <BookingStatus status={booking.booking_info.booking_progress} />
         </div>
         <div className="pt-2">
           <div className="flex mb-4">
@@ -563,72 +602,186 @@ const BookingViewContent = () => {
             </div>
           </div>
         </div>
+        {booking.booking_info.booking_progress == "Cancelled" && (
+          <div className="py-4">
+            <div className="my-4">
+              <p className="font-bold mb-2">Cancellation Details</p>
+              <div className="grid gap-3">
+                <div className="col flex">
+                  <span className="my-2 mr-2">
+                    <i className="pi pi-user text-lg"></i>
+                  </span>
+                  <div className="my-1.5">
+                    <p className="m-0">Cancelled By:</p>
+                    {console.log(booking)}
+                    <p className="m-0 font-medium">
+                      {booking.booking_info.cancellation_initiator == "employer"
+                        ? "Household Employer"
+                        : "Kasambahay"}
+                    </p>
+                  </div>
+                </div>
+                <div className="col flex">
+                  <span className="my-2 mr-2">
+                    <i className="pi pi-calendar text-lg"></i>
+                  </span>
+                  <div className="my-1.5">
+                    <p className="m-0">Cancelled On:</p>
+                    <p className="m-0 font-medium">
+                      {dayjs(booking.booking_info.cancellation_date).format(
+                        "ddd, MMM D, YYYY"
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="col flex">
+                  <span className="my-2 mr-2">
+                    <i className="pi pi-home text-lg"></i>
+                  </span>
+                  <div className="my-1.5">
+                    <p className="m-0">Reason:</p>
+                    <p className="m-0 font-medium">
+                      {/* Live-in with shared room */}
+                      {booking.booking_info.cancellation_reason}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="py-4">
-          <BookingProgress booking={booking} />
+          <div className="py-4 flex flex-col items-center">
+            <p className="font-bold mb-2 text-center">Kasambahay's Profile</p>
+            <div className="flex flex-col items-center my-4 gap-4 ">
+              <img
+                src={
+                  // process.env.NEXT_PUBLIC_ASSET_URL + booking.worker.profile_url
+                  booking.worker.profile_url // TODO: Change this to the above line when the backend is ready
+                }
+                alt="profile picture"
+                className="h-7rem w-7rem rounded-full"
+              />
+              <div className="flex gap-8">
+                <div className="flex">
+                  <span className="my-2 mr-2">
+                    <i className="pi pi-user text-lg"></i>
+                  </span>
+                  <div className="my-1.5">
+                    <p className="m-0">Full Name</p>
+                    <p className="m-0 font-semibold text-lg text-center">
+                      {/* Name: */}
+                      {booking.worker.first_name +
+                        " " +
+                        booking.worker.last_name}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex">
+                  <span className="my-2 mr-2">
+                    <i className="pi pi-envelope text-lg"></i>
+                  </span>
+                  <div className="my-1.5">
+                    <p className="m-0">Email:</p>
+                    <p className="m-0 font-medium">
+                      {/* Email: */}
+                      {booking.worker.email}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex">
+                  <span className="my-2 mr-2">
+                    <i className="pi pi-phone text-lg"></i>
+                  </span>
+                  <div className="my-1.5">
+                    <p className="m-0">Phone:</p>
+                    <p className="m-0 font-medium">
+                      {/* Live-in with shared room */}
+                      <p className="m-0 font-medium">
+                        {/* Phone: */}
+                        {booking.worker.phone}
+                      </p>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* <div className="flex flex-column justify-center my-4 items-center">
+              <div className="flex flex-column justify-center items-center py-2 mb-2">
+                <p className="font-bold text-center mb-1">Booking Status:</p>
+
+                <BookingStatus status={booking.booking_info.booking_progress} />
+              </div>
+
+              {renderAdditionalInfo()}
+            </div> */}
+            <div className="w-10 mx-auto mb-2 flex items-center flex-column ">
+              <RatingAndReviewModal
+                show={showReviewModal}
+                hasReview={reviewObject.rating > 0}
+                handleClose={handleCloseReviewModal}
+                handleCreate={handleCreateReview}
+                handleUpdate={handleUpdateReview}
+                handleRatingChange={handleRatingChange}
+                handleCommentsChange={handleCommentsChange}
+                rating={rating}
+                comments={comments}
+              />
+
+              <label className="font-bold flex-1 mb-2">
+                Your Rating & Review
+              </label>
+              <Rating
+                value={reviewObject.rating}
+                cancel={false}
+                className="my-2"
+                readOnly
+                pt={{
+                  onIcon: {
+                    className: "text-orange-400",
+                    style: { width: "1.3rem", height: "1.3rem" },
+                  },
+                  offIcon: {
+                    className: "",
+                    style: { width: "1.3rem", height: "1.3rem" },
+                  },
+                }}
+              />
+              <ReviewComments comments={reviewObject.comments} />
+            </div>
+          </div>
         </div>
       </div>
       <div className="md:w-1/4 px-6 pt-5">
         {/* Static sidebar content */}
         <div className="sticky top-20">
           <div className="flex flex-column">
-            <div className="flex justify-center">
-              <img
-                src={
-                  process.env.NEXT_PUBLIC_ASSET_URL + booking.worker.profile_url
-                }
-                alt="profile picture"
-                className="h-24 w-24 rounded-full"
-              />
-            </div>
-            <div className="flex flex-column justify-center items-center">
-              <h3 className="font-bold text-center mb-2">
-                {/* Maria Cristina */}
-                {booking.worker.first_name + " " + booking.worker.last_name}
-              </h3>
-              <p className="text-center mb-2">
-                <span className="mr-2">
-                  <i className="pi pi-envelope"></i>
-                </span>
-                {/* maria.cristina@gmail */}
-                {booking.worker.email}
-              </p>
-              <p className="text-center">
-                <span className="mr-2">
-                  <i className="pi pi-phone"></i>
-                </span>
-                {/* 09123456789 */}
-                {booking.worker.phone}
-              </p>
-              <div className="flex flex-column justify-center items-center py-2 mb-2">
-                <p className="font-bold text-center mb-1">Booking Status:</p>
-                {/* <Tag value={booking.booking_info.booking_progress}></Tag> */}
-                <BookingStatus status={booking.booking_info.booking_progress} />
-              </div>
-
-              {renderAdditionalInfo()}
-            </div>
             {/* Actions */}
             <div className="flex flex-column justify-center items-center my-4">
-              {renderButtons()}
+              <DHBookingButtons
+                booking={booking}
+                reviewObject={reviewObject}
+                setShowReviewModal={setShowReviewModal}
+                handleCloseReviewModal={handleCloseReviewModal}
+                handleCreateReview={handleCreateReview}
+                handleUpdateReview={handleUpdateReview}
+                handleRatingChange={handleRatingChange}
+                handleCommentsChange={handleCommentsChange}
+                handleCancelBooking={handleCancelBooking}
+                handleDeleteBooking={handleDeleteBooking}
+                rating={rating}
+                comments={comments}
+                // showBookExtendModal={showBookExtendModal}
+                // setShowBookExtendModal={setShowBookExtendModal}
+                // handleCloseBookExtendModal={handleCloseBookExtendModal}
+                // bookingExtensions={bookingExtensions}
+                fetchBookingData={fetchBookingData}
+                router={router}
+                showReviewModal={showReviewModal}
+                session={session}
+                toast={toast}
+              />
             </div>
-            {/* <div className="flex flex-column justify-center items-center my-4">
-              <Button
-                label="Send Message"
-                className="w-full"
-                onClick={() => router.push("/app/employer/messages")}
-              />
-              <Button
-                label="Mark as Complete"
-                className="w-full mt-2"
-                // onClick={markAsComplete}
-              />
-              <Button
-                label="Cancel Booking"
-                className="w-full mt-2"
-                severity="danger"
-                onClick={() => router.push("/app/employer/bookings")}
-              />
-            </div> */}
           </div>
         </div>
       </div>
