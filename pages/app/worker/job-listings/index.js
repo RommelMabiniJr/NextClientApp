@@ -545,11 +545,11 @@ export default function WorkerSearchPage({ userUUID }) {
                 distances={distances}
                 getDistance={LocationService.getDistance}
               />
-              <Button
+              {/* <Button
                 // label="Not Interested"
                 icon="pi pi-eye-slash"
                 className="flex-grow-1 md:flex-grow-0 p-button-sm p-button-secondary mt-2 w-full"
-              />
+              /> */}
             </div>
           </div>
         </div>
@@ -682,7 +682,7 @@ export default function WorkerSearchPage({ userUUID }) {
                 className="flex-grow-1 md:flex-grow-0 p-button-sm p-button-danger mt-2 w-full"
                 onClick={async () => {
                   // console.log(employer);
-                  const confirmationResult = await cancelApplication({
+                  await cancelApplication({
                     workerUUID,
                     jobId: employer.post.job_id,
                   });

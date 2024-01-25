@@ -140,8 +140,9 @@ const JobDetailsDialog = ({
   return (
     <>
       <Button
-        label="Apply"
-        className="flex-grow-1 md:flex-grow-0 p-button-sm p-button-primary"
+        label="Apply Job"
+        size="small"
+        className="flex-grow-1 md:flex-grow-0"
         onClick={() => setVisible(true)}
       />
       <Dialog

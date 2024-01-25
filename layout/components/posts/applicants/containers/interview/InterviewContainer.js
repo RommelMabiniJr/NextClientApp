@@ -68,7 +68,21 @@ export default function InterviewContainer({
       },
     },
     {
-      label: "Cancel",
+      label: "Cancel Interview",
+      icon: "pi pi-times",
+      command: () => {
+        onCancelInterview();
+      },
+    },
+    {
+      label: "View Profile",
+      icon: "pi pi-user",
+    },
+  ];
+
+  const completedMenuItems = [
+    {
+      label: "Cancel Completion",
       icon: "pi pi-times",
       command: () => {
         onCancelInterview();
@@ -815,12 +829,17 @@ export default function InterviewContainer({
                                 </div>
                               </div>
                               <Menu
-                                model={applicantMenuItems}
+                                model={
+                                  applicant.interview.status === "completed"
+                                    ? completedMenuItems
+                                    : applicantMenuItems
+                                }
                                 popup
                                 ref={menuRef}
                                 id="popup_menu_applicants"
                                 className="w-auto"
                               />
+
                               <i
                                 className="pi pi-ellipsis-v p-2 ml-3 text-xs cursor-pointer"
                                 onClick={(e) => handleMenuRef(e, applicant)}

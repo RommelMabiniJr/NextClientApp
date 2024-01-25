@@ -220,6 +220,60 @@ const JobApplicationView = () => {
     });
   };
 
+  const onCancelApplication = async ({ workerUUID, jobId }) => {
+    try {
+      const response = await axios.delete(
+        `${serverUrl}/worker/application/${workerUUID}/${jobId}`
+      );
+
+      return response.data; // Return response or handle as needed
+    } catch (error) {
+      console.error("Error confirming application: ", error);
+    }
+  };
+
+  const handleCancelApplication = () => {
+    confirmDialog({
+      message: "Do you want to cancel this application?",
+      header: "Cancel Application",
+      icon: "pi pi-info-circle",
+      defaultFocus: "reject",
+      acceptClassName: "p-button-danger",
+      rejectClassName: "p-button-secondary p-button-text",
+      accept: async () => {
+        console.log(applicationDetails);
+        const response = await onCancelApplication({
+          workerUUID: session.user.uuid,
+          jobId: applicationDetails.post.job_id,
+        });
+
+        if (response) {
+          toast.current.show({
+            severity: "success",
+            summary: "Success",
+            detail: "Application cancelled",
+            life: 3000,
+          });
+        } else {
+          toast.current.show({
+            severity: "error",
+            summary: "Error",
+            detail: "Something went wrong",
+            life: 3000,
+          });
+        }
+
+        // Navigate back to page1 with URL parameters
+        router.push({
+          pathname: "/app/worker/job-listings",
+          query: {
+            tabIndex: tabIndex, // Replace with the actual selected tab index
+          },
+        });
+      },
+    });
+  };
+
   useEffect(() => {
     // Function to fetch application details and update state
     const fetchApplicationDetails = async () => {
@@ -360,18 +414,33 @@ const JobApplicationView = () => {
           <div style={{ display: "grid" }} className="col-12 md-8">
             <div className="col-11 md:col-10 bg-white p-4 m-4 mx-auto flex flex-column justify-content-between rounded-md border-2 ">
               {/* <h5 className="ml-2 mb-5">Application Details</h5> */}
-              <span className="col-12 flex flex align-items-center mb-4 ">
-                <Button
-                  icon="pi pi-arrow-left"
-                  onClick={handleBack}
-                  className="p-button-secondary p-button"
-                  // link
-                  text
-                />
-                <h3 className="inline font-bold m-0 ml-4">
-                  Viewing Job Application
-                </h3>
-              </span>
+              <div className="col-12 flex flex-column items-start justify-between md:flex-row md:items-center mb-4 ">
+                <div className="flex items-center">
+                  <Button
+                    icon="pi pi-arrow-left"
+                    onClick={handleBack}
+                    className="p-button-secondary p-button"
+                    // link
+                    text
+                  />
+                  <h3 className="inline font-bold m-0 ml-4">
+                    Viewing Job Application
+                  </h3>
+                </div>
+                <div className="align-self-center">
+                  <div className="flex flex-wrap justify-content-start">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        label="Cancel Application"
+                        className="p-button-danger p-button"
+                        // outlined
+                        size="small"
+                        onClick={handleCancelApplication}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="content px-8 flex flex-column gap-3">
                 <div className="flex items-center">
                   <div className="ml-2 mr-4">
@@ -470,25 +539,6 @@ const JobApplicationView = () => {
                 <p className="px-2 pb-4">
                   {applicationDetails.post.job_description}
                 </p>
-              </div>
-              <div className="footer px-8">
-                <div className="flex flex-wrap justify-content-start">
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      label="Cancel Application"
-                      className="p-button-danger p-button"
-                      // outlined
-                      size="small"
-                    />
-                    <Button
-                      label="Message"
-                      // icon="pi pi-envelope"
-                      className=" p-button"
-                      size="small"
-                      severity="secondary"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
             {/* Timeline */}

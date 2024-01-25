@@ -180,6 +180,7 @@ const LoginPage = () => {
               </div>
 
               <Button
+                loading={formik.isSubmitting}
                 type="Submit"
                 label="Log In"
                 icon="pi pi-user"
