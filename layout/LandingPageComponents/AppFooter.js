@@ -70,10 +70,11 @@ export function FooterLinks() {
       <div className="bg-gray-50 h-1/2 w-full flex md:flex-row flex-col justify-around items-start p-20">
         <div className="p-5 ">
           <ul>
-            <p className="text-gray-800 font-bold text-3xl pb-2">
-              KasambahayKo :
-              <div className="text-blue-600">streamlining your search</div>
-              <div className="text-blue-600">for the perfect care services</div>
+           <p className="text-gray-800 font-bold text-2xl pb-2">
+              Streamlining your
+              <div className="text-blue-600">
+                search for the perfect care services
+              </div>
             </p>
             <div className="flex gap-6 pb-5">
               <i className=" pi pi-instagram text-2xl cursor-pointer hover:text-yellow-600" />
