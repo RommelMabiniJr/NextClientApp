@@ -170,23 +170,29 @@ const JobDetailsDialog = ({
               </label>
               <div className="flex mt-2 w-full flex-wrap justify-content-center">
                 {/* generate with random severity based on badge name */}
-                {job.badges.map((badge, index) => {
-                  const badgeColors = ["primary", "success", "warning", "info"];
+                {Array.isArray(job.badges) &&
+                  job?.badges?.map((badge, index) => {
+                    const badgeColors = [
+                      "primary",
+                      "success",
+                      "warning",
+                      "info",
+                    ];
 
-                  return (
-                    <Tag
-                      key={badge}
-                      // sequence the badge colors based on index
-                      severity={
-                        badgeColors[index % badgeColors.length] || "primary"
-                      }
-                      className="block mb-1"
-                      icon="pi pi-check-square"
-                      value={badge}
-                      style={{ backgroundColor: badge.badge_color }}
-                    />
-                  );
-                })}
+                    return (
+                      <Tag
+                        key={badge}
+                        // sequence the badge colors based on index
+                        severity={
+                          badgeColors[index % badgeColors.length] || "primary"
+                        }
+                        className="block mb-1"
+                        icon="pi pi-check-square"
+                        value={badge}
+                        style={{ backgroundColor: badge.badge_color }}
+                      />
+                    );
+                  })}
               </div>
             </center>
           </div>

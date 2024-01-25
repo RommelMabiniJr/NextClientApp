@@ -104,7 +104,9 @@ const BookingViewContent = ({ session }) => {
     }
   };
   const onDeleteBooking = async () => {
-    const success = await BookingService.deleteRegBookingByEmployer(bookingId);
+    const success = await BookingService.deleteBookingRequestByWorker(
+      bookingId
+    );
 
     if (success) {
       toast.current.show({
@@ -119,7 +121,7 @@ const BookingViewContent = ({ session }) => {
         router.reload();
       }, 3000);
 
-      router.push("/app/employer/bookings");
+      router.push("/app/worker/bookings");
     } else {
       toast.current.show({
         severity: "error",

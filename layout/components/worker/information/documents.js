@@ -15,6 +15,9 @@ const DocumentsInformation = ({ documents, session }) => {
   const [selectedDocToUpload, setSelectedDocToUpload] = useState(null);
   const [selectedDocUrl, setSelectedDocUrl] = useState([]); // An array of URLs
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [docUploadVisible, setDocUploadVisible] = useState(false);
+
+  const [filteredDocOptions, setFilteredDocOptions] = useState([]); // An array of URLs
 
   const docOptions = [
     { label: "NBI Clearance", value: "nbi clearance" },
@@ -93,7 +96,6 @@ const DocumentsInformation = ({ documents, session }) => {
           `${process.env.NEXT_PUBLIC_SERVER_URL}/worker/documents/${session.user.uuid}`
         );
         setDocs(response.data);
-        console.log(response.data);
       };
 
       fetchDocuments();
@@ -102,15 +104,47 @@ const DocumentsInformation = ({ documents, session }) => {
     }
   }, []);
 
+  useEffect(() => {
+    // Filter Document Options
+
+    if (!docs) {
+      return;
+    }
+
+    // Filter out the document types that are already in the docs array
+    const options = docOptions.filter((doc) => {
+      // Check if the document type is in the docs array
+      const docType = docs.find((document) => document.type === doc.value);
+
+      // If the document type is in the docs array, then filter it out
+      if (docType) {
+        return false;
+      }
+
+      // If the document type is not in the docs array, then return true
+      return true;
+    });
+
+    console.log(options);
+
+    // Update the filteredDocOptions state
+    setFilteredDocOptions(options);
+  }, [docs]);
+
   if (!session) {
     return <div>loading...</div>;
   }
 
   const emptyTemplate = () => {
     return (
-      <div x>
-        <h3>Upload Files</h3>
-        <p>Drop or select files</p>
+      <div className="w-full py-3 cursor-copy">
+        <div className="h-full flex flex-column justify-content-center align-items-center">
+          <i className="pi pi-upload text-900 text-2xl mb-3"></i>
+          <span className="font-bold text-900 text-xl mb-3">Upload Files</span>
+          <span className="font-medium text-600 text-md text-center">
+            Drop or select files
+          </span>
+        </div>
       </div>
     );
   };
@@ -127,14 +161,6 @@ const DocumentsInformation = ({ documents, session }) => {
             </span>
           </span>
         </div>
-        <Dropdown
-          value={selectedType}
-          options={docOptions}
-          placeholder="Select Document Type"
-          onChange={(e) => setSelectedType(e.value)}
-          optionLabel="label"
-          className="w-auto "
-        />
         <Button
           type="button"
           icon="pi pi-times"
@@ -149,25 +175,72 @@ const DocumentsInformation = ({ documents, session }) => {
 
   return (
     <div>
+      {console.log(filteredDocOptions)}
       <div className="px-4 my-4">
-        <FileUpload
-          chooseLabel="Select"
-          uploadLabel="Upload"
-          cancelLabel="Cancel"
-          accept=".pdf"
-          //   maxFileSize={1000000}
-          emptyTemplate={emptyTemplate}
-          itemTemplate={itemTemplate}
-          onSelect={handleDocumentChange}
-          customUpload
-          uploadHandler={handleDocumentUpload}
-          className="w-8"
-        />
+        <Dialog
+          header="Document Upload"
+          className="w-5 h-screen"
+          visible={docUploadVisible}
+          onHide={() => setDocUploadVisible(false)}
+        >
+          <div className="flex flex-col mb-4 w-full">
+            <label htmlFor="documentType" className="mb-2 font-medium text-lg">
+              Document Type
+            </label>
+            <Dropdown
+              id="documentType"
+              value={selectedType}
+              options={filteredDocOptions}
+              placeholder="Select Document Type"
+              onChange={(e) => setSelectedType(e.value)}
+              optionLabel="label"
+              className="w-full"
+            />
+          </div>
+          <div className="flex flex-col mb-4 w-full">
+            <label htmlFor="fileUpload" className="mb-2 font-medium text-lg">
+              Upload File
+            </label>
+            <FileUpload
+              id="fileUpload"
+              chooseLabel="Select"
+              uploadLabel="Upload"
+              cancelLabel="Cancel"
+              accept=".pdf"
+              //   maxFileSize={1000000}
+              emptyTemplate={emptyTemplate}
+              itemTemplate={itemTemplate}
+              onSelect={handleDocumentChange}
+              customUpload
+              uploadHandler={handleDocumentUpload}
+              className="w-full"
+            />
+          </div>
+        </Dialog>
       </div>
       <div className="px-4 grid w-full">
-        <h2 className="text-lg font-semibold mb-4 col-12">
-          Uploaded Documents
-        </h2>
+        <div className="col-12 flex items-center w-full gap-3 mb-4">
+          <h2 className="text-xl font-semibold m-0">Uploaded Documents</h2>
+          <div>
+            <Button
+              size="small"
+              rounded
+              outlined
+              className="flex-1"
+              icon="pi pi-plus"
+              onClick={() => setDocUploadVisible(true)}
+              pt={{
+                root: {
+                  className: "p-0 h-2rem w-2rem",
+                },
+                icon: {
+                  className: "text-xs",
+                },
+              }}
+            />
+          </div>
+        </div>
+
         <Dialog
           header="Document Preview"
           maximizable
@@ -247,6 +320,8 @@ const DocumentsInformation = ({ documents, session }) => {
               </div>
             </div>
           ))}
+
+        {/* Compare docOptions to docs, if docOptions is not in docs, then render the docOptions */}
       </div>
     </div>
   );

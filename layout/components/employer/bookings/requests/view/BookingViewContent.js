@@ -177,7 +177,9 @@ const BookingViewContent = ({ session }) => {
     }
   };
   const onDeleteBooking = async () => {
-    const success = await BookingService.deleteRegBookingByEmployer(bookingId);
+    const success = await BookingService.deleteBookingRequestByEmployer(
+      bookingId
+    );
 
     if (success) {
       toast.current.show({

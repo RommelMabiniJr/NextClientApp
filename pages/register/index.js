@@ -1,16 +1,6 @@
 import Navbar from "../../layout/components/Navbar";
 import React, { useState, useRef, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import {
-  createSlice,
-  configureStore,
-  createAsyncThunk,
-} from "@reduxjs/toolkit";
-import { FileUpload } from "primereact/fileupload";
-import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
 import { Steps } from "primereact/steps";
-import { Checkbox } from "primereact/checkbox";
 import { Divider } from "primereact/divider";
 import { SelectButton } from "primereact/selectbutton";
 import { useFormik } from "formik";
@@ -21,88 +11,10 @@ import axios from "axios";
 import RegistrationSteps from "../../layout/components/register/RegistrationSteps";
 import { registerValidate } from "@/lib/validators/validate";
 import Link from "next/link";
-
-const initialState = {
-  firstname: "",
-  secondname: "",
-  email: "",
-  password: "",
-  documents: [],
-  loading: false,
-  error: null,
-  success: false,
-};
-
-export const registerWorker = createAsyncThunk(
-  "worker/registerWorker",
-  async (workerData, thunkAPI) => {
-    try {
-      const response = await axios.post("/api/worker/register", workerData);
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.response.data);
-    }
-  }
-);
-
-const registrationSlice = createSlice({
-  name: "registration",
-  initialState,
-  reducers: {
-    setName: (state, action) => {
-      state.name = action.payload;
-    },
-    setEmail: (state, action) => {
-      state.email = action.payload;
-    },
-    setPassword: (state, action) => {
-      state.password = action.payload;
-    },
-    setDocuments: (state, action) => {
-      state.documents = action.payload;
-    },
-    clearFields: (state) => {
-      state.name = "";
-      state.email = "";
-      state.password = "";
-      state.documents = [];
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(registerWorker.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = false;
-      })
-      .addCase(registerWorker.fulfilled, (state) => {
-        state.loading = false;
-        state.error = null;
-        state.success = true;
-        state.name = "";
-        state.email = "";
-        state.password = "";
-        state.documents = [];
-      })
-      .addCase(registerWorker.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload.message;
-        state.success = false;
-      });
-  },
-});
-
-const store = configureStore({
-  reducer: registrationSlice.reducer,
-});
+import { useSession } from "next-auth/react";
 
 const RegistrationPage = () => {
-  const [firstName, setFirstName] = useState("");
-  const [secondName, setSecondName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const { status } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
 
   // initialize user type to based on url params for example
@@ -233,6 +145,10 @@ const RegistrationPage = () => {
       </div>
     );
   };
+
+  if (status === "authenticated") {
+    router.push("/app/user-router");
+  }
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full">

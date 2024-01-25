@@ -51,27 +51,6 @@ export default function WorkerProfile() {
     signOut();
   };
 
-  const handleImgClick = () => {
-    setVisible(true);
-  };
-
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result);
-      };
-    }
-  };
-
-  const handleFileUpload = () => {
-    // TODO: Handle file upload logic here
-    setVisible(false);
-  };
-
   if (!session) {
     return (
       <div>
@@ -101,7 +80,7 @@ export default function WorkerProfile() {
             <AccordionTab header="Background">
               <BackgroundInformation session={session} worker={worker} />
             </AccordionTab>
-            <AccordionTab header="Documents">
+            <AccordionTab header="Miscellaneous">
               <DocumentsInformation
                 session={session}
                 documents={worker.documents}

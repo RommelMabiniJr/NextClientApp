@@ -23,8 +23,11 @@ import styles from "../styles/landingpage.module.css";
 import { carousel } from "primereact/carousel";
 import { router } from "websocket";
 import { Avatar } from "primereact/avatar";
+import { useSession } from "next-auth/react";
+import LandingNavBtns from "./LandingNavBtns";
 
 const Navbar = () => {
+  const { data: session, status } = useSession();
   const [isHidden, setIsHidden] = React.useState(false);
   const menuRef = useRef();
   const router = useRouter();
@@ -137,21 +140,7 @@ const Navbar = () => {
               </li>
             </ul>
             <div className="flex justify-content-between lg:block border-top-1 lg:border-top-none surface-border py-3 lg:py-0 mt-3 lg:mt-0">
-              <Link href="auth/login">
-                <Button
-                  label="Login"
-                  text
-                  rounded
-                  className="border-none font-light line-height-2 text-blue-500"
-                ></Button>
-              </Link>
-              <Link href="/register">
-                <Button
-                  label="Register"
-                  rounded
-                  className="border-none ml-5 font-light line-height-2 bg-blue-500 text-white"
-                ></Button>
-              </Link>
+              <LandingNavBtns />
             </div>
           </div>
         </div>

@@ -189,12 +189,15 @@ export default function ShowPostButton({ post, isModifiable = true }) {
           </div>
           <div className="col-12 mb-2 px-0">
             <strong>Benefits :</strong>
+            {console.log("BENEFITS: ", post.benefits)}
             <ul>
-              {post.benefits?.map((benefit, index) => (
-                <li key={index} className="list-disc ml-3">
-                  {benefit}
-                </li>
-              ))}
+              {Array.isArray(post.benefits) &&
+                post.benefits.length > 0 &&
+                post.benefits.map((benefit, index) => (
+                  <li key={index} className="list-disc ml-3">
+                    {benefit}
+                  </li>
+                ))}
             </ul>
           </div>
           <div className="col-12 mb-2 px-0">

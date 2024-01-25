@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Checkbox } from "primereact/checkbox";
 import { Button } from "primereact/button";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import { classNames } from "primereact/utils";
 import login_validate from "@/lib/validators/validate";
@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 import { Toast } from "primereact/toast";
 
 const LoginPage = () => {
+  const { status } = useSession();
   const [checked, setChecked] = useState(false);
   const router = useRouter();
   const toast = useRef(null);
@@ -86,6 +87,10 @@ const LoginPage = () => {
       <small className="p-error">&nbsp;</small>
     );
   };
+
+  if (status === "authenticated") {
+    router.push("/app/user-router");
+  }
 
   return (
     <div>
