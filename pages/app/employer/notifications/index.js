@@ -6,6 +6,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { NotificationService } from "@/layout/service/NotificationService";
 import NotificationHeader from "@/layout/components/employer/notifications/NotificationHeader";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 
 const NotificationPage = () => {
   const { data: session, status: sessionStatus } = useSession();
@@ -45,7 +46,7 @@ const NotificationPage = () => {
   return (
     <div className="bg-white h-screen">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
-      <div className="px-5 py-4 ml-5">
+      <div className="px-5 ml-5">
         <NotificationHeader
           notificationMode={notificationMode}
           setNotificationMode={setNotificationMode}
@@ -60,6 +61,7 @@ const NotificationPage = () => {
           <EmptyNotification />
         )}
       </div>
+      <FooterLinks />
     </div>
   );
 };

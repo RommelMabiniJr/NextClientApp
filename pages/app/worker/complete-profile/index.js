@@ -5,7 +5,7 @@ import { Divider } from "primereact/divider";
 import { Toast } from "primereact/toast";
 import { useFormik } from "formik";
 import axios from "axios";
-import { completeProfileValidate } from "@/lib/validators/validate";
+import { workerCompleteProfileValidate } from "@/lib/validators/validate";
 import Link from "next/link";
 import setupSteps from "@/layout/components/worker/complete-profile/setupSteps";
 import { useSession } from "next-auth/react";
@@ -38,8 +38,8 @@ const CompleteProfile = () => {
       certifications: "",
     },
 
-    validate: completeProfileValidate,
-    onSubmit: onSubmit,
+    validate: workerCompleteProfileValidate,
+    onSubmit,
   });
 
   useEffect(() => {

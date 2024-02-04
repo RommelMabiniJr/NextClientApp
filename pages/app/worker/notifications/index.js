@@ -1,3 +1,4 @@
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 import WorkerNavbar from "@/layout/WorkerNavbar";
 import EmptyNotification from "@/layout/components/worker/notifications/EmptyNotification";
 import NotificationHeader from "@/layout/components/worker/notifications/NotificationHeader";
@@ -45,7 +46,7 @@ const NotificationPage = () => {
   return (
     <div className="bg-white h-screen">
       <WorkerNavbar session={session} handleSignOut={handleSignOut} />
-      <div className="px-5 py-4 ml-5">
+      <div className="px-5 ml-5">
         <NotificationHeader
           notificationMode={notificationMode}
           setNotificationMode={setNotificationMode}
@@ -60,6 +61,7 @@ const NotificationPage = () => {
           <EmptyNotification />
         )}
       </div>
+      <FooterLinks />
     </div>
   );
 };

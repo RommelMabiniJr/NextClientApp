@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { DataView } from "primereact/dataview";
 import { Splitter, SplitterPanel } from "primereact/splitter";
@@ -20,6 +20,9 @@ import { TabView, TabPanel } from "primereact/tabview";
 import { getSession } from "next-auth/react";
 import ScrollbarWrapper from "@/layout/components/ScrollbarWrapper";
 import { mapTimelineData } from "@/layout/components/utils/timelineUtils";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
+import { Badge } from "primereact/badge";
+import { OverlayPanel } from "primereact/overlaypanel";
 // import ScrollRestorationDisabler from "@/layout/components/ScrollRestorationDisabler";
 
 export async function getServerSideProps(context) {
@@ -158,6 +161,8 @@ export default function WorkerSearchPage({ userUUID }) {
       icon: "pi pi-sort-amount-up",
     },
   ];
+
+  const overlayPanel = useRef(null);
 
   const scrollToID = (elID) => {
     // Make sure error is handled if element doesn't exist
@@ -709,7 +714,7 @@ export default function WorkerSearchPage({ userUUID }) {
     <div>
       <WorkerNavbar session={session} />
       <Splitter>
-        <SplitterPanel size={20} minSize={20} className="px-2">
+        <SplitterPanel size={20} minSize={20} className="px-2 hidden md:block">
           <div className="col-fixed" style={{ width: "25vw" }}>
             <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
               <span className="vertical-align-middle font-bold">
@@ -812,7 +817,135 @@ export default function WorkerSearchPage({ userUUID }) {
             onTabChange={handleTabChange}
           >
             <TabPanel header="Browse Jobs">
-              <h1 className="text-center py-4">Apply for Jobs Near You</h1>
+              <div className="px-2 flex items-center justify-between mb-3">
+                <h1 className=" md:mx-auto py-4 text-2xl md:text-5xl m-0">
+                  Find Your Ideal Kasambahay
+                </h1>
+                <span
+                  className="vertical-align-middle font-semibold cursor-pointer md:hidden"
+                  onClick={(e) => overlayPanel.current.toggle(e)}
+                >
+                  <i className="pi pi-filter mr-1 text-sm"></i>
+                  Filters
+                  <Badge
+                    value="3"
+                    className="ml-2"
+                    pt={{ root: { className: "bg-secondary text-xs min-w-4" } }}
+                  ></Badge>
+                </span>
+                <OverlayPanel ref={overlayPanel} className="z-4 shadow-6">
+                  <div className="col-fixed" style={{ width: "50vw" }}>
+                    <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
+                      <span className="vertical-align-middle font-bold">
+                        <i className="pi pi-filter mr-1"></i>
+                        Filters
+                      </span>
+                      <Divider className="mt-2" />
+                      <label className="font-medium">Work Arrangement</label>
+                      <div className="py-3">
+                        <MultiSelect
+                          value={selectedWorkArrangements}
+                          options={workArrangeOptions}
+                          onChange={(e) => setSelectedWorkArrangements(e.value)}
+                          optionLabel="name"
+                          placeholder="Select Work Arrangements"
+                          className="w-full"
+                        />
+                      </div>
+
+                      <label className="font-medium">Service Categories</label>
+                      <div className="py-3 mb-4">
+                        <MultiSelect
+                          value={selectedServiceCategories}
+                          options={serviceCategoryOptions}
+                          onChange={(e) =>
+                            setSelectedServiceCategories(e.value)
+                          }
+                          optionLabel="name"
+                          placeholder="Select Service Categories"
+                          className="w-full"
+                        />
+                      </div>
+                      <span className="vertical-align-middle font-bold">
+                        <i className="pi pi-sort mr-1"></i>
+                        Sort By
+                      </span>
+                      <Divider className="mt-2" />
+
+                      {/* Date Range */}
+                      <div className="mb-3">
+                        <MultiStateCheckbox
+                          value={selectedDateRange}
+                          options={dateRangeOptions}
+                          optionValue="value"
+                          onChange={(e) =>
+                            handleCheckboxChange("DateRange", e.value)
+                          }
+                        />
+                        <span className="vertical-align-middle ml-2">
+                          Post Date{" "}
+                          {selectedDateRange
+                            ? `(${selectedDateRange})`
+                            : "(none)"}
+                        </span>
+                      </div>
+
+                      {/* Distance */}
+                      <div className="mb-3">
+                        <MultiStateCheckbox
+                          value={selectedDistance}
+                          options={distanceOptions}
+                          optionValue="value"
+                          onChange={(e) =>
+                            handleCheckboxChange("Distance", e.value)
+                          }
+                        />
+                        <span className="vertical-align-middle ml-2">
+                          Distance{" "}
+                          {selectedDistance
+                            ? `(${selectedDistance})`
+                            : "(none)"}
+                        </span>
+                      </div>
+
+                      {/* Cost */}
+                      <div className="mb-3">
+                        <MultiStateCheckbox
+                          value={selectedCost}
+                          options={costOptions}
+                          optionValue="value"
+                          onChange={(e) =>
+                            handleCheckboxChange("Cost", e.value)
+                          }
+                          disabled // disable cost sorting for now
+                        />
+                        <span className="vertical-align-middle ml-2">
+                          Cost {selectedCost ? `(${selectedCost})` : "(none)"}
+                        </span>
+                      </div>
+
+                      {/* Duration */}
+                      <div className="mb-3">
+                        <MultiStateCheckbox
+                          value={selectedDuration}
+                          options={durationOptions}
+                          optionValue="value"
+                          onChange={(e) =>
+                            handleCheckboxChange("Duration", e.value)
+                          }
+                          disabled // disable duration sorting for now
+                        />
+                        <span className="vertical-align-middle ml-2">
+                          Duration{" "}
+                          {selectedDuration
+                            ? `(${selectedDuration})`
+                            : "(none)"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </OverlayPanel>
+              </div>
               <DataView
                 value={filteredAndSortedJobs}
                 itemTemplate={itemTemplate}
@@ -846,6 +979,7 @@ export default function WorkerSearchPage({ userUUID }) {
           /> */}
         </SplitterPanel>
       </Splitter>
+      <FooterLinks />
     </div>
   );
 }

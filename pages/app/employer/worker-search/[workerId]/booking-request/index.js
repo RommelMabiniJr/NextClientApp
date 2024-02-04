@@ -1,5 +1,6 @@
 import EmployerNavbar from "@/layout/EmployerNavbar";
 import Footer from "@/layout/Footer";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 import BookRequest from "@/layout/components/employer/worker-search/booking-request/BookRequest";
 import PostCreateSteps from "@/layout/components/employer/worker-search/booking-request/PostCreateSteps";
 import { ConfigService } from "@/layout/service/ConfigService";
@@ -174,7 +175,7 @@ const BookRequestPage = () => {
           />
         )}
       </div>
-      <Footer />
+      <FooterLinks />
     </div>
   );
 };

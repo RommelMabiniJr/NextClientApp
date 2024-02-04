@@ -103,7 +103,6 @@ const Posts = ({ posts }) => {
       return (
         <div className="col-12 md:col-6 lg:col-4 p-3">
           <Link href="/app/posts/create/">
-            {/* When hovered, highlight using primary color */}
             <div className="flex flex-column justify-content-center text-900 align-items-center h-full p-5 border-2 border-dashed rounded-lg hover:border-primary-500 hover:text-primary-600 cursor-pointer">
               <span>
                 <i className="pi pi-upload text-2xl "></i>
@@ -178,7 +177,7 @@ const Posts = ({ posts }) => {
     <div className="col-12">
       <div className="">
         <div className="">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center ">
             <h1 className="text-left mt-3 mb-5 font-semibold">Jobposts</h1>
 
             <div className="flex gap-6">
@@ -202,7 +201,8 @@ const Posts = ({ posts }) => {
           </div>
           <DataView
             value={filteredPosts}
-            className="grid"
+            layout="grid"
+            className="min-h-full"
             itemTemplate={postTemplate}
           />
         </div>

@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import BookingViewContent from "@/layout/components/worker/bookings/request/view/BookingViewContent";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 
 const BookingView = () => {
   const { data: session, status, loading } = useSession();
@@ -18,7 +19,7 @@ const BookingView = () => {
     <div className="bg-white">
       <WorkerNavbar session={session} />
       <BookingViewContent session={session} />
-      <Footer />
+      <FooterLinks />
     </div>
   );
 };

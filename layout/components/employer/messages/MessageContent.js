@@ -28,15 +28,6 @@ const MessageContent = ({ UUIDS, session }) => {
     });
 
     setMessage("");
-    // setMessagesReceived((prevState) => [
-    //   ...prevState,
-    //   {
-    //     message: message,
-    //     senderUUID: senderUUID,
-    //     receiverUUID: receiverUUID,
-    //     createdAt: new Date().toISOString(),
-    //   },
-    // ]);
   };
 
   useEffect(() => {
@@ -69,7 +60,6 @@ const MessageContent = ({ UUIDS, session }) => {
     // Handle received private messages
     const receiveMessageHandler = (data) => {
       console.log("Received private message:", data);
-      // Handle the received private message in your React component
 
       // Update the messagesReceived state
       setMessagesReceived((prevState) => [...prevState, data]);

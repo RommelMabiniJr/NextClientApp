@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { DataView } from "primereact/dataview";
 import { Splitter, SplitterPanel } from "primereact/splitter";
@@ -17,6 +17,9 @@ import EmployerNavbar from "@/layout/EmployerNavbar";
 import ShowWorkerDetailsBtn from "@/layout/components/employer/worker-search/worker-details/ShowWorkerDetailsBtn";
 import { LocationService } from "@/layout/service/LocationService";
 import { getTotalAverageRating } from "@/layout/components/utils/ratingreviewutils";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
+import { Badge } from "primereact/badge";
+import { OverlayPanel } from "primereact/overlaypanel";
 
 export default function WorkerSearchPage() {
   const { data: session, status: sessionStatus } = useSession();
@@ -35,6 +38,7 @@ export default function WorkerSearchPage() {
   const [activeSortOption, setActiveSortOption] = useState(null);
 
   const router = useRouter();
+  const overlayPanel = useRef(null);
 
   const documentAvailOptions = [
     {
@@ -435,7 +439,7 @@ export default function WorkerSearchPage() {
     <div>
       <EmployerNavbar session={session} />
       <Splitter>
-        <SplitterPanel size={20} minSize={20} className="px-2">
+        <SplitterPanel size={20} minSize={20} className="px-2 hidden md:block">
           <div className="col-fixed" style={{ width: "25vw" }}>
             <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
               <span className="vertical-align-middle font-bold">
@@ -531,7 +535,128 @@ export default function WorkerSearchPage() {
           </div>
         </SplitterPanel>
         <SplitterPanel size={80} minSize={80} className="px-2">
-          <h1 className="text-center py-4">Find Your Ideal Kasambahay</h1>
+          <div className="px-2 flex items-center justify-between mb-3">
+            <h1 className=" md:mx-auto py-4 text-2xl md:text-5xl m-0">
+              Find Your Ideal Kasambahay
+            </h1>
+            <span
+              className="vertical-align-middle font-semibold cursor-pointer md:hidden"
+              onClick={(e) => overlayPanel.current.toggle(e)}
+            >
+              <i className="pi pi-filter mr-1 text-sm"></i>
+              Filters
+              <Badge
+                value="3"
+                className="ml-2"
+                pt={{ root: { className: "bg-secondary text-xs min-w-4" } }}
+              ></Badge>
+            </span>
+            <OverlayPanel ref={overlayPanel} className="z-4 shadow-6">
+              <div className="col-fixed" style={{ width: "50vw" }}>
+                <div style={{ paddingLeft: "2.5vw", paddingTop: "5vh" }}>
+                  <span className="vertical-align-middle font-bold">
+                    <i className="pi pi-filter mr-1"></i>
+                    Filters
+                  </span>
+                  <Divider className="mt-2" />
+                  <label className="font-medium">Document Availability</label>
+                  <div className="py-3">
+                    <MultiSelect
+                      value={selectedDocuments}
+                      options={documentAvailOptions}
+                      onChange={(e) => setSelectedDocuments(e.value)}
+                      optionLabel="name"
+                      placeholder="Select Document Availability"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <label className="font-medium">Service Categories</label>
+                  <div className="py-3 mb-4">
+                    <MultiSelect
+                      value={selectedServiceCategories}
+                      options={serviceCategoryOptions}
+                      onChange={(e) => setSelectedServiceCategories(e.value)}
+                      optionLabel="name"
+                      placeholder="Select Service Categories"
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="vertical-align-middle font-bold">
+                    <i className="pi pi-sort mr-1"></i>
+                    Sort By
+                  </span>
+                  <Divider className="mt-2" />
+
+                  {/* Date Range */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={sortSelectBookings}
+                      options={bookingsOptions}
+                      optionValue="value"
+                      onChange={(e) =>
+                        handleCheckboxChange("Bookings", e.value)
+                      }
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Number of Bookings{" "}
+                      {sortSelectBookings
+                        ? `(${sortSelectBookings})`
+                        : "(none)"}
+                    </span>
+                  </div>
+
+                  {/* Distance */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={sortSelectDistance}
+                      options={distanceOptions}
+                      optionValue="value"
+                      onChange={(e) =>
+                        handleCheckboxChange("Distance", e.value)
+                      }
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Distance{" "}
+                      {sortSelectDistance
+                        ? `(${sortSelectDistance})`
+                        : "(none)"}
+                    </span>
+                  </div>
+
+                  {/* Cost */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={sortSelectRate}
+                      options={rateOptions}
+                      optionValue="value"
+                      onChange={(e) => handleCheckboxChange("Rate", e.value)}
+                      // disabled // disable cost sorting for now
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Pay rate{" "}
+                      {sortSelectRate ? `(${sortSelectRate})` : "(none)"}
+                    </span>
+                  </div>
+
+                  {/* Stars */}
+                  <div className="mb-3">
+                    <MultiStateCheckbox
+                      value={sortSelectStars}
+                      options={starsOptions}
+                      optionValue="value"
+                      onChange={(e) => handleCheckboxChange("Stars", e.value)}
+                      // disabled // disable duration sorting for now
+                    />
+                    <span className="vertical-align-middle ml-2">
+                      Stars{" "}
+                      {sortSelectStars ? `(${sortSelectStars})` : "(none)"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </OverlayPanel>
+          </div>
           <DataView
             value={filteredAndSortedJobs}
             itemTemplate={itemTemplate}
@@ -541,6 +666,7 @@ export default function WorkerSearchPage() {
           />
         </SplitterPanel>
       </Splitter>
+      <FooterLinks />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import axios from "axios";
 import Posts from "@/layout/components/posts/show/Posts";
 import PostHistory from "@/layout/components/posts/show/PostsHistory";
 import ManageApplications from "@/layout/components/posts/show/ManageApplications";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 
 export default function EditJobPostPage() {
   const { data: session, status, loading } = useSession();
@@ -153,6 +154,7 @@ const DisplayPosts = ({ session, handleSignOut }) => {
           </div>
         </div>
       </div>
+      <FooterLinks />
     </div>
   );
 };

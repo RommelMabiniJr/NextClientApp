@@ -1,5 +1,6 @@
 import EmployerNavbar from "@/layout/EmployerNavbar";
 import Footer from "@/layout/Footer";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 import BookingsContent from "@/layout/components/employer/bookings/BookingsContent";
 import { useSession } from "next-auth/react";
 
@@ -14,7 +15,7 @@ const Bookings = () => {
     <div className="bg-white">
       <EmployerNavbar session={session} />
       <BookingsContent session={session} />
-      <Footer />
+      <FooterLinks />
     </div>
   );
 };

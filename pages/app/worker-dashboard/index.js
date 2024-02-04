@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Divider } from "primereact/divider";
 import WorkerNavbar from "@/layout/WorkerNavbar";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function Dashboard() {
             </h2>
             <h4 className="text-500 mb-3 mt-0">What would you like to do?</h4>
             <Divider className="p-mb-3" />
-            <div className="flex text-left justify-content-evenly p-mt-4">
+            <div className="flex flex-col md:flex-row text-left justify-content-evenly gap-3 px-4">
               <Card title="Job Applications">
                 <p className="p-m-0">You have applied for 0 jobs in total.</p>
                 <Button
@@ -81,6 +82,7 @@ export default function Dashboard() {
               </Card>
             </div>
           </div>
+          <FooterLinks />
         </>
       )}
     </div>

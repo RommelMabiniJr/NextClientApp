@@ -13,6 +13,7 @@ import { NotificationService } from "./service/NotificationService";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { getRelativeTimeFromNow } from "./components/utils/dateUtils";
 import { createWorkNotificationRoute } from "./components/utils/notificationUtils";
+import { useResizeListener } from "primereact/hooks";
 
 const WorkerNavbar = ({}) => {
   const { data: session, loading } = useSession({
@@ -27,6 +28,16 @@ const WorkerNavbar = ({}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [websocketNotifications, setWebsocketNotifications] = useState([]);
+  const [resizeEventData, setResizeEventData] = useState(null);
+  const [bindWindowResizeListener, unbindWindowResizeListener] =
+    useResizeListener({
+      listener: (event) => {
+        setResizeEventData({
+          width: event.currentTarget.innerWidth,
+          height: event.currentTarget.innerHeight,
+        });
+      },
+    });
   const notifMenu = useRef(null);
   const menu = useRef(null);
   const router = useRouter();
@@ -39,6 +50,20 @@ const WorkerNavbar = ({}) => {
   if (!session) {
     return <div>Loading...</div>;
   }
+
+  useEffect(() => {
+    setResizeEventData({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  }, []);
+
+  useEffect(() => {
+    bindWindowResizeListener();
+    return () => {
+      unbindWindowResizeListener();
+    };
+  }, [bindWindowResizeListener, unbindWindowResizeListener]);
 
   useEffect(() => {
     // Fetch notifications from the server
@@ -60,6 +85,18 @@ const WorkerNavbar = ({}) => {
     };
     fetchNotifications();
   }, [session]);
+
+  const itemsRenderer = (item) => {
+    return (
+      <a className="flex align-items-center p-menuitem-link" href={item.url}>
+        <span className={item.icon} />
+        <span className="mx-2">{item.label}</span>
+        {item.badge && (
+          <Badge className="ml-auto" value={item.badge} severity="danger" />
+        )}
+      </a>
+    );
+  };
 
   const items = session && [
     {
@@ -88,6 +125,29 @@ const WorkerNavbar = ({}) => {
       url: "/app/worker/bookings",
       command: () => {
         // handle logout logic here
+      },
+    },
+  ];
+
+  const breakpointItems = [
+    {
+      label: "Notifications",
+      icon: "pi pi-fw pi-bell",
+      template: itemsRenderer,
+      url: "/app/worker/notifications",
+      badge:
+        notifications.filter((notification) => !notification.read).length > 0 &&
+        notifications.filter((notification) => !notification.read).length,
+      command: () => {
+        // handle logout logic here
+      },
+    },
+    {
+      label: "Logout",
+      icon: "pi pi-fw pi-power-off",
+      command: () => {
+        // handle logout logic here
+        handleSignOut();
       },
     },
   ];
@@ -301,7 +361,21 @@ const WorkerNavbar = ({}) => {
 
   return (
     <div className="sticky top-0 z-50 ">
-      <Menubar start={start} model={items} end={end} />
+      <Menubar
+        start={start}
+        model={
+          resizeEventData?.width < 960 ? items.concat(breakpointItems) : items
+        }
+        end={resizeEventData?.width < 960 ? null : end}
+        pt={{
+          root: {
+            className: "flex justify-between h-4rem",
+          },
+          button: {
+            className: "mr-3",
+          },
+        }}
+      />
     </div>
   );
 };
