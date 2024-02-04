@@ -98,6 +98,7 @@ const DHBookingButtons = ({
             className="w-full mt-2"
             size="small"
             raised
+            onClick={() => setCancelReasonDialogVisible(true)}
           />
         </>
       );
