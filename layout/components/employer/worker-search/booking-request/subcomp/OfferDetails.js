@@ -216,7 +216,7 @@ const OfferDetails = ({
               onChange={(e) => handlePayFrequencyChange(e)}
               options={frequencyOptions}
               optionLabel="name"
-              placeholder="Select a Deadline"
+              placeholder="Select a Payment Frequency"
               className="w-full mt-2"
               // disabled={!isEditMode}
             />

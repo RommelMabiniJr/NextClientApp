@@ -819,7 +819,7 @@ export default function WorkerSearchPage({ userUUID }) {
             <TabPanel header="Browse Jobs">
               <div className="px-2 flex items-center justify-between mb-3">
                 <h1 className=" md:mx-auto py-4 text-2xl md:text-5xl m-0">
-                  Find Your Ideal Kasambahay
+                  Find Jobs Near You
                 </h1>
                 <span
                   className="vertical-align-middle font-semibold cursor-pointer md:hidden"

@@ -107,8 +107,8 @@ const MessageContentDialog = ({
               <div>
                 <Avatar
                   image={
-                    // process.env.NEXT_PUBLIC_ASSET_URL + worker.profile_url
-                    employer.profile_url // TODO: Change this to the above line when the backend is ready
+                    process.env.NEXT_PUBLIC_ASSET_URL + employer.profile_url
+                    // employer.profile_url // TODO: Change this to the above line when the backend is ready
                   }
                   // size="large"
                   shape="circle"

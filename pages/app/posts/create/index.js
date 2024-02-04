@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import { postJobTitleAndDescriptionValidate } from "@/lib/validators/postValidator";
 import { ConfigService } from "@/layout/service/ConfigService";
 import FormatHelper from "@/lib/formatHelper";
+import FooterLinks from "@/layout/LandingPageComponents/AppFooter";
 
 export default function CreateJobPostPage() {
   const { data: session } = useSession();
@@ -247,12 +248,7 @@ export default function CreateJobPostPage() {
   return (
     <div className="h-full">
       <EmployerNavbar session={session} handleSignOut={handleSignOut} />
-      <div
-        className="grid"
-        // onClick={() => {
-        //   formik.errors
-        // }}
-      >
+      <div className="grid">
         <div className="col-12">
           <div className="card w-10 lg:w-9 mx-auto">
             <form>
@@ -298,6 +294,7 @@ export default function CreateJobPostPage() {
           </div>
         </div>
       </div>
+      <FooterLinks />
     </div>
   );
 }

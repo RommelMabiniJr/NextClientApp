@@ -2,6 +2,7 @@ import { Rating } from "primereact/rating";
 import { LocationService } from "@/layout/service/LocationService";
 import DateConverter from "@/lib/dateConverter";
 import { Button } from "primereact/button";
+import { classNames } from "primereact/utils";
 
 export default function ListItem({
   applicant,
@@ -64,8 +65,18 @@ export default function ListItem({
                   <p className="m-0 mr-2 text-base font-semibold leading-6 text-gray-900">
                     {applicant.first_name + " " + applicant.last_name}
                   </p>
-                  <span className="inline-flex items-center rounded-md bg-yellow-50 px-1 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20">
-                    Unverified
+                  <span
+                    className={classNames(
+                      "inline-flex items-center rounded-md px-1 py-0.5 text-xs font-medium ring-1 ring-inset ",
+                      {
+                        "bg-green-50 text-green-700 ring-green-600/20":
+                          applicant.verified,
+                        "text-yellow-700 bg-yellow-50 ring-yellow-600/20":
+                          !applicant.verified,
+                      }
+                    )}
+                  >
+                    {applicant.verified ? "Verified" : "Unverified"}
                   </span>
                 </span>
 
@@ -73,10 +84,18 @@ export default function ListItem({
                   className="mt-1 truncate text-xs leading-5 text-gray-600"
                   pt={{
                     root: { className: "gap-1" },
-                    onIcon: { className: "h-10 w-10" },
+                    onIcon: { className: "h-10 w-10 text-orange-400" },
                     offIcon: { className: "h-10 w-10" },
                   }}
-                  value={0}
+                  // for every reviews, the value will be added to the total value and divided by the number of reviews
+                  value={
+                    applicant.reviews.length > 0
+                      ? applicant.reviews.reduce(
+                          (acc, review) => acc + review.rating,
+                          0
+                        ) / applicant.reviews.length
+                      : 0
+                  }
                   readOnly
                   cancel={false}
                 />

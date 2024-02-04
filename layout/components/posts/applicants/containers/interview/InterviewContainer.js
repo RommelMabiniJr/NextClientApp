@@ -804,8 +804,20 @@ export default function InterviewContainer({
                                     " " +
                                     applicant.information.last_name}
                                 </p>
-                                <span className="inline-flex items-center rounded-md bg-yellow-50 px-1 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20">
-                                  Unverified
+                                <span
+                                  className={classNames(
+                                    "inline-flex items-center rounded-md px-1 py-0.5 text-xs font-medium ring-1 ring-inset ",
+                                    {
+                                      "bg-green-50 text-green-700 ring-green-600/20":
+                                        applicant.information.verified,
+                                      "text-yellow-700 bg-yellow-50 ring-yellow-600/20":
+                                        !applicant.information.verified,
+                                    }
+                                  )}
+                                >
+                                  {applicant.information.verified
+                                    ? "Verified"
+                                    : "Unverified"}
                                 </span>
                               </span>
 
@@ -824,7 +836,7 @@ export default function InterviewContainer({
                                 <div className="mt-1 flex items-center justify-end gap-x-1.5">
                                   <i className="pi pi-link"></i>
                                   <p className="text-xs leading-5 text-gray-600">
-                                    Google Meet
+                                    Interview Link
                                   </p>
                                 </div>
                               </div>

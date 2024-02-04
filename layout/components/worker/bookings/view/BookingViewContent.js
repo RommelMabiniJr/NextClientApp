@@ -419,8 +419,8 @@ const BookingViewContent = ({ session }) => {
             <div className="flex flex-col items-center my-4 gap-4 ">
               <img
                 src={
-                  // process.env.NEXT_PUBLIC_ASSET_URL + booking.worker.profile_url
-                  booking.employer.profile_url // TODO: Change this to the above line when the backend is ready
+                  process.env.NEXT_PUBLIC_ASSET_URL + booking.worker.profile_url
+                  // booking.employer.profile_url // TODO: Change this to the above line when the backend is ready
                 }
                 alt="profile picture"
                 className="h-7rem w-7rem rounded-full"

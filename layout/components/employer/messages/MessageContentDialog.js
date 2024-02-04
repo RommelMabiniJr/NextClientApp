@@ -131,7 +131,9 @@ const MessageContentDialog = ({
         <div className="flex flex-row items-center gap-2">
           <div>
             <Avatar
-              image={`${process.env.NEXT_PUBLIC_ASSET_URL}/1691928413649_45798965.jpg`}
+              image={`${
+                process.env.NEXT_PUBLIC_ASSET_URL + worker.profile_url
+              }`}
               // size="large"
               shape="circle"
               className="mb-1"
@@ -183,7 +185,9 @@ const MessageContentDialog = ({
             <div className="flex flex-row items-center gap-2">
               <div>
                 <Avatar
-                  image={`${process.env.NEXT_PUBLIC_ASSET_URL}/1691928413649_45798965.jpg`}
+                  image={`${
+                    process.env.NEXT_PUBLIC_ASSET_URL + worker.profile_url
+                  }`}
                   // size="large"
                   shape="circle"
                   className="mb-1"
