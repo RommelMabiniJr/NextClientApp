@@ -548,7 +548,7 @@ const AccountSecurityStep = ({
               !formik.errors.user_type &&
               isVerified
             ) {
-              handleNextStep();
+              formik.handleSubmit();
             }
           }}
         />

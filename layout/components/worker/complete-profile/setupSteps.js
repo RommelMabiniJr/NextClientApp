@@ -76,6 +76,7 @@ const WorkerInformationStep = ({
             Service Offered
           </label>
           <AutoComplete
+            autoFocus
             id="servicesOffered"
             field="name"
             multiple
@@ -90,6 +91,9 @@ const WorkerInformationStep = ({
                 {option.name}
               </div>
             )}
+            className={classNames("w-full", {
+              "p-invalid": isFormFieldInvalid("servicesOffered"),
+            })}
           />
           {getFormErrorMessage("servicesOffered")}
         </div>
@@ -129,15 +133,20 @@ const WorkerInformationStep = ({
         </div>
       </div>
       <div className="flex flex-wrap justify-content-end gap-2 mt-4">
-        {/* <Button
-          label="Previous"
-          icon="pi pi-angle-left"
-          onClick={handlePreviousStep}
-        /> */}
         <Button
+          type="button"
           label="Next"
+          className=""
           icon="pi pi-angle-right"
-          onClick={handleNextStep}
+          iconPos="right"
+          onClick={() => {
+            handleNextStep();
+          }}
+          disabled={
+            formik.errors.bio ||
+            formik.errors.servicesOffered ||
+            formik.errors.availability
+          }
         />
       </div>
     </div>
@@ -185,7 +194,6 @@ const ExperienceStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           </label>
           <InputNumber
             id="hourlyRate"
-            className="mb-3"
             inputId="hourlyRate"
             value={formik.values.hourlyRate}
             onValueChange={formik.handleChange}
@@ -193,7 +201,11 @@ const ExperienceStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
             mode="currency"
             currency="PHP"
             min={rateRange[0]}
+            className={classNames("mb-3", {
+              "p-invalid": isFormFieldInvalid("hourlyRate"),
+            })}
           />
+          {getFormErrorMessage("hourlyRate")}
         </div>
         <div className="field col-12 md:col-8">
           <label htmlFor="skills" className="block text-900 font-medium mb-2">
@@ -208,6 +220,9 @@ const ExperienceStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
             suggestions={filteredOptions}
             completeMethod={search}
             onChange={formik.handleChange}
+            className={classNames("mb-3", {
+              "p-invalid": isFormFieldInvalid("skills"),
+            })}
           />
           {getFormErrorMessage("skills")}
         </div>
@@ -226,15 +241,35 @@ const ExperienceStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
         />
         {getFormErrorMessage("workExperience")}
       </div>
-      <FooterButtons
-        handleNextStep={handleNextStep}
-        handlePreviousStep={handlePreviousStep}
-      />
+      <div className="flex flex-wrap justify-content-between gap-2 mt-4">
+        <Button
+          label="Back"
+          className=""
+          icon="pi pi-angle-left"
+          iconPos="left"
+          onClick={handlePreviousStep}
+        />
+        <Button
+          type="button"
+          label="Next"
+          className=""
+          icon="pi pi-angle-right"
+          iconPos="right"
+          onClick={() => {
+            handleNextStep();
+          }}
+          disabled={
+            formik.errors.workExperience ||
+            formik.errors.skills ||
+            formik.errors.hourlyRate
+          }
+        />
+      </div>
     </div>
   );
 };
 
-function MultipleLanguageOpt({ formik, languagesOptions }) {
+function MultipleLanguageOpt({ formik, languagesOptions, isFormFieldInvalid }) {
   const [languages, setLanguages] = useState(
     languagesOptions.map((language) => {
       return { name: language };
@@ -278,11 +313,18 @@ function MultipleLanguageOpt({ formik, languagesOptions }) {
       suggestions={filteredLanguages}
       completeMethod={search}
       onChange={formik.handleChange}
+      className={classNames("mb-3", {
+        "p-invalid": isFormFieldInvalid("languages"),
+      })}
     />
   );
 }
 
-function MultipleCertificationOpt({ formik, certificatesOptions }) {
+function MultipleCertificationOpt({
+  formik,
+  certificatesOptions,
+  isFormFieldInvalid,
+}) {
   const [cert, setCert] = useState(
     certificatesOptions.map((cert) => {
       return { name: cert };
@@ -325,6 +367,9 @@ function MultipleCertificationOpt({ formik, certificatesOptions }) {
       suggestions={filteredCert}
       completeMethod={search}
       onChange={formik.handleChange}
+      className={classNames("mb-3", {
+        "p-invalid": isFormFieldInvalid("certifications"),
+      })}
     />
   );
 }
@@ -359,6 +404,7 @@ const BackgroundStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           <MultipleLanguageOpt
             formik={formik}
             languagesOptions={languagesOptions}
+            isFormFieldInvalid={isFormFieldInvalid}
           />
           {getFormErrorMessage("languages")}
           <label
@@ -370,6 +416,7 @@ const BackgroundStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           <MultipleCertificationOpt
             formik={formik}
             certificatesOptions={certificatesOptions}
+            isFormFieldInvalid={isFormFieldInvalid}
           />
           {getFormErrorMessage("certifications")}
           <label
@@ -384,7 +431,9 @@ const BackgroundStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
             options={educItems}
             optionLabel="name"
             placeholder="Select a Education"
-            className="w-full"
+            className={classNames("w-full", {
+              "p-invalid": isFormFieldInvalid("email"),
+            })}
           />
           {getFormErrorMessage("education")}
         </div>
@@ -398,11 +447,19 @@ const BackgroundStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           onClick={handlePreviousStep}
         />
         <Button
+          type="button"
           label="Confirm"
           className=""
           icon="pi pi-arrow-right"
           iconPos="right"
-          onClick={props.formik.handleSubmit}
+          onClick={() => {
+            formik.handleSubmit();
+          }}
+          disabled={
+            formik.errors.languages ||
+            formik.errors.certifications ||
+            formik.errors.education
+          }
         />
       </div>
     </div>
