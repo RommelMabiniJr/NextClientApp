@@ -22,9 +22,27 @@ export const EVENT_DESCRIPTIONS = {
   APPLICATION_UNDER_REVIEW: "Application Under Review",
 };
 
+export const EVENT_DESCRIPTIONS_SEQUENCE = [
+  EVENT_DESCRIPTIONS.APPLICATION_SUBMITTED,
+  EVENT_DESCRIPTIONS.APPLICATION_UNDER_REVIEW,
+  EVENT_DESCRIPTIONS.SCREENING_PASSED,
+  EVENT_DESCRIPTIONS.INTERVIEW_SCHEDULED,
+  EVENT_DESCRIPTIONS.INTERVIEW_COMPLETED,
+  EVENT_DESCRIPTIONS.JOB_OFFER,
+  EVENT_DESCRIPTIONS.JOB_OFFER_ACCEPTED,
+];
+
 export const mapTimelineData = (apiData) => {
+  // Sort the timeline data by event timestamp
   apiData.sort(
     (a, b) => new Date(a.event_timestamp) - new Date(b.event_timestamp)
+  );
+
+  // Sort the event descriptions based on the sequence
+  apiData.sort(
+    (a, b) =>
+      EVENT_DESCRIPTIONS_SEQUENCE.indexOf(a.event_description) -
+      EVENT_DESCRIPTIONS_SEQUENCE.indexOf(b.event_description)
   );
 
   return apiData.map((item, index) => {

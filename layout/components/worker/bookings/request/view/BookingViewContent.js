@@ -17,6 +17,10 @@ import { Rating } from "primereact/rating";
 import { RatingAndReviewService } from "@/layout/service/RatingAndReviewService";
 import ReviewComments from "@/layout/components/worker/bookings/subcomp/ReviewComments";
 import DHBookingButtons from "../../subcomp/DHBookingButtons";
+import {
+  convertTimeStringToDate,
+  displayTimeAsRange,
+} from "@/layout/components/utils/dateUtils";
 
 const BookingViewContent = ({ session }) => {
   const router = useRouter();
@@ -395,7 +399,14 @@ const BookingViewContent = ({ session }) => {
                 </span>
                 <div className="my-1.5">
                   <p className="m-0">Working Hours:</p>
-                  <p className="m-0 font-medium">8:00 AM - 5:00 PM</p>
+                  <p className="m-0 font-medium">
+                    {displayTimeAsRange(
+                      convertTimeStringToDate(
+                        booking.jobposting.job_start_time
+                      ),
+                      convertTimeStringToDate(booking.jobposting.job_end_time)
+                    )}
+                  </p>
                 </div>
               </div>
               <div className="flex">

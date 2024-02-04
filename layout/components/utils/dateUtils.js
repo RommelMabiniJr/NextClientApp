@@ -35,13 +35,19 @@ export const displayDatesAsRange = (d1, d2) => {
   return `${date1} - ${date2}`;
 };
 
+export const convertTimeStringToDate = (time) => {
+  const date = new Date();
+  return new Date(date.toDateString() + " " + time);
+};
+
 export const displayTimeAsRange = (t1, t2) => {
+  console.log(t1, t2);
   const date = new Date(); // Create a new date object
   const time1 = new Date(date.toDateString() + " " + t1); // Convert t1 to a valid date object
   const time2 = new Date(date.toDateString() + " " + t2); // Convert t2 to a valid date object
 
-  const formattedTime1 = dayjs(time1).format("h:mm A");
-  const formattedTime2 = dayjs(time2).format("h:mm A");
+  const formattedTime1 = dayjs(t1).format("h:mm A");
+  const formattedTime2 = dayjs(t2).format("h:mm A");
 
   return `${formattedTime1} - ${formattedTime2}`;
 };

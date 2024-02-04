@@ -36,6 +36,8 @@ const ApplicationTimeline = ({
   const [bookingId, setBookingId] = useState("");
   const router = useRouter();
 
+  console.log("timelineData", timelineData);
+
   useEffect(() => {
     // return if no applicationId
     if (!applicationId) return;

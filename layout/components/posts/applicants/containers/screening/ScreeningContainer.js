@@ -17,6 +17,7 @@ export default function ScreeningContainer({
   distances,
   setScreeningResults,
   screeningResults,
+  setHasScreening,
   postId,
 }) {
   const toast = useRef(null);
@@ -225,6 +226,9 @@ export default function ScreeningContainer({
           });
 
           setScreeningResults(formattedScreeningResults);
+
+          setHasScreening(true);
+
           // Save
           setIsFinished(true);
         } else {

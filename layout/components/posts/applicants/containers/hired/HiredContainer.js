@@ -50,6 +50,9 @@ const HiredContainer = ({ postId }) => {
             label="VIEW BOOKING"
             icon="pi pi-chevron-right"
             iconPos="right"
+            onClick={() => {
+              router.push(`/app/employer/bookings`);
+            }}
           />
         </div>
       </div>

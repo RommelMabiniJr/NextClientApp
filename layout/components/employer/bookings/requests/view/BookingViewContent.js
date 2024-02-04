@@ -17,7 +17,10 @@ import { Rating } from "primereact/rating";
 import RatingAndReviewModal from "@/layout/components/employer/bookings/subcomp/RatingAndReviewModal";
 import { RatingAndReviewService } from "@/layout/service/RatingAndReviewService";
 import ReviewComments from "@/layout/components/employer/bookings/subcomp/ReviewComments";
-import { displayTimeAsRange } from "@/layout/components/utils/dateUtils";
+import {
+  convertTimeStringToDate,
+  displayTimeAsRange,
+} from "@/layout/components/utils/dateUtils";
 import DHBookingButtons from "../../subcomp/DHBookingButtons";
 
 const BookingViewContent = ({ session }) => {
@@ -530,8 +533,10 @@ const BookingViewContent = ({ session }) => {
                   <p className="m-0">Working Hours:</p>
                   <p className="m-0 font-medium">
                     {displayTimeAsRange(
-                      booking.jobposting.job_start_time,
-                      booking.jobposting.job_end_time
+                      convertTimeStringToDate(
+                        booking.jobposting.job_start_time
+                      ),
+                      convertTimeStringToDate(booking.jobposting.job_end_time)
                     )}
                   </p>
                 </div>

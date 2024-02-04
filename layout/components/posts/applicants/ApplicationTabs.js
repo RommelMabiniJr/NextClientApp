@@ -391,6 +391,7 @@ export default function ApplicationTabs({
             distances={distances}
             setScreeningResults={setScreeningResults}
             screeningResults={screeningResults}
+            setHasScreening={setHasScreening}
           />
         </TabPanel>
         <TabPanel
