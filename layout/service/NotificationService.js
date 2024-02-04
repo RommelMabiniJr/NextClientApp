@@ -45,6 +45,28 @@ export const NotificationService = {
     }
   },
 
+  async setAllEmpNotificationsRead(uuid) {
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/employer/notifications/${uuid}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  async setAllWorkerNotificationsRead(uuid) {
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/worker/notifications/${uuid}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
   async getPostId(applicationId) {
     try {
       const response = await axios.get(

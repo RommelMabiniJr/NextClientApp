@@ -46,7 +46,7 @@ const BookingViewContent = ({ session }) => {
         if (data.booking_info.booking_progress === "Completed") {
           // check and see if the employer has already left a review
           // if they have, then show the review
-          const review = await RatingAndReviewService.getReviewOfBooking(
+          const review = await RatingAndReviewService.getReviewOfBookingRequest(
             bookingId
           );
 

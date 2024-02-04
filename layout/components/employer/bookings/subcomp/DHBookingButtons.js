@@ -11,6 +11,7 @@ import MessageContent from "../../messages/MessageContent";
 import MessageContentDialog from "../../messages/MessageContentDialog";
 import { BookingService } from "@/layout/service/BookingService";
 import CancelModal from "./CancelModal";
+import { Divider } from "primereact/divider";
 
 const DHBookingButtons = ({
   booking,
@@ -191,9 +192,22 @@ const DHBookingButtons = ({
               className="w-full"
               size="small"
               onClick={() => setMsgPanelVisible(true)}
-              outlined
+              // outlined
+              raised
             />
           </div>
+          <div className="w-full mb-2 flex flex-column items-center">
+            <Button
+              icon="pi pi-trash"
+              label="Delete Booking"
+              severity="danger"
+              className="w-full"
+              size="small"
+              raised
+              onClick={() => handleDeleteBooking()}
+            />
+          </div>
+          <Divider />
           <div className="w-full mb-2 flex flex-column items-center">
             <RatingAndReviewModal
               show={showReviewModal}
@@ -212,8 +226,9 @@ const DHBookingButtons = ({
               icon="pi pi-star"
               className="w-full "
               onClick={() => setShowReviewModal(true)}
-              outlined
               size="small"
+              outlined
+              raised
             />
           </div>
         </>
