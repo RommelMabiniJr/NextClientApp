@@ -10,6 +10,8 @@ import { InputNumber } from "primereact/inputnumber";
 import { Chips } from "primereact/chips";
 import { LanguageService } from "@/layout/service/LanguageService";
 import { CertificateService } from "@/layout/service/CertificateService";
+import ProfilePictureUpload from "../../shared/profilecapture";
+import DocumentsUpload from "./documentUpload";
 
 const FooterButtons = ({ handleNextStep, handlePreviousStep }) => {
   return (
@@ -453,7 +455,8 @@ const BackgroundStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           icon="pi pi-arrow-right"
           iconPos="right"
           onClick={() => {
-            formik.handleSubmit();
+            // formik.handleSubmit();
+            handleNextStep();
           }}
           disabled={
             formik.errors.languages ||
@@ -468,6 +471,29 @@ const BackgroundStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
 
 const VerificationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
   const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
+  const [imageSrc, setImageSrc] = useState(null);
+  const [imageBlob, setImageBlob] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState({
+    resume: null,
+    nbiClearance: null,
+    barangayClearance: null,
+    policeClearance: null,
+  });
+
+  const handleFileSelect = (file, documentType) => {
+    setSelectedFiles({
+      ...selectedFiles,
+      [documentType]: file,
+    });
+
+    formik.setFieldValue(`documents.${documentType}`, file);
+  };
+
+  const handleCaptureImage = (imgFile, previewSrc) => {
+    setImageSrc(previewSrc);
+    setImageBlob(imgFile);
+    formik.setFieldValue("profilePhoto", imgFile);
+  };
 
   return (
     <div>
@@ -476,37 +502,33 @@ const VerificationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           htmlFor="personalPhoto"
           className="block text-900 font-medium mb-2"
         >
-          Upload a picture{" "}
+          Profile Picture{" "}
         </label>
-        <FileUpload
-          name="personalPhoto"
-          url={"/api/upload"}
-          accept="image/*"
-          maxFileSize={1000000}
-          emptyTemplate={
-            <p className="m-0">Drag and drop a picture of yourself here.</p>
-          }
+        <ProfilePictureUpload
+          parentSrc={imageSrc}
+          onCaptureImage={handleCaptureImage}
+          formik={formik}
         />
-        {/* {getFormErrorMessage('bio')} */}
+        {getFormErrorMessage("profilePhoto")}
       </div>
 
-      <div className="">
-        <label htmlFor="" className="block text-900 font-medium mb-1">
-          Upload a government-issued ID
+      <div className="mb-4">
+        <label
+          htmlFor="personalPhoto"
+          className="block text-900 font-medium mb-2"
+        >
+          Documents (Upload at least 1 document)
         </label>
-        <p htmlFor="" className="block text-500 font-small mb-2">
-          Provide proof of identity
-        </p>
-        <FileUpload
-          name="personalPhoto"
-          url={"/api/upload"}
-          accept="image/*"
-          maxFileSize={1000000}
-          emptyTemplate={
-            <p className="m-0">Drag and drop an image of your id here.</p>
-          }
+        <Button
+          type="button"
+          label="Show Docs"
+          onClick={() => console.log(selectedFiles, imageSrc)}
         />
-        {/* {getFormErrorMessage('bio')} */}
+        <DocumentsUpload
+          selectedFiles={selectedFiles}
+          onFileSelect={handleFileSelect}
+        />
+        {getFormErrorMessage("profilePhoto")}
       </div>
 
       <div className="flex flex-wrap justify-content-between gap-2 mt-4">
@@ -518,18 +540,27 @@ const VerificationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
           onClick={handlePreviousStep}
         />
         <Button
+          type="button"
           label="Confirm"
           className=""
           icon="pi pi-arrow-right"
           iconPos="right"
-          onClick={props.formik.handleSubmit}
+          onClick={() => {
+            formik.handleSubmit();
+            // console.log(formik.values.profilePhoto);
+          }}
+          disabled={formik.errors.profilePhoto || formik.errors.documents}
         />
       </div>
     </div>
   );
 };
 
-//
-const setupSteps = [WorkerInformationStep, ExperienceStep, BackgroundStep];
+const setupSteps = [
+  WorkerInformationStep,
+  ExperienceStep,
+  BackgroundStep,
+  VerificationStep,
+];
 
 export default setupSteps;

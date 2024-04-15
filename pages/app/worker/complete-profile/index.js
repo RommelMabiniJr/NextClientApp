@@ -36,6 +36,14 @@ const CompleteProfile = () => {
       languages: "",
       education: "College",
       certifications: "",
+
+      documents: {
+        resume: null,
+        nbiClearance: null,
+        barangayClearance: null,
+        policeClearance: null,
+      },
+      profilePhoto: null,
     },
 
     validate: workerCompleteProfileValidate,
@@ -96,9 +104,9 @@ const CompleteProfile = () => {
     {
       label: "Background",
     },
-    // {
-    //   label: "Verification",
-    // },
+    {
+      label: "Verification",
+    },
   ];
 
   const isFormFieldInvalid = (name) =>
@@ -115,13 +123,49 @@ const CompleteProfile = () => {
   async function onSubmit(values) {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
     try {
-      console.log(values);
+      const formData = new FormData();
+
+      formData.append("profilePhoto", values.profilePhoto);
+      formData.append("bio", values.bio);
+      formData.append("availability", values.availability);
+      formData.append("workExperience", values.workExperience);
+      formData.append("hourlyRate", values.hourlyRate);
+      formData.append("education", values.education);
+      formData.append("skills", values.skills);
+      formData.append("uuid", session.user.uuid);
+
+      formData.append("languages", JSON.stringify(values.languages));
+      formData.append("certifications", JSON.stringify(values.certifications));
+      formData.append(
+        "servicesOffered",
+        JSON.stringify(values.servicesOffered)
+      );
+
+      // Append each document separately
+      for (const documentKey in values.documents) {
+        if (values.documents.hasOwnProperty(documentKey)) {
+          formData.append(documentKey, values.documents[documentKey]);
+        }
+      }
 
       const response = await axios({
         method: "post",
-        data: { ...values, uuid: session.user.uuid },
+        data: formData,
         withCredentials: true,
-        url: `${serverUrl}/worker/complete-profile`,
+        url: `${serverUrl}/worker/complete-profile-v2`,
+      });
+
+      const updatedSession = await axios.get(`${serverUrl}/auth/session`, {
+        params: {
+          userUuid: session.user.uuid,
+        },
+      });
+
+      await update({
+        ...session,
+        user: {
+          ...updatedSession.data,
+        },
       });
 
       toast.current.show({
@@ -131,23 +175,6 @@ const CompleteProfile = () => {
         life: 3000,
       });
 
-      // Make session user object reflect changes from the database (i.e. completedProfile: true)
-      console.log({
-        ...session,
-        user: {
-          ...session.user,
-          completedProfile: "true",
-        },
-      });
-      await update({
-        ...session,
-        user: {
-          ...session.user,
-          completedProfile: "true",
-        },
-      });
-
-      console.log(session);
       router.push("/app/worker-dashboard?completedProfile=true");
     } catch (error) {
       console.error(error);

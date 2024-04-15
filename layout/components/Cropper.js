@@ -87,7 +87,7 @@ const DisplayHeader = ({}) => {
   // this function is used to convert the base64 cropped image to a file object
   async function getCroppedFile(
     imageSrc,
-    pixelCrop,
+    pixelCrop = { x: 0, y: 0, width: 0, height: 0 },
     rotation = 0,
     flip = { horizontal: false, vertical: false },
     fileName = "cropped.jpg"

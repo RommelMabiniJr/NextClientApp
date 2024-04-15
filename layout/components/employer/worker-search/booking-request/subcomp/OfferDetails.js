@@ -21,12 +21,15 @@ const OfferDetails = ({
   handleUpdate,
   handleSendOffer,
   session,
+  formik,
 }) => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [benefitsOptions, setBenefitsOptions] = useState([]);
   const [frequencyOptions, setFrequencyOptions] = useState([]); // ["Daily", "Weekly", "Monthly", "Annually"
   const [salaryRange, setSalaryRange] = useState([]); // [10000, 20000]
   const formatHelper = FormatHelper();
+
+  const [currentBenefits, setCurrentBenefits] = useState([]);
 
   const deadlineOptions = [
     { name: "1 day", value: "1" },
@@ -70,7 +73,7 @@ const OfferDetails = ({
       const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
 
       if (response.status === 200) {
-        const benefits = formatHelper.stringToArray(response.data.config_value);
+        const benefits = JSON.parse(response.data.config_value);
 
         setBenefitsOptions(benefits);
       }
@@ -115,6 +118,16 @@ const OfferDetails = ({
     fetchSalaryOptions();
     fetchFrequencyOptions();
   }, []);
+
+  useEffect(() => {
+    console.log(formik.values.jobType);
+    const filteredBenefits = benefitsOptions.filter((benefit) =>
+      benefit.options.includes(formik.values.jobType)
+    );
+
+    // Set the filtered benefits to the state
+    setCurrentBenefits(filteredBenefits);
+  }, [formik.values.jobType, benefitsOptions]);
 
   const handleEdit = () => {
     setIsEditMode(true);
@@ -224,7 +237,7 @@ const OfferDetails = ({
           <BenefitSection
             tempOfferDetails={tempOfferDetails}
             setTempOfferDetails={setTempOfferDetails}
-            benefitsOptions={benefitsOptions}
+            benefitsOptions={currentBenefits}
           />
           <div className="flex justify-center md:justify-end">
             <div className="flex w-full">

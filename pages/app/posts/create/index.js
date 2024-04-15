@@ -110,7 +110,7 @@ export default function CreateJobPostPage() {
       const response = await ConfigService.getConfig(CONFIG_NAME, CONFIG_TYPE);
 
       if (response.status === 200) {
-        const benefits = formatHelper.stringToArray(response.data.config_value);
+        const benefits = JSON.parse(response.data.config_value);
 
         setBenefitsOptions(benefits);
       }
@@ -158,6 +158,20 @@ export default function CreateJobPostPage() {
     fetchJobConfig();
   }, []);
 
+  // Validate that the selected benefits are part of the available benefits based on the jobType
+  const validateSelectedBenefits = (selectedBenefits) => {
+    const availableBenefits = benefitsOptions.filter((benefit) =>
+      benefit.options.includes(formik.values.jobType)
+    );
+    const filteredBenefits = selectedBenefits.filter((benefit) =>
+      availableBenefits.some(
+        (availableBenefit) => availableBenefit.benefit === benefit
+      )
+    );
+
+    return filteredBenefits;
+  };
+
   const onSubmit = async (values) => {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
     try {
@@ -166,6 +180,11 @@ export default function CreateJobPostPage() {
       values.jobEndDate = dayjs(values.jobEndDate).format("YYYY-MM-DD");
       values.jobStartTime = dayjs(values.jobStartTime).format("HH:mm:ss");
       values.jobEndTime = dayjs(values.jobEndTime).format("HH:mm:ss");
+
+      // Make sure that values.benefits align with the available benefitsOptions based on the selected jobType
+      const filteredBenefits = validateSelectedBenefits(values.benefits);
+
+      values.benefits = filteredBenefits;
 
       const response = await axios({
         method: "post",

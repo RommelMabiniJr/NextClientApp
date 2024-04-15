@@ -280,14 +280,14 @@ const DocumentsInformation = ({ documents, session }) => {
               <div className="border-1 border-round border-400 p-4 flex align-content-center justify-content-between ">
                 <div>
                   <i
-                    className="pi pi-file mr-3"
+                    className="pi pi-paperclip mr-3"
                     style={{ fontSize: "1.3rem" }}
                   ></i>
                   <span className="font-semibold">
                     {/* Capitalize each letter */}
-                    {document.type.toUpperCase()}:{" "}
+                    {document.type.toUpperCase()}
                   </span>
-                  <span>{document.status}</span>
+                  {/* <span>{document.status}</span> */}
                 </div>
                 <ConfirmPopup />
                 <div>

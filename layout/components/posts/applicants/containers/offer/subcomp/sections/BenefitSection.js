@@ -6,6 +6,7 @@ const BenefitSection = ({
   tempOfferDetails,
   setTempOfferDetails,
   benefitsOptions,
+  formik,
 }) => {
   const [categories, setCategories] = useState([]);
 
@@ -30,6 +31,9 @@ const BenefitSection = ({
   });
 
   useEffect(() => {
+    // if benefitsOptions is empty, return
+    if (!benefitsOptions) return;
+
     setCategories(benefitsOptions);
   }, [benefitsOptions]);
 
@@ -66,14 +70,16 @@ const BenefitSection = ({
           return (
             <div key={benefit} className="flex align-items-center">
               <Checkbox
-                inputId={benefit}
+                inputId={benefit.benefit}
                 name="benefit"
-                value={benefit}
+                value={benefit.benefit}
                 onChange={onBenefitChange}
-                checked={selectedBenefits.some((item) => item === benefit)}
+                checked={selectedBenefits.some(
+                  (item) => item === benefit.benefit
+                )}
               />
-              <label htmlFor={benefit} className="ml-2">
-                {benefit}
+              <label htmlFor={benefit.benefit} className="ml-2">
+                {benefit.benefit}
               </label>
             </div>
           );

@@ -159,6 +159,7 @@ const BookRequest = ({
             offerStatus={offerStatus}
             offerEvents={offerEvents}
             session={session}
+            formik={formik}
           />
         </div>
       </div>

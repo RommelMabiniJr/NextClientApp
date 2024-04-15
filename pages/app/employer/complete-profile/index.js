@@ -31,6 +31,7 @@ const CompleteProfile = () => {
       badges: [],
       paymentFrequency: "",
       bio: "",
+      profilePhoto: null,
     },
 
     validate: completeProfileValidate,
@@ -69,6 +70,9 @@ const CompleteProfile = () => {
       // Will be used to ask to create bio
       label: "Additional",
     },
+    {
+      label: "Verification",
+    },
   ];
 
   const isFormFieldInvalid = (name) =>
@@ -91,36 +95,43 @@ const CompleteProfile = () => {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
     try {
+      const formData = new FormData();
+
+      formData.append("profilePhoto", values.profilePhoto);
+      formData.append("bio", values.bio);
+      formData.append("availability", values.availability);
+      formData.append("paymentFrequency", values.paymentFrequency);
+      formData.append("householdSize", values.householdSize);
+      formData.append("pets", JSON.stringify(values.pets));
+      formData.append("specificNeeds", values.specificNeeds);
+      formData.append("badges", JSON.stringify(values.badges));
+      formData.append("uuid", session.user.uuid);
+
       const response = await axios({
         method: "post",
-        data: { ...values, uuid: session.user.uuid },
+        data: formData,
         withCredentials: true,
-        url: `${serverUrl}/employer/complete-profile`,
+        url: `${serverUrl}/employer/complete-profile-v2`,
       });
 
-      console.log(response.data);
+      const updatedSession = await axios.get(`${serverUrl}/auth/session`, {
+        params: {
+          userUuid: session.user.uuid,
+        },
+      });
+
+      await update({
+        ...session,
+        user: {
+          ...updatedSession.data,
+        },
+      });
 
       toast.current.show({
         severity: "success",
         summary: "Success",
         detail: "Profile created Succesfully",
         life: 3000,
-      });
-
-      // Make session user object reflect changes from the database (i.e. completedProfile: true)
-      console.log({
-        ...session,
-        user: {
-          ...session.user,
-          completedProfile: "true",
-        },
-      });
-      await update({
-        ...session,
-        user: {
-          ...session.user,
-          completedProfile: "true",
-        },
       });
 
       router.push("/app/employer-dashboard?completedProfile=true");

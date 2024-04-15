@@ -8,6 +8,7 @@ import ContactInformation from "@/layout/components/employer/information/contact
 import HouseholdInformation from "@/layout/components/employer/information/household";
 import PaymentInformation from "@/layout/components/employer/information/payment";
 import DisplayHeader from "@/layout/components/Cropper";
+import ProfilePictureUpload from "@/layout/components/shared/profilecapture";
 
 export default function EmployerProfile() {
   const { data: session, status } = useSession();

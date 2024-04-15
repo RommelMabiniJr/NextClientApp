@@ -132,20 +132,6 @@ const RegistrationPage = () => {
 
   const StepComponent = RegistrationSteps[currentStep];
 
-  const userTemplate = (option) => {
-    // display user color, if worker bg is pink, employer bg is blue
-
-    return (
-      <div
-      // className={`${
-      //   option.value === "household employer" ? "bg-blue-500" : "bg-pink-500"
-      // }`}
-      >
-        {option.label}
-      </div>
-    );
-  };
-
   if (status === "authenticated") {
     router.push("/app/user-router");
   }
@@ -188,7 +174,6 @@ const RegistrationPage = () => {
               name="user_type"
               id="userType"
               options={options}
-              // itemTemplate={userTemplate}
               onChange={(e) => {
                 formik.setFieldValue("user_type", e.value);
               }}

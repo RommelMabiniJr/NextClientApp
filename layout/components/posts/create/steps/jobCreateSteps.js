@@ -490,6 +490,19 @@ const JobDescriptionStep = ({
 const OfferStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
   const { isFormFieldInvalid, getFormErrorMessage, formik } = props;
   const { benefitsOptions, salaryRange, frequencyOptions } = props; // used for config
+  const [benefits, setBenefits] = useState([]);
+
+  useEffect(() => {
+    // Filter benefitsOptions using formik.values.jobType
+    // by matching the jobType to each item in benefitsOptions option<Array> of jobTypes
+
+    const filteredBenefits = benefitsOptions.filter((benefit) =>
+      benefit.options.includes(formik.values.jobType)
+    );
+
+    // Set the filtered benefits to the state
+    setBenefits(filteredBenefits);
+  }, [formik.values.jobType]);
 
   return (
     <div>
@@ -547,13 +560,13 @@ const OfferStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
               </label>
               <div className="flex-1 pt-2 pl-2  ">
                 <div className="grid ">
-                  {benefitsOptions.map((benefit) => {
+                  {benefits.map((benefit) => {
                     return (
                       <div key={benefit} className="col-12 md:col-6 flex">
                         <Checkbox
-                          inputId={benefit}
+                          inputId={benefit.benefit}
                           name="benefit"
-                          value={benefit}
+                          value={benefit.benefit}
                           onChange={(e) => {
                             let _selectedBenefits =
                               [...formik.values?.benefits] || [];
@@ -567,11 +580,11 @@ const OfferStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
                             formik.setFieldValue("benefits", _selectedBenefits);
                           }}
                           checked={formik.values.benefits?.some(
-                            (item) => item === benefit
+                            (item) => item === benefit.benefit
                           )}
                         />
-                        <label htmlFor={benefit} className="ml-2">
-                          {benefit}
+                        <label htmlFor={benefit.benefit} className="ml-2">
+                          {benefit.benefit}
                         </label>
                       </div>
                     );
