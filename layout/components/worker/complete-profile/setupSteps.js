@@ -519,11 +519,11 @@ const VerificationStep = ({ handleNextStep, handlePreviousStep, ...props }) => {
         >
           Documents (Upload at least 1 document)
         </label>
-        <Button
+        {/* <Button
           type="button"
           label="Show Docs"
           onClick={() => console.log(selectedFiles, imageSrc)}
-        />
+        /> */}
         <DocumentsUpload
           selectedFiles={selectedFiles}
           onFileSelect={handleFileSelect}

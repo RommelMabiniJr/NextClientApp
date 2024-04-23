@@ -23,11 +23,22 @@ const InterviewPage = ({}) => {
   const { roomId } = router.query;
 
   useEffect(() => {
-    if (!session) return;
+    if (
+      !session &&
+      !process.env.NEXT_PUBLIC_ZEGO_CLOUD_APP_ID &&
+      !process.env.NEXT_PUBLIC_ZEGO_CLOUD_SERVER_SECRET
+    )
+      return;
+
+    console.log("test", process.env.NEXT_PUBLIC_ZEGO_CLOUD_SERVER_SECRET);
 
     import("@zegocloud/zego-uikit-prebuilt").then(({ ZegoUIKitPrebuilt }) => {
-      const appId = 1100122973;
-      const serverSecret = "0696f24203f82442c93d1bb0b97ef7e0";
+      const appId = 40839893;
+      const serverSecret = "3e411c52171c4e21262d6f3714c3d014";
+
+      // Use the following if you want to use the environment variables
+      // const appId = process.env.NEXT_PUBLIC_ZEGO_CLOUD_APP_ID;
+      // const serverSecret = process.env.NEXT_PUBLIC_ZEGO_CLOUD_SERVER_SECRET;
 
       const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
         appId,
